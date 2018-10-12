@@ -12,6 +12,7 @@
 void setup(){
 
 	InitSio();
+	//InitGPOI();
 }
 
 void loop() {

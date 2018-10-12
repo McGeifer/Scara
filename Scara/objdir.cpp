@@ -8,28 +8,55 @@
 // Initial definition of the object dictionary entries.
 static ObjStruct objStruct_data[] =
 {
-	{OBJ_IDX_ACK,				OBJ_PROP_RW, 0, &Hdl_ACK},
-	{OBJ_IDX_START_MOVE,		OBJ_PROP_RW, 0, &Hdl_StartMove},
+	// basic options
+	{0xA0, OBJ_PROP_RW, 0, &Hdl_ACK},				// acknowledge
+	{0x3F, OBJ_PROP_RW, 0, &Hdl_StartMove},			// start movement of robot axis
+	
+	// position values
+	{0x10, OBJ_PROP__W, 0, &SetNewTargetPos},		// x - new target position
+	{0x11, OBJ_PROP_R_, 0, &GetActualTargetPos},	// x - actual target position
+	{0x12, OBJ_PROP_R_, 0, &GetActualPos},			// x - actual position
+	{0x20, OBJ_PROP__W, 0, &SetNewTargetPos},		// y - new target position
+	{0x21, OBJ_PROP_R_, 0, &GetActualTargetPos},	// y - actual target position
+	{0x22, OBJ_PROP_R_, 0, &GetActualPos},			// y - actual position
+	{0x30, OBJ_PROP__W, 0, &SetNewTargetPos},		// z - new target position
+	{0x31, OBJ_PROP_R_, 0, &GetActualTargetPos},	// z - actual target position
+	{0x32, OBJ_PROP_R_, 0, &GetActualPos},			// z - actual position
+	
+	// angle values
+	{0x41, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
+	{0x42, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
+	{0x43, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
+	{0x50, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
+	{0x51, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
+	{0x52, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
+};
 
-	{OBJ_IDX_X_NEW_TARGET,		OBJ_PROP__W, 0, &SetNewTargetPos},
-	{OBJ_IDX_X_ACT_TARGET,		OBJ_PROP_R_, 0, &GetActualTargetPos},
-	{OBJ_IDX_X_ACT,				OBJ_PROP_R_, 0, &GetActualPos},
-
-	{OBJ_IDX_Y_NEW_TARGET,		OBJ_PROP__W, 0, &SetNewTargetPos},
-	{OBJ_IDX_Y_ACT_TARGET,		OBJ_PROP_R_, 0, &GetActualTargetPos},
-	{OBJ_IDX_Y_ACT,				OBJ_PROP_R_, 0, &GetActualPos},
-
-	{OBJ_IDX_Z_NEW_TARGET,		OBJ_PROP__W, 0, &SetNewTargetPos},
-	{OBJ_IDX_Z_ACT_TARGET,		OBJ_PROP_R_, 0, &GetActualTargetPos},
-	{OBJ_IDX_Z_ACT,				OBJ_PROP_R_, 0, &GetActualPos},
-
-	{OBJ_IDX_AX1_NEW_TARGET,	OBJ_PROP__W, 0, &SetNewTargetAngle},
-	{OBJ_IDX_AX1_ACT_TARGET,	OBJ_PROP_R_, 0, &GetActualTargetAngle},
-	{OBJ_IDX_AX1_ACT_,			OBJ_PROP_R_, 0, &GetActualAngle},
-
-	{OBJ_IDX_AX2_NEW_TARGET,	OBJ_PROP__W, 0, &SetNewTargetAngle},
-	{OBJ_IDX_AX2_ACT_TARGET,	OBJ_PROP_R_, 0, &GetActualTargetAngle},
-	{OBJ_IDX_AX2_ACT_,			OBJ_PROP_R_, 0, &GetActualAngle},
+// Initial definition of the tool table.
+static ToolTbl toolTbl[] =
+{
+	// tool 0 - machine zero
+	{0x01, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// only change if you know exactly what you are doing!
+	
+	// variable tooltable entries
+	{0x10, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// custom tools
+	{0x11, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x20, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x21, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x30, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x31, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x40, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x41, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x50, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x51, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x60, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x61, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x70, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x71, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x80, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x81, OBJ_PROP__W, 0, 0, 0, &SetTool},
+	{0x90, OBJ_PROP_R_, 0, 0, 0, &GetTool},
+	{0x91, OBJ_PROP__W, 0, 0, 0, &SetTool},
 };
  
 // Function to search the object dictionary. If a given entry is found a pointer to it will be returned by the function.  
@@ -41,6 +68,20 @@ ObjStruct* LocateObjDir(uint8_t index, uint8_t props, uint16_t data) {
 	for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++)
 	{
 		if (p->index == index)
+			return p;
+	}
+	return NULL;
+}
+
+// Function to search the tool table. If a given entry is found a pointer to it will be returned by the function.  
+ToolTbl* LocateTool(uint8_t index, uint8_t props, uint16_t data) {
+
+	ToolTbl *p;
+	p = toolTbl;
+
+	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++)
+	{
+		if (p->toolIndex == index)
 			return p;
 	}
 	return NULL;

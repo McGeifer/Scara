@@ -18,5 +18,7 @@ const int GetActualPos(uint8_t *index, uint8_t *props, uint16_t *data);
 const int SetNewTargetAngle(uint8_t *index, uint8_t *props, uint16_t *data);
 const int GetActualTargetAngle(uint8_t *index, uint8_t *props, uint16_t *data);
 const int GetActualAngle(uint8_t *index, uint8_t *props, uint16_t *data);
+const int GetTool(uint8_t *index, uint8_t *props, uint16_t *data);
+const int SetTool(uint8_t *index, uint8_t *props, uint16_t *data);
 
 #endif
