@@ -4,15 +4,20 @@
  Author:	Jens Schiller
 */
 
+#include "gpio.h"
+#include "status.h"
+#include "dynamixel.h"
+#include "SimpleModbusSlave.h"
+#include "DynamixelSerial2.h"
 #include "handler.h"
 #include "objdir.h"
-#include "DynamixelSerial2.h"
 #include "sio.h"
 
-void setup(){
+void setup() {
 
 	InitSio();
-	//InitGPOI();
+	InitGPIO();
+	InitDynamixel();
 }
 
 void loop() {
@@ -20,3 +25,4 @@ void loop() {
 	HandleSio();
 	delay(1000);
 }
+

@@ -4,11 +4,12 @@
 
 #include "handler.h"
 #include "objdir.h"
+#include "status.h"
 
 int HandleSio() {
 
 	ObjStruct *tmp;
-	tmp = LocateObjDir(0xA0, 0, 0);
+	tmp = LocateObj(0xA0);
 	uint8_t x = 1;
 	uint8_t y = 3;
 	uint16_t z = 15;
@@ -19,7 +20,7 @@ int HandleSio() {
 	}
 	else {
 		Serial.println("Gefunden");
-		tmp->pFunction(&x, &y, &z);
+		
 		return 0;
 	}
 }
@@ -36,8 +37,24 @@ const int Hdl_StartMove(uint8_t *index, uint8_t *props, uint16_t *data) {
 	
 }
 
+const int Hdl_SystemError(uint8_t *index, uint8_t *props, uint16_t *data) {
+
+}
+
+const int Hdl_OperationMode(uint8_t *index, uint8_t *props, uint16_t *data) {
+
+}
+
+const int8_t GetSystemError() {
+	return GetObjStructData(0xFF);
+}
+
 const int SetNewTargetPos(uint8_t *index, uint8_t *props, uint16_t *data) {
 
+	char* string;
+	sprintf(string, "Write operation not allowed for object: %x - object ist read only", index);
+	SendStatus(string, STATUS_TYPE_ERROR);
+	return -1;
 }
 
 const int GetActualTargetPos(uint8_t *index, uint8_t *props, uint16_t *data) {

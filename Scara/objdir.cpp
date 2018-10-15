@@ -6,11 +6,13 @@
 #include "handler.h"
 
 // Initial definition of the object dictionary entries.
-static ObjStruct objStruct_data[] =
-{
+static ObjStruct objStruct_data[] = {
+
 	// basic options
 	{0xA0, OBJ_PROP_RW, 0, &Hdl_ACK},				// acknowledge
 	{0x3F, OBJ_PROP_RW, 0, &Hdl_StartMove},			// start movement of robot axis
+	{0xFE, OBJ_PROP_RW, 0, &Hdl_OperationMode},		// operation mode: modbus, rapid or scara
+	{0xFF, OBJ_PROP_RW, 0, &Hdl_SystemError},		// system error
 	
 	// position values
 	{0x10, OBJ_PROP__W, 0, &SetNewTargetPos},		// x - new target position
@@ -33,8 +35,8 @@ static ObjStruct objStruct_data[] =
 };
 
 // Initial definition of the tool table.
-static ToolTbl toolTbl[] =
-{
+static ToolTbl toolTbl[] = {
+
 	// tool 0 - machine zero
 	{0x01, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// only change if you know exactly what you are doing!
 	
@@ -58,31 +60,45 @@ static ToolTbl toolTbl[] =
 	{0x90, OBJ_PROP_R_, 0, 0, 0, &GetTool},
 	{0x91, OBJ_PROP__W, 0, 0, 0, &SetTool},
 };
- 
-// Function to search the object dictionary. If a given entry is found a pointer to it will be returned by the function.  
-ObjStruct* LocateObjDir(uint8_t index, uint8_t props, uint16_t data) {
+
+ObjStruct* LocateObj(uint8_t index) {
 	
 	ObjStruct *p;
 	p = objStruct_data;
 
-	for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++)
-	{
+	for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++)	{
 		if (p->index == index)
 			return p;
 	}
 	return NULL;
 }
 
-// Function to search the tool table. If a given entry is found a pointer to it will be returned by the function.  
-ToolTbl* LocateTool(uint8_t index, uint8_t props, uint16_t data) {
+ToolTbl* LocateTool(uint8_t index) {
 
 	ToolTbl *p;
 	p = toolTbl;
 
-	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++)
-	{
+	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
+
 		if (p->toolIndex == index)
 			return p;
 	}
 	return NULL;
+}
+
+int16_t GetObjStructData(uint8_t index) {
+
+	ObjStruct *p;
+	p = LocateObj(index);
+	if (p != NULL) 
+		return p->data;
+	else
+		return NULL;
+}
+
+void SetObjStructData(uint8_t index, int16_t data) {
+
+	ObjStruct *p;
+	p = LocateObj(index);
+	p->data = data;
 }
