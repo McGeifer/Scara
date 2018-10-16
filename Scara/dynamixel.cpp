@@ -32,8 +32,6 @@ void InitDynamixel() {
 
 	if (response != 3) {
 
-		SendStatus("Not all Dynamixel-Servos could be found, check wiring and restart the controller.", STATUS_TYPE_ERROR);
-		
 		// set system error state to prevent further operations
 		ObjStruct *tmp;
 		uint8_t index = 0xFF;
@@ -58,7 +56,7 @@ void InitDynamixel() {
 	Dynamixel.setLEDAlarm(0, 127);				// LED blink for alle error types
 	Dynamixel.setShutdownAlarm(0, 37);			// turn of torque for: overload, overheating and input voltage error
 	
-	// Only change if you know exactly what	you are doing!
+	// Only change if you really know what you are doing!
 	Dynamixel.setCSlope(0, 32, 32);				// compilance slope - default value
 	Dynamixel.setCMargin(0, 0, 0);				// compilance margin - default value
 	Dynamixel.setPunch(0, 32);					// minimum current supplied to the motor - dafault value
@@ -75,7 +73,7 @@ void InitDynamixel() {
 	Dynamixel.setLEDAlarm(1, 127);				// LED blink for alle error types
 	Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
 		
-	// Only change if you know exactly what	you are doing!
+	// Only change if you really know what you are doing!
 	Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
 	Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
 	Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - dafault value
@@ -92,8 +90,13 @@ void InitDynamixel() {
 	Dynamixel.setLEDAlarm(1, 127);				// LED blink for alle error types
 	Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
 		
-	// Only change if you know exactly what	you are doing!
+	// Only change if you really know what you are doing!
 	Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
 	Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
 	Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - dafault value
+
+	// enable torque for all servo motors
+	Dynamixel.torqueStatus(0, ON);
+	Dynamixel.torqueStatus(1, ON);
+	Dynamixel.torqueStatus(2, ON);
 }

@@ -4,25 +4,31 @@
  Author:	Jens Schiller
 */
 
+#include "objdir.h"
 #include "gpio.h"
 #include "status.h"
 #include "dynamixel.h"
 #include "SimpleModbusSlave.h"
 #include "DynamixelSerial2.h"
 #include "handler.h"
-#include "objdir.h"
 #include "sio.h"
+
+extern bool run;
 
 void setup() {
 
+	run = false;
 	InitSio();
 	InitGPIO();
 	InitDynamixel();
+	SetOperationMode();
+	run = true;
 }
 
 void loop() {
 
-	HandleSio();
-	delay(1000);
+	while (run) {
+		SystemStatus();
+		HandleSio();
+	}
 }
-

@@ -9,6 +9,10 @@
 	#include "WProgram.h"
 #endif
 
+// ##############################################
+// object dictionary
+// ##############################################
+
 // The basic data structure for the object dictionary.
 typedef struct {
 
@@ -29,7 +33,11 @@ typedef struct {
 			bool		toolAct;			// tool ist active?
 } ToolTbl;
 
-// Modbus holing registers
+// ##############################################
+// modbus
+// ##############################################
+
+// modbus holing registers
 enum holding_registers {
 
 	CMD_MODBUS,					// The first register starts at address 0
@@ -41,7 +49,7 @@ enum holding_registers {
 	TOTAL_REGS_SIZE_MODBUS		// Total number of registers. Function 3 and 16 share the same register array
 };
 
-// Function 3 and 16 register array
+// function 3 and 16 register array
 static unsigned int holdingRegs[TOTAL_REGS_SIZE_MODBUS];
 
 // ##############################################
@@ -55,28 +63,30 @@ static unsigned int holdingRegs[TOTAL_REGS_SIZE_MODBUS];
 #define OBJ_PROP_RW	(OBJ_READ | OBJ_WRITE)	// read & write
 
 // ##############################################
-// Operation modes
+// operation modes
 // ##############################################
-#define OP_MODE_SCARA	0x01				// use "Scara" protocoll
-#define OP_MODE_MODBUS	0x02				// use SimpleModbusClient
-#define OP_MODE_RAPID	0x03				// use "Rapid" protocoll
+#define OP_MODE_MODBUS				0x01	// use SimpleModbusClient
+#define OP_MODE_RAPID				0x02	// use "Rapid" protocoll
+#define OP_MODE_SCARA				0x03	// use "Scara" protocoll
 
 // ##############################################
-// Status message types
+// status message types
 // ##############################################
-//#define STATUS_TYPE_NOTYPE		0x01		// display a message without status type
-#define STATUS_TYPE_INFO		0x02		// display normal info message
-#define STATUS_TYPE_WARNING		0x03		// display a warning message
-#define STATUS_TYPE_ERROR		0x04		// display a error message
+//#define STATUS_TYPE_NOTYPE		0x01	// display a message without status type
+#define STATUS_TYPE_INFO			0x02	// display normal info message
+#define STATUS_TYPE_WARNING			0x03	// display a warning message
+#define STATUS_TYPE_ERROR			0x04	// display a error message
 
 // ##############################################
-// min max values for the object dictionary
+// system status
 // ##############################################
+#define SYS_STAT_RUNNING			0x00	// no error - system operational
+#define SYS_STAT_DYNAMIXEL_ERROR	0x01	// not all 3 dynamixel servo motors could be found
+#define SYS_STAT_UNKOWN_ERROR		0xFF	// uknown error - not used jet
 
-// basic options
-#define OP_MODE 
-
-// position values
+// ##############################################
+// min & max values for the object dictionary
+// ##############################################
 #define X_NEW_TARGET_POS_MIN -200
 #define X_NEW_TARGET_POS_MAX 200
 #define Y_NEW_TARGET_POS_MIN -200
@@ -84,11 +94,16 @@ static unsigned int holdingRegs[TOTAL_REGS_SIZE_MODBUS];
 #define Z_NEW_TARGET_POS_MIN -200
 #define Z_NEW_TARGET_POS_MAX 200
 
-// angle values
 #define AXIS_1_NEW_TARGET_ANGLE_MIN -105
 #define AXIS_1_NEW_TARGET_ANGLE_MAX 105
 #define AXIS_2_NEW_TARGET_ANGLE_MIN -105
 #define AXIS_2_NEW_TARGET_ANGLE_MAX 105
+
+// ##############################################
+// miscellaneous
+// ##############################################
+
+//nothing here
 
 // ##############################################
 // function declarations

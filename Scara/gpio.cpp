@@ -3,7 +3,7 @@
 // 
 
 #include "gpio.h"
-
+#include "objdir.h"
 
 void InitGPIO() {
 
@@ -16,9 +16,25 @@ void InitGPIO() {
 	attachInterrupt(INTERRUPT_PIN, InterruptRoutine, CHANGE);	// Attaches interrupt for counting the impulses
 }
 
-void InterruptRoutine()
-{
-	noInterrupts();
+void SetOperationMode() {
 
+	if (MODBUS_PIN == HIGH && RAPID_PIN == LOW) {
+		
+		SetObjStructData(0xFE, OP_MODE_MODBUS);
+	}
+	else if (RAPID_PIN == HIGH && MODBUS_PIN == LOW) {
+
+		SetObjStructData(0xFE, OP_MODE_RAPID);
+	}
+	else {
+
+		SetObjStructData(0xFE, OP_MODE_SCARA);
+	}
+}
+
+void InterruptRoutine() {
+
+	noInterrupts();
+	// blub
 	interrupts();
 }

@@ -6,26 +6,26 @@
 #include "objdir.h"
 #include "status.h"
 
-int HandleSio() {
+//int HandleSio() {
+//
+//	ObjStruct *tmp;
+//	tmp = LocateObj(0xA0);
+//	uint8_t x = 1;
+//	uint8_t y = 3;
+//	uint16_t z = 15;
+//
+//	if (tmp == NULL) {
+//		Serial.println("Nicht gefunden");
+//		return -1;
+//	}
+//	else {
+//		Serial.println("Gefunden");
+//		
+//		return 0;
+//	}
+//}
 
-	ObjStruct *tmp;
-	tmp = LocateObj(0xA0);
-	uint8_t x = 1;
-	uint8_t y = 3;
-	uint16_t z = 15;
-
-	if (tmp == NULL) {
-		Serial.println("Nicht gefunden");
-		return -1;
-	}
-	else {
-		Serial.println("Gefunden");
-		
-		return 0;
-	}
-}
-
-const int Hdl_ACK(uint8_t *index, uint8_t *props, uint16_t *data) {
+const int SetACK(uint8_t *index, uint8_t *props, uint16_t *data) {
 	
 	Serial.println((int)*index, HEX);
 	Serial.println((int)*props, HEX);
@@ -33,16 +33,8 @@ const int Hdl_ACK(uint8_t *index, uint8_t *props, uint16_t *data) {
 	return 0;
 }
 
-const int Hdl_StartMove(uint8_t *index, uint8_t *props, uint16_t *data) {
+const int SetStartMove(uint8_t *index, uint8_t *props, uint16_t *data) {
 	
-}
-
-const int Hdl_SystemError(uint8_t *index, uint8_t *props, uint16_t *data) {
-
-}
-
-const int Hdl_OperationMode(uint8_t *index, uint8_t *props, uint16_t *data) {
-
 }
 
 const int8_t GetSystemError() {

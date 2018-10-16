@@ -11,5 +11,7 @@
 
  // test
 void SendStatus(char* message, uint8_t statusType);
+void SystemStatus();
+	 
 
 #endif

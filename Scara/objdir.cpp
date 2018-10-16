@@ -5,14 +5,16 @@
 #include "objdir.h"
 #include "handler.h"
 
+bool run = false;
+
 // Initial definition of the object dictionary entries.
 static ObjStruct objStruct_data[] = {
 
 	// basic options
-	{0xA0, OBJ_PROP_RW, 0, &Hdl_ACK},				// acknowledge
-	{0x3F, OBJ_PROP_RW, 0, &Hdl_StartMove},			// start movement of robot axis
-	{0xFE, OBJ_PROP_RW, 0, &Hdl_OperationMode},		// operation mode: modbus, rapid or scara
-	{0xFF, OBJ_PROP_RW, 0, &Hdl_SystemError},		// system error
+	{0xA0, OBJ_PROP__W, 0, &SetACK},				// acknowledge
+	{0x3F, OBJ_PROP__W, 0, &SetStartMove},			// start movement of robot axis
+	{0xFE, OBJ_PROP_RW, 0, NULL},					// internal obj - operation mode: modbus = 1, rapid = 2 or scara = 3
+	{0xFF, OBJ_PROP_RW, 0, NULL},					// internal obj - system status
 	
 	// position values
 	{0x10, OBJ_PROP__W, 0, &SetNewTargetPos},		// x - new target position
@@ -38,7 +40,7 @@ static ObjStruct objStruct_data[] = {
 static ToolTbl toolTbl[] = {
 
 	// tool 0 - machine zero
-	{0x01, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// only change if you know exactly what you are doing!
+	{0x01, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// Only change if you really know what you are doing!
 	
 	// variable tooltable entries
 	{0x10, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// custom tools

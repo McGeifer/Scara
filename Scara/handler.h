@@ -9,14 +9,11 @@
 	#include "WProgram.h"
 #endif
 
-int HandleSio();
-const int Hdl_ACK (uint8_t *index, uint8_t *props, uint16_t *data);
-const int Hdl_StartMove (uint8_t *index, uint8_t *props, uint16_t *data);
-const int Hdl_SystemError(uint8_t *index, uint8_t *props, uint16_t *data);
-const int Hdl_OperationMode(uint8_t *index, uint8_t *props, uint16_t *data);
+//int HandleSio();
+const int SetACK (uint8_t *index, uint8_t *props, uint16_t *data);
+const int SetStartMove (uint8_t *index, uint8_t *props, uint16_t *data);
 
 const int8_t GetSystemError();
-
 
 const int SetNewTargetPos(uint8_t *index, uint8_t *props, uint16_t *data);
 const int GetActualTargetPos(uint8_t *index, uint8_t *props, uint16_t *data);

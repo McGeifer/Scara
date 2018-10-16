@@ -5,6 +5,8 @@
 #include "status.h"
 #include "objdir.h"
 
+extern bool run;
+
 void SendStatus(char* message, uint8_t statusType) {
 
 	switch (GetObjStructData(0xFE))
@@ -40,6 +42,27 @@ void SendStatus(char* message, uint8_t statusType) {
 	case OP_MODE_MODBUS:
 		// no status message available, possible implementation via modbus exeption code -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes
 		break;
+
+	default:
+		break;
+	}
+}
+
+void SystemStatus() {
+
+	switch (GetObjStructData(0xFF))
+	{
+	case 0:
+		// no error
+		break;
+
+	case SYS_STAT_DYNAMIXEL_ERROR:
+		SendStatus("Not all Dynamixel servos could be found, check wiring and restart the controller.", STATUS_TYPE_ERROR);
+		run = false;
+
+	case SYS_STAT_UNKOWN_ERROR:
+		SendStatus("Unknown error, check system and restart the controller.", STATUS_TYPE_ERROR);
+		run = false;
 
 	default:
 		break;

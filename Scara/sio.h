@@ -10,5 +10,8 @@
 #endif
 
 void InitSio();
+void HandleSio();
+void HandleModbus();
+
 
 #endif
