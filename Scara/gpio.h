@@ -17,7 +17,7 @@
 
 
 void InitGPIO();
-void InterruptRoutine();
-void SetOperationMode();
+void InitOperationMode();
+static void InterruptRoutine();
 
 #endif

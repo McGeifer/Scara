@@ -14,16 +14,13 @@ void InitDynamixel() {
 	int response = 0;
 
 	for (int i = 0; i < 2; i++) {
-
 		char* string;
 		tmp = Dynamixel.ping(i);
 		if (tmp == -1) {
-
 			sprintf(string, "Dynamixel not found @ ID: %d", i);
 			SendStatus(string, STATUS_TYPE_ERROR);
 		}
 		else {
-
 			sprintf(string, "Dynamixel found @ ID: %d", i);
 			SendStatus(string, STATUS_TYPE_INFO);
 			response++;
@@ -31,7 +28,6 @@ void InitDynamixel() {
 	}
 
 	if (response != 3) {
-
 		// set system error state to prevent further operations
 		ObjStruct *tmp;
 		uint8_t index = 0xFF;

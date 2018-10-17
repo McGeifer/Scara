@@ -4,8 +4,7 @@
 
 #include "objdir.h"
 #include "handler.h"
-
-bool run = false;
+#include "status.h"
 
 // Initial definition of the object dictionary entries.
 static ObjStruct objStruct_data[] = {
@@ -13,8 +12,10 @@ static ObjStruct objStruct_data[] = {
 	// basic options
 	{0xA0, OBJ_PROP__W, 0, &SetACK},				// acknowledge
 	{0x3F, OBJ_PROP__W, 0, &SetStartMove},			// start movement of robot axis
-	{0xFE, OBJ_PROP_RW, 0, NULL},					// internal obj - operation mode: modbus = 1, rapid = 2 or scara = 3
-	{0xFF, OBJ_PROP_RW, 0, NULL},					// internal obj - system status
+
+	// internal objects
+	{0xFE, OBJ_PROP_RW, 0, NULL},					// operation mode: modbus = 1, rapid = 2 or scara = 3
+	{0xFF, OBJ_PROP_RW, 0, NULL},					// system status
 	
 	// position values
 	{0x10, OBJ_PROP__W, 0, &SetNewTargetPos},		// x - new target position
@@ -28,9 +29,9 @@ static ObjStruct objStruct_data[] = {
 	{0x32, OBJ_PROP_R_, 0, &GetActualPos},			// z - actual position
 	
 	// angle values
-	{0x41, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
-	{0x42, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
-	{0x43, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
+	{0x40, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
+	{0x41, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
+	{0x42, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
 	{0x50, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
 	{0x51, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
 	{0x52, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
@@ -81,7 +82,6 @@ ToolTbl* LocateTool(uint8_t index) {
 	p = toolTbl;
 
 	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
-
 		if (p->toolIndex == index)
 			return p;
 	}
@@ -92,15 +92,71 @@ int16_t GetObjStructData(uint8_t index) {
 
 	ObjStruct *p;
 	p = LocateObj(index);
+
 	if (p != NULL) 
 		return p->data;
 	else
 		return NULL;
 }
 
-void SetObjStructData(uint8_t index, int16_t data) {
+int8_t SetObjStructData(uint8_t index, uint16_t data) {
 
 	ObjStruct *p;
 	p = LocateObj(index);
-	p->data = data;
+	int16_t minValue;
+	int16_t maxValue;
+
+	if (p != NULL) {	// make sure object does exist
+		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) {	// check if object is writable
+			switch (p->index)	// set min max vaules for comparison
+			{
+			case 0x10:
+				minValue = X_NEW_TARGET_POS_MIN;
+				maxValue = X_NEW_TARGET_POS_MAX;
+				break;
+			case 0x20:
+				minValue = Y_NEW_TARGET_POS_MIN;
+				maxValue = Y_NEW_TARGET_POS_MAX;
+				break;
+			case 0x30:
+				minValue = Z_NEW_TARGET_POS_MIN;
+				maxValue = Z_NEW_TARGET_POS_MAX;
+				break;
+			case 0x40:
+				minValue = AXIS_1_NEW_TARGET_ANGLE_MIN;
+				maxValue = AXIS_1_NEW_TARGET_ANGLE_MAX;
+				break;
+			case 0x50:
+				minValue = AXIS_2_NEW_TARGET_ANGLE_MIN;
+				maxValue = AXIS_2_NEW_TARGET_ANGLE_MAX;
+				break;
+			default:
+				minValue = NULL;
+				maxValue = NULL;
+				break;
+			}
+			if (p->data >= minValue && p->data <= maxValue) { //  wirte data if it's inside the min max range
+				p->data = data;
+				return 0;
+			}
+			else {
+				char* string;
+				sprintf(string, "in function SetObjStructData(): failed to write - object %h value out of range", index);
+				SendStatus(string, STATUS_TYPE_ERROR);
+				return -1;
+			}
+		}
+		else {
+			char* string;
+			sprintf(string, "in function SetObjStructData(): failed to write - object %h is read only", index);
+			SendStatus(string, STATUS_TYPE_ERROR);
+			return -1;
+		}
+	}
+	else {
+		char* string;
+		sprintf(string, "in function SetObjStructData(): failed to write - object %h does not exist", index);
+		SendStatus(string, STATUS_TYPE_ERROR);
+		return -1;
+	}
 }

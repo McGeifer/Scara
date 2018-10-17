@@ -10,8 +10,9 @@
 #endif
 
 void InitSio();
-void HandleSio();
-void HandleModbus();
-
+void HandleSIO();
+static void Modbus();
+static void Rapid();
+static void Scara();
 
 #endif

@@ -15,15 +15,16 @@ void InitSio() {
 	Serial.setTimeout(500);
 
 	// Setup for Modbus connection (Serial1)
-	modbus_configure(115200, 1, 0, TOTAL_REGS_SIZE_MODBUS, 0);
+	modbus_configure(115200, 1, 0, TOTAL_REGS_SIZE_MDB, 0);
 
 	// Setup for Dynamixel connection (Serial2)
 	Dynamixel.begin(1000000, 2);
 }
 
-void HandleSio() {
+// Choose the correct handler to process the received data (selected by operation mode).
+void HandleSIO() {
 
-	// get system error state
+	// get system error state - abort if system is in error state
 	int16_t tmp = GetObjStructData(0xFF);
 
 	if (tmp == 0) {
@@ -31,7 +32,7 @@ void HandleSio() {
 		switch (GetObjStructData(0xFE))	{
 
 		case OP_MODE_MODBUS:
-			HandleModbus();
+			Modbus();
 
 		case OP_MODE_RAPID:
 			//
@@ -40,53 +41,46 @@ void HandleSio() {
 			//
 
 		default:
-
+			// ???
 			break;
 		}
 	}
 }
 
-// Receive a Modbus data package via UART
-void HandleModbus() {
+// Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient.
+static void Modbus() {
 
-	// Temporary variables to get the proper type for further processing.
-	int regSize_tmp = TOTAL_REGS_SIZE_MODBUS - 1;
-	uint8_t holdingRegs_tmp[TOTAL_REGS_SIZE_MODBUS - 1];
+	// function 3 and 16 register array
+	static unsigned int holdingRegs[TOTAL_REGS_SIZE_MDB];
 
-	while (Serial1.available() > 0)
-	{
-		// returns the total error count since the slave started.
-		holdingRegs[TOTAL_ERRORS_MODBUS] = modbus_update(holdingRegs);
+	// returns the total error count since the slave started
+	holdingRegs[TOTAL_ERRORS_MDB] = modbus_update(holdingRegs);
 
-		// get the low bytes from the register values
-		for (int i = 0; i < TOTAL_REGS_SIZE_MODBUS - 1; i++)
-		{
-			holdingRegs_tmp[i] = holdingRegs[i];
-		}
+	int8_t response = SetObjStructData(holdingRegs[INDEX_MDB], (holdingRegs[DATA_HI_MDB] << 8) | holdingRegs[DATA_LO_MDB]);
 
-		//// Search for valid byte sequences
-		//if (readBufferBytes(holdingRegs_tmp, &regSize_tmp, &opModeAngle,
-		//	&startMove, &angleATarget, &angleBTarget, &positionXTarget,
-		//	&positionYTarget, &positionZTargetTmp, &positionZTarget))
-		//{
-		//	sendAcknowledge();
-		//	if (startMove)
-		//		executeByteSequence(&opModeAngle, &startMove, &startMoveZ, &angleATarget,
-		//			&angleBTarget, &positionXTarget, &positionYTarget, &speed_A, &speed_B);
-		//}
-		//else
-		//{
-		//	Serial.println("Fehler in readBufferBytes");
-		//}
+	if (response == -1) {
+		// error handling !?
 	}
 }
 
-void HandleRapid() {
+// Receive a Rapid comand string via UART, check the data for plausibility and store it in the object directory.
+static void Rapid() {
 
 
 }
 
-void HandleScara() {
+// Receive a Scara data package via UART, check the data for plausibility and store it in the object directory.
+static void Scara() {
+
+	uint8_t index;			// object index
+	uint16_t data;			// data
+	uint8_t data_hi;		// data high byte
+	uint8_t data_lo;		// data low byte
+	uint8_t crc;			// crc8 checksum
+	uint8_t buffer[128];	// receive buffer
+
+
+
 
 
 }

@@ -16,23 +16,20 @@ void InitGPIO() {
 	attachInterrupt(INTERRUPT_PIN, InterruptRoutine, CHANGE);	// Attaches interrupt for counting the impulses
 }
 
-void SetOperationMode() {
+void InitOperationMode() {
 
 	if (MODBUS_PIN == HIGH && RAPID_PIN == LOW) {
-		
 		SetObjStructData(0xFE, OP_MODE_MODBUS);
 	}
 	else if (RAPID_PIN == HIGH && MODBUS_PIN == LOW) {
-
 		SetObjStructData(0xFE, OP_MODE_RAPID);
 	}
 	else {
-
 		SetObjStructData(0xFE, OP_MODE_SCARA);
 	}
 }
 
-void InterruptRoutine() {
+static void InterruptRoutine() {
 
 	noInterrupts();
 	// blub

@@ -13,15 +13,14 @@
 #include "handler.h"
 #include "sio.h"
 
-extern bool run;
+bool run = false;
 
 void setup() {
 
-	run = false;
 	InitSio();
 	InitGPIO();
+	InitOperationMode();
 	InitDynamixel();
-	SetOperationMode();
 	run = true;
 }
 
@@ -29,6 +28,6 @@ void loop() {
 
 	while (run) {
 		SystemStatus();
-		HandleSio();
+		HandleSIO();
 	}
 }
