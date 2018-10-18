@@ -19,11 +19,9 @@ void SendStatus(char* message, uint8_t statusType) {
 		case STATUS_TYPE_INFO:
 			Serial.print("Info: ");
 			break;
-
 		case STATUS_TYPE_WARNING:
 			Serial.print("Warning: : ");
 			break;
-
 		case STATUS_TYPE_ERROR:
 			Serial.print("Error: ");
 			break;

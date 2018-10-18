@@ -2,11 +2,22 @@
 // 
 // Setup for serial/ USB connection
 
+#include "Stream.h"
+
 #include "sio.h"
 #include "objdir.h"
-#include "Stream.h"
+#include "status.h"
+
 #include "DynamixelSerial2.h"
 #include "SimpleModbusSlave.h"
+#include "FastCRC.h"
+
+// serial buffer
+static const uint8_t bufferLength = 64;
+static uint8_t buffer[bufferLength];
+static uint8_t ndx;
+FastCRC8 CRC8;
+
 
 void InitSio() {
 
@@ -35,10 +46,10 @@ void HandleSIO() {
 			Modbus();
 
 		case OP_MODE_RAPID:
-			//
+			Rapid();
 
 		case OP_MODE_SCARA:
-			//
+			Scara();
 
 		default:
 			// ???
@@ -56,10 +67,14 @@ static void Modbus() {
 	// returns the total error count since the slave started
 	holdingRegs[TOTAL_ERRORS_MDB] = modbus_update(holdingRegs);
 
-	int8_t response = SetObjStructData(holdingRegs[INDEX_MDB], (holdingRegs[DATA_HI_MDB] << 8) | holdingRegs[DATA_LO_MDB]);
-
-	if (response == -1) {
-		// error handling !?
+	// write modbus packet to object
+	if (SetObjStructData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB]) == 0) {
+		ObjStruct *recvP = LocateObj(holdingRegs[INDEX_MDB]);
+		
+		if (recvP->pFunction != NULL) {
+			// execute handler function if available
+			recvP->pFunction(&recvP->index, &recvP->props, &recvP->data);
+		}
 	}
 }
 
@@ -72,15 +87,40 @@ static void Rapid() {
 // Receive a Scara data package via UART, check the data for plausibility and store it in the object directory.
 static void Scara() {
 
-	uint8_t index;			// object index
-	uint16_t data;			// data
-	uint8_t data_hi;		// data high byte
-	uint8_t data_lo;		// data low byte
-	uint8_t crc;			// crc8 checksum
-	uint8_t buffer[128];	// receive buffer
+	if (Serial.available() > 0) {
+		buffer[ndx] = Serial.read();
+		ndx++;
 
+		if (ndx >= SCARA_PACKET_LENGTH) {
 
+			for (uint8_t i = 0; i < (bufferLength - 3); i++) {
 
+				// check crc for packet
+				uint8_t crc = CRC8.smbus(&buffer[ndx - SCARA_PACKET_LENGTH], 3);
+				
+				if (crc == buffer[ndx - 1]) {
+					uint8_t recvIndex = buffer[ndx - SCARA_PACKET_LENGTH + 1];
+					uint16_t recvData = (buffer[ndx - SCARA_PACKET_LENGTH + 2] << 8) | buffer[ndx - SCARA_PACKET_LENGTH + 3];
 
+					// save data in object
+					if (SetObjStructData(recvIndex, recvData) == 0) {
+						ObjStruct *recvP = LocateObj(recvIndex);
+						memset(buffer, 0, ndx);
+						ndx = 0;
+
+						if (recvP->pFunction != NULL) {
+							// execute handler function if available
+							recvP->pFunction(&recvP->index, &recvP->props, &recvP->data); 
+						}
+					}
+				}
+				else
+					SendStatus("in function Scara(): crc checksum invalid", STATUS_TYPE_WARNING);
+			}
+		}
+	}
+}
+
+static void ParseRapidString(String *str) {
 
 }

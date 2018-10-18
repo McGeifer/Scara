@@ -9,6 +9,8 @@
 	#include "WProgram.h"
 #endif
 
+#define SCARA_PACKET_LENGTH 4
+
 void InitSio();
 void HandleSIO();
 static void Modbus();

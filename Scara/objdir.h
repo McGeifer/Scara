@@ -19,7 +19,7 @@ typedef struct {
 	const	uint8_t		index;				// indexnumber of object
 	const	uint8_t		props;				// object properties
 			uint16_t	data;				// object data --- 0xFFFF is reserved for error handling ###
-			int			(*pFunction)(uint8_t* index, uint8_t* props, uint16_t* data);	// pointer for handler function
+			int			(*pFunction)(const uint8_t* index, const uint8_t* props, const uint16_t* data);	// pointer for handler function
 } ObjStruct;
 
 // The basic data structure for the tool table.
@@ -41,8 +41,7 @@ typedef struct {
 enum holding_registers {
 
 	INDEX_MDB,				// The first register starts at address 0
-	DATA_HI_MDB,
-	DATA_LO_MDB,
+	DATA_MDB,
 	CRC_MDB,
 	TOTAL_ERRORS_MDB,		// Leave this one
 	TOTAL_REGS_SIZE_MDB		// Total number of registers. Function 3 and 16 share the same register array
@@ -81,19 +80,20 @@ enum holding_registers {
 #define SYS_STAT_UNKOWN_ERROR		0xFF	// uknown error - not used jet
 
 // ##############################################
-// min & max values for the object dictionary
+// min & max values for the object dictionary positions and angles
+// attention! min/max[hex] = value(mm or °) * 10 + 32768 (preservation of the mathematical sign)
 // ##############################################
-#define X_NEW_TARGET_POS_MIN 		0x7830	// -200
-#define X_NEW_TARGET_POS_MAX		0x87D0	// 200
-#define Y_NEW_TARGET_POS_MIN		0x7830	// -200
-#define Y_NEW_TARGET_POS_MAX		0x87D0	// 200
-#define Z_NEW_TARGET_POS_MIN		0x7830	// -200
-#define Z_NEW_TARGET_POS_MAX		0x87D0	// 200
+#define X_NEW_TARGET_POS_MIN 		0x7830	// -200 mm
+#define X_NEW_TARGET_POS_MAX		0x87D0	// 200 mm
+#define Y_NEW_TARGET_POS_MIN		0x7830	// -200 mm
+#define Y_NEW_TARGET_POS_MAX		0x87D0	// 200 mm
+#define Z_NEW_TARGET_POS_MIN		0x7830	// -200 mm
+#define Z_NEW_TARGET_POS_MAX		0x87D0	// 200 mm
 
-#define AXIS_1_NEW_TARGET_ANGLE_MIN	0x7BE6	// -105
-#define AXIS_1_NEW_TARGET_ANGLE_MAX	0x841A	// 105
-#define AXIS_2_NEW_TARGET_ANGLE_MIN	0x7BE6	// -105
-#define AXIS_2_NEW_TARGET_ANGLE_MAX	0x841A	// 105
+#define AXIS_1_NEW_TARGET_ANGLE_MIN	0x7BE6	// -105 °
+#define AXIS_1_NEW_TARGET_ANGLE_MAX	0x841A	// 105 °
+#define AXIS_2_NEW_TARGET_ANGLE_MIN	0x7BE6	// -105 °
+#define AXIS_2_NEW_TARGET_ANGLE_MAX	0x841A	// 105 °
 											
 // ##############################################
 // miscellaneous
@@ -111,11 +111,11 @@ ObjStruct* LocateObj(uint8_t index);
 // Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer.  
 ToolTbl* LocateTool(uint8_t index);
 
-// Function to return the stored data of an object dictionary entry
+// Function to return the stored data of an object
 int16_t GetObjStructData(uint8_t index);
 
 // Funtion for writing data to the object dictionary
-// Warning! This function will not check the data, make sure the calling function only bypasses valid data.
+// Warning! Make sure the calling function only bypasses valid data, this function will not check it.
 int8_t SetObjStructData(uint8_t index, uint16_t data);
 
 #endif

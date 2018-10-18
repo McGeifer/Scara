@@ -41,7 +41,7 @@ static ObjStruct objStruct_data[] = {
 static ToolTbl toolTbl[] = {
 
 	// tool 0 - machine zero
-	{0x01, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// Only change if you really know what you are doing!
+	{0x01, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// only change if you really know what you are doing!
 	
 	// variable tooltable entries
 	{0x10, OBJ_PROP_R_, 0, 0, 0, &GetTool},		// custom tools
@@ -135,7 +135,7 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 				maxValue = NULL;
 				break;
 			}
-			if (p->data >= minValue && p->data <= maxValue) { //  wirte data if it's inside the min max range
+			if (p->data >= minValue && p->data <= maxValue) { //  write data if it's inside the min max range
 				p->data = data;
 				return 0;
 			}
@@ -143,14 +143,14 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 				char* string;
 				sprintf(string, "in function SetObjStructData(): failed to write - object %h value out of range", index);
 				SendStatus(string, STATUS_TYPE_ERROR);
-				return -1;
+				return -3;
 			}
 		}
 		else {
 			char* string;
 			sprintf(string, "in function SetObjStructData(): failed to write - object %h is read only", index);
 			SendStatus(string, STATUS_TYPE_ERROR);
-			return -1;
+			return -2;
 		}
 	}
 	else {

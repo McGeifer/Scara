@@ -16,6 +16,7 @@ void InitDynamixel() {
 	for (int i = 0; i < 2; i++) {
 		char* string;
 		tmp = Dynamixel.ping(i);
+
 		if (tmp == -1) {
 			sprintf(string, "Dynamixel not found @ ID: %d", i);
 			SendStatus(string, STATUS_TYPE_ERROR);
