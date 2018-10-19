@@ -15,23 +15,32 @@
 
 // The basic data structure for the object dictionary.
 typedef struct {
-
-	const	uint8_t		index;				// indexnumber of object
+	const	uint8_t		idx;				// index number of object
 	const	uint8_t		props;				// object properties
 			uint16_t	data;				// object data --- 0xFFFF is reserved for error handling ###
-			int			(*pFunction)(const uint8_t* index, const uint8_t* props, const uint16_t* data);	// pointer for handler function
+			int			(*pFunction)(const uint8_t* idx, const uint8_t* props, const uint16_t* data);	// pointer for handler function
 } ObjStruct;
 
 // The basic data structure for the tool table.
 typedef struct {
-
-	const	uint8_t		toolIndex;			// indexnumber of tool
+	const	uint8_t		toolIdx;			// index number of tool
 	const	uint8_t		props;				// object properties
-			uint16_t	offsetX;			// x offset
-			uint16_t	offsetY;			// y offset
-			uint16_t	offsetZ;			// z offset
-			bool		toolAct;			// tool ist active?
+			int16_t		offsetX;			// x offset
+			int16_t		offsetY;			// y offset
+			int16_t		offsetZ;			// z offset
+			bool		active;				// tool ist active?
+			int			(*pFunction)(const uint8_t* toolIndex); // pointer for handler function
 } ToolTbl;
+
+// Register to store position values for rapid protocoll
+// attention! posReg[hex] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
+typedef struct {
+	const	uint8_t		pointIdx;
+	const	uint8_t		props;
+			uint16_t	posRegX;
+			uint16_t	posRegY;
+			uint16_t	posRegZ;
+} RapidPosReg;
 
 // ##############################################
 // modbus
@@ -39,7 +48,6 @@ typedef struct {
 
 // modbus holing registers
 enum holding_registers {
-
 	INDEX_MDB,				// The first register starts at address 0
 	DATA_MDB,
 	CRC_MDB,
@@ -81,7 +89,7 @@ enum holding_registers {
 
 // ##############################################
 // min & max values for the object dictionary positions and angles
-// attention! min/max[hex] = value(mm or °) * 10 + 32768 (preservation of the mathematical sign)
+// attention! min/max[hex] = value(mm or °) * 10 + 32768 for preservation of the mathematical sign and decimal
 // ##############################################
 #define X_NEW_TARGET_POS_MIN 		0x7830	// -200 mm
 #define X_NEW_TARGET_POS_MAX		0x87D0	// 200 mm

@@ -7,7 +7,7 @@
 
 extern bool run;
 
-void SendStatus(char* message, uint8_t statusType) {
+static void SendStatus(char* message, uint8_t statusType) {
 
 	switch (GetObjStructData(0xFE))
 	{

@@ -15,6 +15,7 @@
 // serial buffer
 static const uint8_t bufferLength = 64;
 static uint8_t buffer[bufferLength];
+static char cBuffer[bufferLength];
 static uint8_t ndx;
 FastCRC8 CRC8;
 
@@ -58,7 +59,7 @@ void HandleSIO() {
 	}
 }
 
-// Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient.
+// Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient library.
 static void Modbus() {
 
 	// function 3 and 16 register array
@@ -73,54 +74,82 @@ static void Modbus() {
 		
 		if (recvP->pFunction != NULL) {
 			// execute handler function if available
-			recvP->pFunction(&recvP->index, &recvP->props, &recvP->data);
+			recvP->pFunction(&recvP->idx, &recvP->props, &recvP->data);
 		}
 	}
 }
 
 // Receive a Rapid comand string via UART, check the data for plausibility and store it in the object directory.
 static void Rapid() {
-
-
-}
-
-// Receive a Scara data package via UART, check the data for plausibility and store it in the object directory.
-static void Scara() {
-
 	if (Serial.available() > 0) {
-		buffer[ndx] = Serial.read();
-		ndx++;
 
-		if (ndx >= SCARA_PACKET_LENGTH) {
+		if (ndx >= bufferLength - 1) {
+			cBuffer[ndx] = Serial.read();
+			ndx++;
 
-			for (uint8_t i = 0; i < (bufferLength - 3); i++) {
-
-				// check crc for packet
-				uint8_t crc = CRC8.smbus(&buffer[ndx - SCARA_PACKET_LENGTH], 3);
+			if (cBuffer[ndx] == ';') {
 				
-				if (crc == buffer[ndx - 1]) {
-					uint8_t recvIndex = buffer[ndx - SCARA_PACKET_LENGTH + 1];
-					uint16_t recvData = (buffer[ndx - SCARA_PACKET_LENGTH + 2] << 8) | buffer[ndx - SCARA_PACKET_LENGTH + 3];
+				// parse rapid string
+				
 
-					// save data in object
-					if (SetObjStructData(recvIndex, recvData) == 0) {
-						ObjStruct *recvP = LocateObj(recvIndex);
-						memset(buffer, 0, ndx);
-						ndx = 0;
 
-						if (recvP->pFunction != NULL) {
-							// execute handler function if available
-							recvP->pFunction(&recvP->index, &recvP->props, &recvP->data); 
-						}
-					}
-				}
-				else
-					SendStatus("in function Scara(): crc checksum invalid", STATUS_TYPE_WARNING);
+
+
+
+
+
+
 			}
+		}
+		else {
+			memset(cBuffer, 0, ndx);
+			ndx = 0;
+			SendStatus("in function Scara(): input string to long", STATUS_TYPE_ERROR);
 		}
 	}
 }
 
-static void ParseRapidString(String *str) {
+// Receive a Scara data package via UART, check the data package and store it in the object dictionary.
+static void Scara() {
 
+	if (Serial.available() > 0) {
+
+		if (ndx <= bufferLength) {
+			buffer[ndx] = Serial.read();
+			ndx++;
+
+			if (ndx >= SCARA_PACKET_LENGTH) {
+
+				for (uint8_t i = 0; i < (bufferLength - 3); i++) {
+
+					// check crc for packet
+					uint8_t crc = CRC8.smbus(&buffer[ndx - SCARA_PACKET_LENGTH], 3);
+
+					if (crc == buffer[ndx - 1]) {
+						uint8_t recvIndex = buffer[ndx - SCARA_PACKET_LENGTH + 1];
+						uint16_t recvData = (buffer[ndx - SCARA_PACKET_LENGTH + 2] << 8) | buffer[ndx - SCARA_PACKET_LENGTH + 3];
+
+						// save data in object
+						if (SetObjStructData(recvIndex, recvData) == 0) {
+							ObjStruct *recvP = LocateObj(recvIndex);
+							memset(buffer, 0, ndx);
+							ndx = 0;
+
+							if (recvP->pFunction != NULL) {
+								// execute handler function if available
+								recvP->pFunction(&recvP->idx, &recvP->props, &recvP->data);
+							}
+						}
+					}
+					else
+						SendStatus("in function Scara(): crc checksum invalid", STATUS_TYPE_WARNING);
+				}
+			}
+		}
+		else {
+			memset(buffer, 0, ndx);
+			ndx = 0;
+			SendStatus("in function Scara(): input data to long", STATUS_TYPE_ERROR);
+		}
+	}
 }
