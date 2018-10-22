@@ -30,12 +30,7 @@ void InitDynamixel() {
 
 	if (response != 3) {
 		// set system error state to prevent further operations
-		ObjStruct *tmp;
-		uint8_t index = 0xFF;
-		uint8_t props = OBJ_PROP_RW;
-		uint16_t data = 0x01;
-		tmp = LocateObj(0xFF);
-		tmp->pFunction(&index, &props, &data);
+		SetObjStructData(0xFF, 0x01);
 		return;
 	}
 

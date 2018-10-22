@@ -13,8 +13,8 @@
 
 void InitSio();
 void HandleSIO();
-static void Modbus();
-static void Rapid();
-static void Scara();
+static void HandleModbusData();
+static void HandleRapidString();
+static void HandleScaraData();
 
 #endif

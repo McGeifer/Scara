@@ -88,7 +88,7 @@ static RapidPosReg rapidPosReg[] = {
 
 uint8_t SetPos(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *zValue) {
 
-	//malloc()
+	// !?!?
 }
 
 ObjStruct* LocateObj(uint8_t index) {
@@ -147,8 +147,8 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 
 	ObjStruct *p;
 	p = LocateObj(index);
-	int16_t minValue;
-	int16_t maxValue;
+	uint16_t minValue;
+	uint16_t maxValue;
 
 	if (p != NULL) {	// make sure object does exist
 		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) {	// check if object is writable
@@ -175,8 +175,8 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 				maxValue = AXIS_2_NEW_TARGET_ANGLE_MAX;
 				break;
 			default:
-				minValue = NULL;
-				maxValue = NULL;
+				minValue = 0x0000;
+				maxValue = 0xFFFF;
 				break;
 			}
 			if (p->data >= minValue && p->data <= maxValue) { //  write data if it's inside the allowed range

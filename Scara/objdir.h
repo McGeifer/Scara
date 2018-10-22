@@ -22,6 +22,7 @@ typedef struct {
 } ObjStruct;
 
 // The basic data structure for the tool table.
+// Attention! offset[hex] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
 typedef struct {
 	const	uint8_t		toolIdx;			// index number of tool
 	const	uint8_t		props;				// object properties
@@ -33,7 +34,7 @@ typedef struct {
 } ToolTbl;
 
 // Register to store position values for rapid protocoll
-// attention! posReg[hex] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
+// Attention! posReg[hex] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
 typedef struct {
 	const	uint8_t		pointIdx;
 	const	uint8_t		props;
