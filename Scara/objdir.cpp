@@ -83,12 +83,13 @@ static RapidPosReg rapidPosReg[] = {
 
 	// positions 0 - 239 - dynamicly allocated
 //	{0x00, OBJ_PROP_RW, 0, 0, 0},
-
 };
 
 uint8_t SetPos(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *zValue) {
 
-	// !?!?
+	RapidPosReg *array[64];
+	array[0] = (RapidPosReg*)malloc(sizeof(RapidPosReg));
+	uint8_t tmp = array[0]->pointIdx;
 }
 
 ObjStruct* LocateObj(uint8_t index) {
