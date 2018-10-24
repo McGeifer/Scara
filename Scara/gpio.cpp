@@ -4,6 +4,7 @@
 
 #include "gpio.h"
 #include "objdir.h"
+#include "status.h"
 
 void InitGPIO() {
 
@@ -19,13 +20,13 @@ void InitGPIO() {
 void InitOperationMode() {
 
 	if (MODBUS_PIN == HIGH && RAPID_PIN == LOW) {
-		SetObjStructData(0xFE, OP_MODE_MODBUS);
+		//SetObjStructData(0xFE, OP_MODE_MODBUS);
 	}
 	else if (RAPID_PIN == HIGH && MODBUS_PIN == LOW) {
-		SetObjStructData(0xFE, OP_MODE_RAPID);
+		//SetObjStructData(0xFE, OP_MODE_RAPID);
 	}
 	else {
-		SetObjStructData(0xFE, OP_MODE_SCARA);
+		//SetObjStructData(0xFE, OP_MODE_SCARA);
 	}
 }
 

@@ -19,8 +19,7 @@ int SetStartMove(const uint8_t *index, const uint8_t *props, const uint16_t *dat
 }
 
 int8_t GetSystemError() {
-	return GetObj
-		GetObjStructData(0xFF);
+	return (uint8_t)GetObjStructData(0xFF);
 }
 
 int SetNewTargetPos(const uint8_t *index, const uint8_t *props, const uint16_t *data) {

@@ -9,7 +9,8 @@ extern bool run;
 
 static void SendStatus(char* message, uint8_t statusType) {
 
-	switch (GetObjStructData(0xFE))
+	uint8_t i = 0x02;
+	switch (i/*GetObjStructData(0xFE)*/)
 	{
 	case OP_MODE_SCARA:
 	case OP_MODE_RAPID:

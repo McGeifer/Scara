@@ -233,30 +233,60 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 
 			switch (p->idx)	// set min max vaules for comparison
 			{
-			case 0x10:
-				minValue = X_POS_MIN;
-				maxValue = X_POS_MAX;
-				break;
-			case 0x20:
-				minValue = Y_POS_MIN;
-				maxValue = Y_POS_MAX;
-				break;
-			case 0x30:
-				minValue = Z_POS_MIN;
-				maxValue = Z_POS_MAX;
-				break;
-			case 0x40:
-				minValue = AXIS_1_ANGLE_MIN;
-				maxValue = AXIS_1_ANGLE_MAX;
-				break;
-			case 0x50:
-				minValue = AXIS_2_ANGLE_MIN;
-				maxValue = AXIS_2_ANGLE_MAX;
-				break;
-			default:
-				minValue = 0x0000;
-				maxValue = 0xFFFF;
-				break;
+				case 0x10:
+					minValue = X_POS_MIN;
+					maxValue = X_POS_MAX;
+					break;
+
+				case 0x20:
+					minValue = Y_POS_MIN;
+					maxValue = Y_POS_MAX;
+					break;
+
+				case 0x30:
+					minValue = Z_POS_MIN;
+					maxValue = Z_POS_MAX;
+					break;
+
+				case 0x40:
+					minValue = AXIS_1_ANGLE_MIN;
+					maxValue = AXIS_1_ANGLE_MAX;
+					break;
+
+				case 0x50:
+					minValue = AXIS_2_ANGLE_MIN;
+					maxValue = AXIS_2_ANGLE_MAX;
+					break;
+
+				case 0x60:
+					minValue = X_SPEED_MIN;
+					maxValue = X_SPEED_MAX;
+					break;
+
+				case 0x70:
+					minValue = Y_SPEED_MIN;
+					maxValue = Y_SPEED_MAX;
+					break;
+
+				case 0x80:
+					minValue = Z_SPEED_MIN;
+					maxValue = Z_SPEED_MAX;
+					break;
+
+				case 0x90:
+					minValue = AXIS_1_SPEED_MIN;
+					maxValue = AXIS_1_SPEED_MAX;
+					break;
+
+				case 0xA0:
+					minValue = AXIS_2_SPEED_MIN;
+					maxValue = AXIS_2_SPEED_MAX;
+					break;
+
+				default:
+					minValue = 0x0000;
+					maxValue = 0xFFFF;
+					break;
 			}
 			if (minValue < p->data &&  maxValue > p->data) { //  write data if it's inside the allowed range
 				p->data = data;

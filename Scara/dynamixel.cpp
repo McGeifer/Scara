@@ -13,24 +13,27 @@ void InitDynamixel() {
 	int tmp = 0;
 	int response = 0;
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i <= 2; i++) {
 		char* string;
 		tmp = Dynamixel.ping(i);
-
+		Serial.println("10");
 		if (tmp == -1) {
 			sprintf(string, "Dynamixel not found @ ID: %d", i);
 			SendStatus(string, STATUS_TYPE_ERROR);
+			Serial.println("11");
 		}
 		else {
 			sprintf(string, "Dynamixel found @ ID: %d", i);
 			SendStatus(string, STATUS_TYPE_INFO);
 			response++;
+			Serial.println("12");
 		}
 	}
 
 	if (response != 3) {
 		// set system error state to prevent further operations
-		SetObjStructData(0xFF, 0x01);
+		//SetObjStructData(0xFF, 0x01);
+		Serial.println("13");
 		return;
 	}
 
