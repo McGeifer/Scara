@@ -19,13 +19,9 @@ bool run = false;
 void setup() {
 
 	InitSio();
-	Serial.println("1");
 	InitGPIO();
-	Serial.println("2");
 	InitOperationMode();
-	Serial.println("3");
 	InitDynamixel();
-	Serial.println("4");
 	run = true;
 }
 

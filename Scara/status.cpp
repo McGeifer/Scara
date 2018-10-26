@@ -18,13 +18,13 @@ static void SendStatus(char* message, uint8_t statusType) {
 		switch (statusType)
 		{
 		case STATUS_TYPE_INFO:
-			Serial.print("Info: ");
+			Serial.print("Info:    ");
 			break;
 		case STATUS_TYPE_WARNING:
-			Serial.print("Warning: : ");
+			Serial.print("Warning: ");
 			break;
 		case STATUS_TYPE_ERROR:
-			Serial.print("Error: ");
+			Serial.print("Error:   ");
 			break;
 
 		/*case STATUS_TYPE_NOTYPE:
@@ -58,10 +58,12 @@ void SystemStatus() {
 	case SYS_STAT_DYNAMIXEL_ERROR:
 		SendStatus("Not all Dynamixel servos could be found, check wiring and restart the controller.", STATUS_TYPE_ERROR);
 		run = false;
+		break;
 
 	case SYS_STAT_UNKOWN_ERROR:
 		SendStatus("Unknown error, check system and restart the controller.", STATUS_TYPE_ERROR);
 		run = false;
+		break;
 
 	default:
 		break;

@@ -9,9 +9,9 @@
 #include "gpio.h"
 #include "status.h"
 
-#include "DynamixelSerial2.h"
-#include "SimpleModbusSlave.h"
-#include "FastCRC.h"
+#include <DynamixelSerial2.h>
+#include <SimpleModbusSlave.h>
+#include <FastCRC.h>
 
 // serial buffer
 static const uint8_t bufferLength = 64;
@@ -24,7 +24,6 @@ void InitSio() {
 
 	// Setup for USB connection;
 	Serial.begin(115200);
-	Serial.println("blub");
 	Serial.setTimeout(500);
 
 	// Setup for Modbus connection (Serial1)
@@ -44,12 +43,15 @@ void HandleSIO() {
 
 		case OP_MODE_MODBUS:
 			HandleModbusData();
+			break;
 
 		case OP_MODE_RAPID:
 			HandleRapidString();
+			break;
 
 		case OP_MODE_SCARA:
 			HandleScaraData();
+			break;
 
 		default:
 			// ???
@@ -82,7 +84,7 @@ int8_t ParseRadpid() {
 		uint8_t pointIdx = 0xFF;
 		uint16_t dataToWrite[sizeof(tmpData)];
 
-		cBuffer[ndx + 1] = '\\0'; // terminate string
+		cBuffer[ndx + 1] = '\0'; // terminate string
 		strcpy(inputString, cBuffer);	// creat copy of the receiveBuffer to prevent change of data by strtok
 		part = strtok(inputString, delimiter);	// split the inputString into multiple tokens
 
@@ -177,8 +179,8 @@ int8_t ParseRadpid() {
 						pointMode = true;
 					}
 					else {
-						char* string;
-						sprintf(string, "in function HandleRapidString(): point p%i does not exist", pointIdx);
+						char string[128];
+						sprintf(string, "in function HandleRapidString(): point P%i does not exist", pointIdx);
 						SendStatus(string, STATUS_TYPE_ERROR);
 						return -1;
 					}
@@ -195,8 +197,8 @@ int8_t ParseRadpid() {
 					pointMode = true;
 				}
 				else {
-					char* string;
-					sprintf(string, "in function HandleRapidString(): point p%i does not exist", pointIdx);
+					char string[128];
+					sprintf(string, "in function HandleRapidString(): point P%i does not exist", pointIdx);
 					SendStatus(string, STATUS_TYPE_ERROR);
 					return -1;
 				}
@@ -217,7 +219,7 @@ int8_t ParseRadpid() {
 					dataToWrite[zPos] = p[2] + (uint16_t)strtol(outputString[5], NULL, 10);
 				}
 				else {
-					SendStatus("in function HandleRapidString(): point p%i does not exist", STATUS_TYPE_ERROR);
+					SendStatus("in function HandleRapidString(): point P%i does not exist", STATUS_TYPE_ERROR);
 					return -1;
 				}
 			}
@@ -230,7 +232,7 @@ int8_t ParseRadpid() {
 					dataToWrite[zPos] = p[2];
 				}
 				else {
-					SendStatus("in function HandleRapidString(): point p%i does not exist", STATUS_TYPE_ERROR);
+					SendStatus("in function HandleRapidString(): point P%i does not exist", STATUS_TYPE_ERROR);
 					return -1;
 				}
 			}
@@ -348,7 +350,7 @@ static void HandleRapidString() {
 			cBuffer[ndx] = Serial.read();
 			ndx++;
 
-			if(ParseRadpid() != 0) {
+			if(ParseRadpid() == -1) {
 				memset (cBuffer, 0, ndx);
 				ndx = 0;
 			}

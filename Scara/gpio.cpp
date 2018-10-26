@@ -19,14 +19,16 @@ void InitGPIO() {
 
 void InitOperationMode() {
 
-	if (MODBUS_PIN == HIGH && RAPID_PIN == LOW) {
-		//SetObjStructData(0xFE, OP_MODE_MODBUS);
+	if (digitalRead(RAPID_PIN) == LOW && digitalRead(MODBUS_PIN) == HIGH) {
+		SetObjStructData(0xFE, OP_MODE_MODBUS);
 	}
-	else if (RAPID_PIN == HIGH && MODBUS_PIN == LOW) {
-		//SetObjStructData(0xFE, OP_MODE_RAPID);
+	else if (digitalRead(RAPID_PIN) == HIGH && digitalRead(MODBUS_PIN) == LOW) {
+		SetObjStructData(0xFE, OP_MODE_RAPID);
+		SendStatus("Rapid protocoll selected", STATUS_TYPE_INFO);
 	}
 	else {
-		//SetObjStructData(0xFE, OP_MODE_SCARA);
+		SetObjStructData(0xFE, OP_MODE_SCARA);
+		SendStatus("Scara protocoll selected", STATUS_TYPE_INFO);
 	}
 }
 

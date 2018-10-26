@@ -149,7 +149,7 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 			p = LocatePos(idx);
 		}
 		else {
-			SendStatus("in function SetPosregData(): failed to write - max number of points reached (0 - 63)", STATUS_TYPE_ERROR);
+			SendStatus("in function SetPosregData(): failed to write - max number of points reached (63)", STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
@@ -171,15 +171,15 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 				}
 			}
 			else {
-				char* string;
-				sprintf(string, "in function SetPosregData(): failed to write - position p%i value out of range", idx);
+				char string[128];
+				sprintf(string, "in function SetPosregData(): failed to write - position P%i value out of range", idx);
 				SendStatus(string, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
-			char* string;
-			sprintf(string, "in function SetPosregData(): failed to write - position p%i is read only", idx);
+			char string[128];
+			sprintf(string, "in function SetPosregData(): failed to write - position P%i is read only", idx);
 			SendStatus(string, STATUS_TYPE_ERROR);
 			return -1;
 		}
@@ -288,27 +288,27 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 					maxValue = 0xFFFF;
 					break;
 			}
-			if (minValue < p->data &&  maxValue > p->data) { //  write data if it's inside the allowed range
+			if (p->data >= minValue &&  p->data <= maxValue) { //  write data if it's inside the allowed range
 				p->data = data;
 				return 0;
 			}
 			else {
-				char* string;
-				sprintf(string, "in function SetObjStructData(): failed to write - object %h value out of range", index);
+				char string[128];
+				sprintf(string, "in function SetObjStructData(): failed to write - object 0x%x value out of range", index);
 				SendStatus(string, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
-			char* string;
-			sprintf(string, "in function SetObjStructData(): failed to write - object %h is read only", index);
+			char string[128];
+			sprintf(string, "in function SetObjStructData(): failed to write - object 0x%x is read only", index);
 			SendStatus(string, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else {
-		char* string;
-		sprintf(string, "in function SetObjStructData(): failed to write - object %h does not exist", index);
+		char string[128];
+		sprintf(string, "in function SetObjStructData(): failed to write - object 0x%x does not exist", index);
 		SendStatus(string, STATUS_TYPE_ERROR);
 		return -1;
 	}
