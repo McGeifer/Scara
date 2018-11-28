@@ -98,7 +98,7 @@ static PosReg_t posRegStatic[] = {
 
 // dynamic position register
 static PosReg_t *pArray[PosArrayLength] = { NULL };
-// index of the last posistion in the position register
+// index of the last position in the position register
 static uint8_t idxLastPos = 0;
 
 // ##############################################
@@ -149,7 +149,7 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 			p = LocatePos(idx);
 		}
 		else {
-			SendStatus("in function SetPosregData(): failed to write - max number of points reached (63)", STATUS_TYPE_ERROR);
+			SendStatus("in function SetPosRegData(): failed to write - max number of points (64) reached ", STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
@@ -172,20 +172,20 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 			}
 			else {
 				char string[128];
-				sprintf(string, "in function SetPosregData(): failed to write - position P%i value out of range", idx);
+				sprintf(string, "in function SetPosRegData(): failed to write - position P%i value out of range", idx);
 				SendStatus(string, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
 			char string[128];
-			sprintf(string, "in function SetPosregData(): failed to write - position P%i is read only", idx);
+			sprintf(string, "in function SetPosRegData(): failed to write - position P%i is read only", idx);
 			SendStatus(string, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else {
-		SendStatus("in function SetPosregData(): failed to write - unknown error", STATUS_TYPE_ERROR);
+		SendStatus("in function SetPosRegData(): failed to write - unknown error", STATUS_TYPE_ERROR);
 		return -1;
 	}
 }
@@ -219,7 +219,7 @@ uint16_t GetObjStructData(uint8_t index) {
 
 int8_t SetObjStructData(uint8_t index, uint16_t data) {
 
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Muss ggf. Handlerfunktion ausführen !!!!!!!!!!!!!!!!!!!!!!! falls Fehler ind Handler -> return -1:
+	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Muss ggf. Handlerfunktion ausführen !!!!!!!!!!!!!!!!!!!!!!! falls Fehler in Handler -> return -1:
 
 
 	ObjStruct_t *p;

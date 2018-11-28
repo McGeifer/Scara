@@ -26,11 +26,9 @@ static void SendStatus(char* message, uint8_t statusType) {
 		case STATUS_TYPE_ERROR:
 			Serial.print("Error:   ");
 			break;
-
 		/*case STATUS_TYPE_NOTYPE:
 			Serial.print(message);
 			break;*/
-
 		default:
 			Serial.print("no statusType: ");
 			break;

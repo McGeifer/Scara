@@ -139,7 +139,7 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 uint16_t GetObjStructData(uint8_t index);
 
 // Funtion for writing data to the object dictionary.
-// Warning! Make sure the calling function only bypasses valid data, this function will not check it.
+// Warning! Make sure the calling function only bypasses valid data, this function will not check it. !?!?????????????????????????????!?!??!?!?!?!?!?!?!?
 int8_t SetObjStructData(uint8_t index, uint16_t data);
 
 // Function to return the stored offset values for a given tool.

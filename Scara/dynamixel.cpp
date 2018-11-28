@@ -48,7 +48,7 @@ void InitDynamixel() {
 		Dynamixel.setMaxTorque(0, 1023);			// max torque -> max value
 		Dynamixel.setSRL(0, 1);						// return level 0=none, 1=only for read comand, 2= always
 		Dynamixel.setRDT(0, 250);					// return delay time = 2탎 * vaule -> 500탎
-		Dynamixel.setLEDAlarm(0, 127);				// LED blink for alle error types
+		Dynamixel.setLEDAlarm(0, 127);				// LED blink for all error types
 		Dynamixel.setShutdownAlarm(0, 37);			// turn of torque for: overload, overheating and input voltage error
 
 		// Only change if you really know what you are doing!
@@ -65,7 +65,7 @@ void InitDynamixel() {
 		Dynamixel.setMaxTorque(1, 1023);			// max torque -> max value
 		Dynamixel.setSRL(1, 1);						// return level 0=none, 1=only for read comand, 2= always
 		Dynamixel.setRDT(1, 250);					// return delay time = 2탎 * vaule -> 500탎
-		Dynamixel.setLEDAlarm(1, 127);				// LED blink for alle error types
+		Dynamixel.setLEDAlarm(1, 127);				// LED blink for all error types
 		Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
 
 		// Only change if you really know what you are doing!
@@ -82,7 +82,7 @@ void InitDynamixel() {
 		Dynamixel.setMaxTorque(1, 1023);			// max torque -> max value
 		Dynamixel.setSRL(1, 1);						// return level 0=none, 1=only for read comand, 2= always
 		Dynamixel.setRDT(1, 250);					// return delay time = 2탎 * vaule -> 500탎
-		Dynamixel.setLEDAlarm(1, 127);				// LED blink for alle error types
+		Dynamixel.setLEDAlarm(1, 127);				// LED blink for all error types
 		Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
 
 		// Only change if you really know what you are doing!

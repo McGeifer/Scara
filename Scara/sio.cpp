@@ -33,7 +33,7 @@ void InitSio() {
 	Dynamixel.begin(1000000, 2);
 }
 
-// Choose the correct handler to process the received data (selected by operation mode).
+// Choose the correct handler to process the data received by serial connection (selected by operation mode).
 void HandleSIO() {
 
 	// get system error state - abort if system is in error state
