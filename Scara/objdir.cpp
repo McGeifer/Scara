@@ -136,8 +136,8 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 
 	PosReg_t *p;
 	p = LocatePos(idx);
-	uint16_t minValue;
-	uint16_t maxValue;
+	//uint16_t minValue;
+	//uint16_t maxValue;
 
 	if (p == NULL) {
 
