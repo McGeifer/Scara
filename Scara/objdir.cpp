@@ -7,7 +7,7 @@
 #include "status.h"
 
 // Initial definition of the object dictionary entries.
-static ObjStruct_t objStruct_data[] = {
+static objStruct_t objStruct_data[] = {
 
 	// basic options
 	{0xF0, OBJ_PROP__W, 0, &SetACK},				// acknowledge
@@ -50,7 +50,7 @@ static ObjStruct_t objStruct_data[] = {
 };
 
 // Initial definition of the tool table.
-static ToolTbl_t toolTbl[] = {
+static toolTbl_t toolTbl[] = {
 
 	// tool 0 - machine zero
 	{0x01, OBJ_PROP_R_, 0, 0, 0, true, NULL},		// only change if you really know what you are doing!
@@ -77,7 +77,7 @@ static ToolTbl_t toolTbl[] = {
 };
 
 // Static position register
-static PosReg_t posRegStatic[] = {
+static posReg_t posRegStatic[] = {
 
 	// fixed positions 240 - 255 - only change if you really know what you are doing!
 	// to keep the
@@ -97,7 +97,7 @@ static PosReg_t posRegStatic[] = {
 };
 
 // dynamic position register
-static PosReg_t *pArray[PosArrayLength] = { NULL };
+static posReg_t *pArray[PosArrayLength] = { NULL };
 // index of the last position in the position register
 static uint8_t idxLastPos = 0;
 
@@ -105,36 +105,38 @@ static uint8_t idxLastPos = 0;
 // pos register - help functions
 // ##############################################
 
-static PosReg_t* LocatePos(uint8_t *idx) {
+static posReg_t* LocatePos(uint8_t *idx) {
 
 	uint8_t i = 0;
 
 	for (i = 0; i = PosArrayLength - 1; i++) {
-		if(pArray[i]->pointIdx == *idx)
+		if (pArray[i]->pointIdx == *idx) {
 			return pArray[i];
+		}
 	}
 	return NULL;
 }
 
 uint16_t* GetPosRegData(uint8_t *idx) {
 
-	PosReg_t *p;
+	posReg_t *p = NULL;
 	p = LocatePos(idx);
 
 	if (p != NULL) {
-		static uint16_t data[3];
+		static uint16_t data[3]; // static?
 		data[0] = p->posRegX;
 		data[1] = p->posRegY;
 		data[2] = p->posRegZ;
 		return data;
 	}
-	else
+	else {
 		return NULL;
+	}
 }
 
 uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *zValue) {
 
-	PosReg_t *p;
+	posReg_t *p = NULL;
 	p = LocatePos(idx);
 	//uint16_t minValue;
 	//uint16_t maxValue;
@@ -142,7 +144,7 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 	if (p == NULL) {
 
 		if (*idx <= PosArrayLength - 1) {
-			pArray[idxLastPos] = (PosReg_t*)malloc(sizeof(PosReg_t)); // allocate memory for new PosReg entry and store a pointer to in the pArray
+			pArray[idxLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer to in the pArray
 			pArray[idxLastPos]->pointIdx = *idx;
 			pArray[idxLastPos]->props = OBJ_PROP_RW;
 			idxLastPos++;
@@ -153,7 +155,6 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 			return -1;
 		}
 	}
-	
 	if (p != NULL) {
 		
 		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) {	// check if object is writable
@@ -194,27 +195,36 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 // objDir - help functions
 // ##############################################
 
-static ObjStruct_t* LocateObj(uint8_t index) {
+static objStruct_t* LocateObj(uint8_t index) {
 	
-	ObjStruct_t *p;
+	objStruct_t *p = NULL;
 	p = objStruct_data;
 
-	for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++)	{
-		if (p->idx == index)
-			return p;
+	if (p != NULL) {
+		for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++) {
+			if (p->idx == index) {
+				return p;
+			}
+		}
 	}
-	return NULL;
+	else {
+		return NULL;
+	}
 }
 
 uint16_t GetObjStructData(uint8_t index) {
 
-	ObjStruct_t *p;
+	objStruct_t *p = NULL;
 	p = LocateObj(index);
 
-	if (p != NULL)
+	if (p != NULL) {
+
+		// wenn umrechung von pos von dez zu hex notwendig (pos * 10 + 32768) dann hier, damit das nicht jedes mal von Hand gemacht werden muss
 		return p->data;
-	else
+	}
+	else {
 		return NULL;
+	}
 }
 
 int8_t SetObjStructData(uint8_t index, uint16_t data) {
@@ -222,74 +232,74 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Muss ggf. Handlerfunktion ausführen !!!!!!!!!!!!!!!!!!!!!!! falls Fehler in Handler -> return -1:
 
 
-	ObjStruct_t *p;
-	p = LocateObj(index);
-	uint16_t minValue;
-	uint16_t maxValue;
+	objStruct_t *pObjStruct = NULL;
+	pObjStruct = LocateObj(index);
+	uint16_t minValue = 0;
+	uint16_t maxValue = 0;
 
-	if (p != NULL) {	// make sure object does exist
+	if (pObjStruct != NULL) {	// make sure object does exist
 
-		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) {	// check if object is writable
+		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W) {	// check if object is writable
 
-			switch (p->idx)	// set min max vaules for comparison
+			switch (pObjStruct->idx)	// set min max vaules for comparison
 			{
-				case 0x10:
-					minValue = X_POS_MIN;
-					maxValue = X_POS_MAX;
-					break;
+			case 0x10:
+				minValue = X_POS_MIN;
+				maxValue = X_POS_MAX;
+				break;
 
-				case 0x20:
-					minValue = Y_POS_MIN;
-					maxValue = Y_POS_MAX;
-					break;
+			case 0x20:
+				minValue = Y_POS_MIN;
+				maxValue = Y_POS_MAX;
+				break;
 
-				case 0x30:
-					minValue = Z_POS_MIN;
-					maxValue = Z_POS_MAX;
-					break;
+			case 0x30:
+				minValue = Z_POS_MIN;
+				maxValue = Z_POS_MAX;
+				break;
 
-				case 0x40:
-					minValue = AXIS_1_ANGLE_MIN;
-					maxValue = AXIS_1_ANGLE_MAX;
-					break;
+			case 0x40:
+				minValue = AXIS_1_ANGLE_MIN;
+				maxValue = AXIS_1_ANGLE_MAX;
+				break;
 
-				case 0x50:
-					minValue = AXIS_2_ANGLE_MIN;
-					maxValue = AXIS_2_ANGLE_MAX;
-					break;
+			case 0x50:
+				minValue = AXIS_2_ANGLE_MIN;
+				maxValue = AXIS_2_ANGLE_MAX;
+				break;
 
-				case 0x60:
-					minValue = X_SPEED_MIN;
-					maxValue = X_SPEED_MAX;
-					break;
+			case 0x60:
+				minValue = X_SPEED_MIN;
+				maxValue = X_SPEED_MAX;
+				break;
 
-				case 0x70:
-					minValue = Y_SPEED_MIN;
-					maxValue = Y_SPEED_MAX;
-					break;
+			case 0x70:
+				minValue = Y_SPEED_MIN;
+				maxValue = Y_SPEED_MAX;
+				break;
 
-				case 0x80:
-					minValue = Z_SPEED_MIN;
-					maxValue = Z_SPEED_MAX;
-					break;
+			case 0x80:
+				minValue = Z_SPEED_MIN;
+				maxValue = Z_SPEED_MAX;
+				break;
 
-				case 0x90:
-					minValue = AXIS_1_SPEED_MIN;
-					maxValue = AXIS_1_SPEED_MAX;
-					break;
+			case 0x90:
+				minValue = AXIS_1_SPEED_MIN;
+				maxValue = AXIS_1_SPEED_MAX;
+				break;
 
-				case 0xA0:
-					minValue = AXIS_2_SPEED_MIN;
-					maxValue = AXIS_2_SPEED_MAX;
-					break;
+			case 0xA0:
+				minValue = AXIS_2_SPEED_MIN;
+				maxValue = AXIS_2_SPEED_MAX;
+				break;
 
-				default:
-					minValue = 0x0000;
-					maxValue = 0xFFFF;
-					break;
+			default:
+				minValue = 0x0000;
+				maxValue = 0xFFFF;
+				break;
 			}
-			if (p->data >= minValue &&  p->data <= maxValue) { //  write data if it's inside the allowed range
-				p->data = data;
+			if (pObjStruct->data >= minValue &&  pObjStruct->data <= maxValue) { //  write data if it's inside the allowed range
+				pObjStruct->data = data;
 				return 0;
 			}
 			else {
@@ -318,21 +328,26 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 // tool table - help functions
 // ##############################################
 
-static ToolTbl_t* LocateTool(uint8_t index) {
+static toolTbl_t* LocateTool(uint8_t index) {
 
-	ToolTbl_t *p;
+	toolTbl_t *p = NULL;
 	p = toolTbl;
 
-	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
-		if (p->toolIdx == index)
-			return p;
+	if (p != NULL) {
+		for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
+			if (p->toolIdx == index) {
+				return p;
+			}
+		}
 	}
-	return NULL;
+	else {
+		return NULL;
+	}
 }
 
 int16_t* GetToolTblData(uint8_t index) {
 
-	ToolTbl_t *p;
+	toolTbl_t *p = NULL;
 	p = LocateTool(index);
 
 	if (p != NULL) {
@@ -343,6 +358,7 @@ int16_t* GetToolTblData(uint8_t index) {
 		data[3] = p->active;
 		return data;
 	}
-	else
+	else {
 		return NULL;
+	}
 }

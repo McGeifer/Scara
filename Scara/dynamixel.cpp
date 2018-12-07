@@ -32,7 +32,7 @@ void InitDynamixel() {
 
 	if (response != 3) {
 		// set system error state to prevent further operations
-		//SetObjStructData(0xFF, SYS_STAT_DYNAMIXEL_ERROR);
+		//SetObjStructData(0xFF, SYS_STAT_DYNAMIXEL_ERROR); // achtung bitmaske!
 		return;
 	}
 	else {

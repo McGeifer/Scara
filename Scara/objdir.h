@@ -19,29 +19,29 @@ typedef struct {
 	const	uint8_t		props;				// object properties
 			uint16_t	data;				// object data --- 0xFFFF is reserved for error handling ###
 			int			(*pFunction)(const uint8_t* idx, const uint8_t* props, const uint16_t* data);	// pointer for handler function
-} ObjStruct_t;
+} objStruct_t;
 
 // The basic data structure for the tool table.
-// Attention! offset[hex] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
+// Attention! offset[dec] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
 typedef struct {
 	const	uint8_t		toolIdx;			// index number of tool
 	const	uint8_t		props;				// object properties
 			int16_t		offsetX;			// x offset
 			int16_t		offsetY;			// y offset
 			int16_t		offsetZ;			// z offset
-			bool		active;				// tool ist active?
+			bool		active;				// tool is active?
 			int			(*pFunction)(const uint8_t* toolIndex); // pointer for handler function
-} ToolTbl_t;
+} toolTbl_t;
 
 // Register to store position values
-// Attention! posReg[hex] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
+// Attention! posReg[dec] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
 typedef struct {
 			uint8_t		pointIdx;
 			uint8_t		props;
 			uint16_t	posRegX;
 			uint16_t	posRegY;
 			uint16_t	posRegZ;
-} PosReg_t;
+} posReg_t;
 
 // ##############################################
 // modbus
@@ -55,6 +55,12 @@ enum holding_registers {
 	TOTAL_ERRORS_MDB,						// Leave this one
 	TOTAL_REGS_SIZE_MDB						// Total number of registers. Function 3 and 16 share the same register array
 };
+
+// ##############################################
+// object index
+// ##############################################
+#define OBJ_IDX_X_NEW_TRAGET_POS 0x10
+
 
 // ##############################################
 // object properties
@@ -76,17 +82,20 @@ enum holding_registers {
 // ##############################################
 // status message types
 // ##############################################
-//#define STATUS_TYPE_NOTYPE		0x01	// display a message without status type
+#define STATUS_TYPE_NOTYPE			0x01	// display a message without status type (try not to use)
 #define STATUS_TYPE_INFO			0x02	// display normal info message
 #define STATUS_TYPE_WARNING			0x03	// display a warning message
 #define STATUS_TYPE_ERROR			0x04	// display a error message
+#define STATUS_TYPE_DEBUG			0x05	// display debug info
 
 // ##############################################
 // system status
 // ##############################################
-#define SYS_STAT_RUNNING			0x00	// no error - system operational
-#define SYS_STAT_DYNAMIXEL_ERROR	0x01	// not all 3 dynamixel servo motors could be found
-#define SYS_STAT_UNKOWN_ERROR		0xFF	// uknown error - not used jet
+#define SYS_STAT_RUNNING			0x01	// no error - system operational
+#define SYS_STAT_DYNAMIXEL_ERROR	0x02	// not all 3 dynamixel servo motors could be found
+#define SYS_STAT_DEBUG				0x04	// print additional debug info 
+#define SYS_STAT_UNKOWN_ERROR		0x08	// uknown error - not used jet
+				
 
 // ##############################################
 // object dictionary min / max position and angle values
@@ -145,14 +154,13 @@ int8_t SetObjStructData(uint8_t index, uint16_t data);
 // Function to return the stored offset values for a given tool.
 int16_t* GetToolTblData(uint8_t index);
 
-
 // Function to search the position register. If the given index is found it returns TRUE if not FALSE.
-//PosReg_t* LocatePos(uint8_t *idx);
+//posReg_t* LocatePos(uint8_t *idx);
 
 // Function to search the object dictionary. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer.
-//ObjStruct_t* LocateObj(uint8_t index);
+//objStruct_t* LocateObj(uint8_t index);
 
 // Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer.
-//ToolTbl_t* LocateTool(uint8_t index);
+//toolTbl_t* LocateTool(uint8_t index);
 
 #endif

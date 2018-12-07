@@ -9,7 +9,7 @@ extern bool run;
 
 static void SendStatus(char* message, uint8_t statusType) {
 
-	uint8_t i = 0x02;
+	uint8_t i = 0x02; // for testing
 	switch (i/*GetObjStructData(0xFE)*/)
 	{
 	case OP_MODE_SCARA:
@@ -17,27 +17,41 @@ static void SendStatus(char* message, uint8_t statusType) {
 
 		switch (statusType)
 		{
+		case STATUS_TYPE_NOTYPE:
+			Serial.print(message);
+			break;
+
 		case STATUS_TYPE_INFO:
 			Serial.print("Info:    ");
+			Serial.println(message);
 			break;
+
 		case STATUS_TYPE_WARNING:
 			Serial.print("Warning: ");
+			Serial.println(message);
 			break;
+
 		case STATUS_TYPE_ERROR:
 			Serial.print("Error:   ");
+			Serial.println(message);
 			break;
-		/*case STATUS_TYPE_NOTYPE:
-			Serial.print(message);
-			break;*/
+
+		case STATUS_TYPE_DEBUG:
+			if (GetObjStructData(0xFF) & SYS_STAT_DEBUG) {
+				Serial.print("Debug:   ");
+				Serial.println(message);
+			}
+			break;
+
 		default:
 			Serial.print("no statusType: ");
+			Serial.println(message);
 			break;
 		}
-		Serial.println(message);
 		break;
 
 	case OP_MODE_MODBUS:
-		// no status message available, possible implementation via modbus exeption code -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes
+		// no status message available, possible implementation via modbus exeption codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes
 		break;
 
 	default:

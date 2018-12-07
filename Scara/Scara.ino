@@ -4,7 +4,6 @@
  Author:	Jens Schiller
 */
 
-
 #include "objdir.h"
 #include "gpio.h"
 #include "status.h"
