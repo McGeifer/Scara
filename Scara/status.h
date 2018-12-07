@@ -10,7 +10,7 @@
 #endif
 
  // test
-void SendStatus(char* message, uint8_t statusType);
+void SendStatus(char* optionalDebugMessage, char* message, uint8_t statusType);
 void SystemStatus();
 	 
 

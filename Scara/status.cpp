@@ -7,8 +7,11 @@
 
 extern bool run;
 
-static void SendStatus(char* message, uint8_t statusType) {
+static void SendStatus(char* optionalDebugMessage, char* message, uint8_t statusType) {
 
+	char statusString[10];
+	char finalMsgString[128];
+	
 	uint8_t i = 0x02; // for testing
 	switch (i/*GetObjStructData(0xFE)*/)
 	{
@@ -18,34 +21,31 @@ static void SendStatus(char* message, uint8_t statusType) {
 		switch (statusType)
 		{
 		case STATUS_TYPE_NOTYPE:
-			Serial.print(message);
+			sprintf(statusString, "         ");
 			break;
 
 		case STATUS_TYPE_INFO:
-			Serial.print("Info:    ");
-			Serial.println(message);
+			sprintf(statusString, "Info:    ");
 			break;
 
 		case STATUS_TYPE_WARNING:
-			Serial.print("Warning: ");
-			Serial.println(message);
+			sprintf(statusString, "Warning: ");
 			break;
 
 		case STATUS_TYPE_ERROR:
-			Serial.print("Error:   ");
-			Serial.println(message);
+			sprintf(statusString, "Error:   ");
 			break;
 
 		case STATUS_TYPE_DEBUG:
 			if (GetObjStructData(0xFF) & SYS_STAT_DEBUG) {
-				Serial.print("Debug:   ");
-				Serial.println(message);
+				sprintf(statusString, "Debug:   ");
+				sprintf(finalMsgString, "%c %c %c", statusString, optionalDebugMessage, message);
+				Serial.println(finalMsgString);
 			}
-			break;
+			return;
 
 		default:
-			Serial.print("no statusType: ");
-			Serial.println(message);
+			sprintf(statusString, "         ");
 			break;
 		}
 		break;
@@ -57,6 +57,8 @@ static void SendStatus(char* message, uint8_t statusType) {
 	default:
 		break;
 	}
+	sprintf(finalMsgString, "%c %c", statusString, message);
+	Serial.println(finalMsgString);
 }
 
 void SystemStatus() {
@@ -68,12 +70,12 @@ void SystemStatus() {
 		break;
 
 	case SYS_STAT_DYNAMIXEL_ERROR:
-		SendStatus("Not all Dynamixel servos could be found, check wiring and restart the system.", STATUS_TYPE_ERROR);
+		SendStatus(NULL, "Not all Dynamixel servos could be found, check wiring and restart the system.", STATUS_TYPE_ERROR);
 		run = false;
 		break;
 
 	case SYS_STAT_UNKOWN_ERROR:
-		SendStatus("Unknown error, check and restart the system.", STATUS_TYPE_ERROR);
+		SendStatus(NULL, "Unknown error, check and restart the system.", STATUS_TYPE_ERROR);
 		run = false;
 		break;
 

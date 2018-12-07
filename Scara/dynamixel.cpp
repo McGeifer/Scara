@@ -20,12 +20,12 @@ void InitDynamixel() {
 		if (tmp == -1) {
 			char string[128];
 			sprintf(string, "no Dynamixel found @ ID: %d", i);
-			SendStatus(string, STATUS_TYPE_ERROR);
+			SendStatus(NULL, string, STATUS_TYPE_ERROR);
 		}
 		else {
 			char string[128];
 			sprintf(string, "Dynamixel found @ ID: %d", i);
-			SendStatus(string, STATUS_TYPE_INFO);
+			SendStatus(NULL, string, STATUS_TYPE_INFO);
 			response++;
 		}
 	}

@@ -15,7 +15,7 @@ static objStruct_t objStruct_data[] = {
 
 	// internal objects
 	{0xFE, OBJ_PROP_RW, 0, NULL},					// operation mode: modbus = 1, rapid = 2 or scara = 3
-	{0xFF, OBJ_PROP_RW, 0, NULL},					// system status
+	{0xFF, OBJ_PROP_RW, 0x04, NULL},					// system status
 	
 	// position values
 	{0x10, OBJ_PROP__W, 0, &SetNewTargetPos},		// x - new target position
@@ -151,13 +151,13 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 			p = LocatePos(idx);
 		}
 		else {
-			SendStatus("in function SetPosRegData(): failed to write - max number of points (64) reached ", STATUS_TYPE_ERROR);
+			SendStatus("in function SetPosRegData():", "failed to write - max number of points (64) reached ", STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
 	if (p != NULL) {
 		
-		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) {	// check if object is writable
+		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) { // check if object is writable
 
 			if (*xValue >= X_POS_MIN && *xValue <= X_POS_MAX) { // check the permissable value range
 
