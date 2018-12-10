@@ -27,7 +27,7 @@ void setup() {
 void loop() {
 
 	while (run) {
-		SystemStatus();
+		//SystemStatus();
 		HandleSIO();
 		//HandleMove();
 	}

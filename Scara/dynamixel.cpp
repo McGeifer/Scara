@@ -15,17 +15,17 @@ void InitDynamixel() {
 	int response = 0;
 
 	for (int i = 0; i <= 2; i++) {
-		
 		tmp = Dynamixel.ping(i);
+
 		if (tmp == -1) {
-			char string[128];
-			sprintf(string, "no Dynamixel found @ ID: %d", i);
-			SendStatus(NULL, string, STATUS_TYPE_ERROR);
+			char msg[128];
+			sprintf(msg, "no Dynamixel found @ ID: %d", i);
+			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);
 		}
 		else {
-			char string[128];
-			sprintf(string, "Dynamixel found @ ID: %d", i);
-			SendStatus(NULL, string, STATUS_TYPE_INFO);
+			char msg[128];
+			sprintf(msg, "Dynamixel found @ ID: %d", i);
+			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_INFO);
 			response++;
 		}
 	}

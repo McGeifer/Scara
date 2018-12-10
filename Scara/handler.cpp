@@ -26,7 +26,7 @@ int SetNewTargetPos(const uint8_t *index, const uint8_t *props, const uint16_t *
 
 	char string[128];
 	sprintf(string, "Write operation not allowed for object: 0x%x - object ist read only", index);
-	SendStatus(string, STATUS_TYPE_ERROR);
+	SendStatus(NULL, string, STATUS_TYPE_ERROR);
 	return -1;
 }
 

@@ -20,17 +20,26 @@ void InitGPIO() {
 void InitOperationMode() {
 
 	if (digitalRead(RAPID_PIN) == LOW && digitalRead(MODBUS_PIN) == HIGH) {
-		SetObjStructData(0xFE, OP_MODE_MODBUS);
+		if (SetObjStructData(0xFE, OP_MODE_MODBUS) == 0) {
+			// no message
+			return;
+		}
 	}
 	else if (digitalRead(RAPID_PIN) == HIGH && digitalRead(MODBUS_PIN) == LOW) {
-		SetObjStructData(0xFE, OP_MODE_RAPID);
-		SendStatus("Rapid protocoll selected", STATUS_TYPE_INFO);
+		if (SetObjStructData(0xFE, OP_MODE_RAPID) == 0) {
+			SendStatus("InitOperationMode(): ", "Rapid protocoll selected", STATUS_TYPE_INFO);
+			return;
+		}
 	}
 	else {
-		SetObjStructData(0xFE, OP_MODE_SCARA);
-		SendStatus("Scara protocoll selected", STATUS_TYPE_INFO);
+		if (SetObjStructData(0xFE, OP_MODE_SCARA) == 0) {
+			SendStatus("InitOperationMode(): ", "Scara protocoll selected", STATUS_TYPE_INFO);
+			return;
+		}
 	}
+	SendStatus("InitOperationMode(): ", "error selcting protocoll", STATUS_TYPE_ERROR);
 }
+
 
 static void InterruptRoutine() {
 

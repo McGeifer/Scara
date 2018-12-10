@@ -8,57 +8,70 @@
 extern bool run;
 
 static void SendStatus(char* optionalDebugMessage, char* message, uint8_t statusType) {
-
-	char statusString[10];
-	char finalMsgString[128];
 	
-	uint8_t i = 0x02; // for testing
-	switch (i/*GetObjStructData(0xFE)*/)
-	{
-	case OP_MODE_SCARA:
-	case OP_MODE_RAPID:
+	if (!(GetObjStructData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system ist in silent mode
 
-		switch (statusType)
+		char statusString[10];
+		char finalMsgString[128];
+		uint8_t i = 0x02; // for testing
+		switch (i/*GetObjStructData(0xFE)*/)
 		{
-		case STATUS_TYPE_NOTYPE:
-			sprintf(statusString, "         ");
-			break;
+		case OP_MODE_SCARA:
+		case OP_MODE_RAPID:
 
-		case STATUS_TYPE_INFO:
-			sprintf(statusString, "Info:    ");
-			break;
+			switch (statusType)
+			{
+			case STATUS_TYPE_NOTYPE:
+				sprintf(statusString, "         ");
+				break;
 
-		case STATUS_TYPE_WARNING:
-			sprintf(statusString, "Warning: ");
-			break;
+			case STATUS_TYPE_INFO:
+				sprintf(statusString, "Info:    ");
+				break;
 
-		case STATUS_TYPE_ERROR:
-			sprintf(statusString, "Error:   ");
-			break;
+			case STATUS_TYPE_WARNING:
+				sprintf(statusString, "Warning: ");
+				break;
 
-		case STATUS_TYPE_DEBUG:
-			if (GetObjStructData(0xFF) & SYS_STAT_DEBUG) {
+			case STATUS_TYPE_ERROR:
+				sprintf(statusString, "Error:   ");
+				break;
+
+			case STATUS_TYPE_DEBUG:
 				sprintf(statusString, "Debug:   ");
-				sprintf(finalMsgString, "%c %c %c", statusString, optionalDebugMessage, message);
-				Serial.println(finalMsgString);
+				break;
+
+			default:
+				sprintf(statusString, "         ");
+				break;
 			}
-			return;
+
+			if (GetObjStructData(0xFF) & SYS_STAT_DEBUG) { // check if system ist in debug mode
+				if (optionalDebugMessage == NULL) {
+					sprintf(finalMsgString, "%s %s", statusString, message);
+					Serial.println(finalMsgString);
+				}
+				else {
+					sprintf(finalMsgString, "%s %s %s", statusString, optionalDebugMessage, message);
+					Serial.println(finalMsgString);
+				}
+			}
+			else {
+				if (statusType != STATUS_TYPE_DEBUG) {
+					sprintf(finalMsgString, "%s %s", statusString, message);
+					Serial.println(finalMsgString);
+				}
+			}
+			break;
+
+		case OP_MODE_MODBUS:
+			// no status message available, possible implementation via modbus exeption codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes
+			break;
 
 		default:
-			sprintf(statusString, "         ");
 			break;
 		}
-		break;
-
-	case OP_MODE_MODBUS:
-		// no status message available, possible implementation via modbus exeption codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes
-		break;
-
-	default:
-		break;
 	}
-	sprintf(finalMsgString, "%c %c", statusString, message);
-	Serial.println(finalMsgString);
 }
 
 void SystemStatus() {

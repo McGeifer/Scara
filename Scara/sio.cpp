@@ -37,20 +37,23 @@ void InitSio() {
 void HandleSIO() {
 
 	// get system error state - abort if system is in error state
-	if (GetObjStructData(0xFF) == 0) {
+	if (!(GetObjStructData(0xFF) & SYS_STAT_ERROR)) {
 
 		switch (GetObjStructData(0xFE))	{
 
 		case OP_MODE_MODBUS:
 			HandleModbusData();
+			//SendStatus("HandleSio(); ", "HandleModbusData() selected", STATUS_TYPE_DEBUG);
 			break;
 
 		case OP_MODE_RAPID:
 			HandleRapidString();
+			//SendStatus("HandleSio(); ", "HandleRapidString() selected", STATUS_TYPE_DEBUG);
 			break;
 
 		case OP_MODE_SCARA:
 			HandleScaraData();
+			//SendStatus("HandleSio(); ", "HandleScaraData() selected", STATUS_TYPE_DEBUG);
 			break;
 
 		default:
@@ -60,7 +63,7 @@ void HandleSIO() {
 	}
 }
 
-int8_t ParseRadpid() {
+uint8_t ParseRadpid() {
 
 	enum tmpData {
 		xPos,
@@ -85,6 +88,11 @@ int8_t ParseRadpid() {
 	cBuffer[ndx + 1] = '\0'; // terminate string
 	strcpy(inputString, cBuffer);	// creat copy of the receiveBuffer to prevent change of data by strtok
 	part = strtok(inputString, delimiter);	// split the inputString into multiple tokens
+
+	for (size_t i = 0; i < length; i++)
+	{
+
+	}
 
 	while(part != NULL) {
 		// create tokens
@@ -113,13 +121,13 @@ int8_t ParseRadpid() {
 				return 0;
 			}
 			else {
-				SendStatus("in function HandleRapidString(): point index expected", STATUS_TYPE_ERROR);
-				return -1;
+				SendStatus("in function HandleRapidString(): ", "point index expected", STATUS_TYPE_ERROR);
+				return 0;
 			}
 		}
 		else {
-			SendStatus("in function HandleRapidString(): robtarget expected", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "robtarget expected", STATUS_TYPE_ERROR);
+			return 0;
 		}
 	}
 
@@ -130,17 +138,17 @@ int8_t ParseRadpid() {
 
 		if(strstr(outputString[1], "on")) {
 			digitalWrite(MAGNET_PIN, HIGH);
-			SendStatus("in function HandleRapidString(): Magnet: on", STATUS_TYPE_INFO);
+			SendStatus("in function HandleRapidString(): ", "Magnet: on", STATUS_TYPE_INFO);
 			return 0;
 		}
 		else if(strstr(outputString[1], "off")) {
 			digitalWrite(MAGNET_PIN, LOW);
-			SendStatus("in function HandleRapidString(): Magnet: off", STATUS_TYPE_INFO);
+			SendStatus("in function HandleRapidString(): ", "Magnet: off", STATUS_TYPE_INFO);
 			return 0;
 		}
 		else {
-			SendStatus("in function HandleRapidString(): Magnet_on / off expected", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "Magnet_on / off expected", STATUS_TYPE_ERROR);
+			return 0;
 		}
 	}
 
@@ -151,19 +159,19 @@ int8_t ParseRadpid() {
 	// outputString	index:	  0		1   2	  3		4	   5	6	   7	8
 	else if(strstr(outputString[0], "Move")) {
 		if(strcmp(outputString[0], "MoveC") == 0) {
-			SendStatus("in function HandleRapidString(): MoveC not supported", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "MoveC not supported", STATUS_TYPE_ERROR);
+			return 0;
 		}
 		else if(strcmp(outputString[0], "MoveL") == 0) {
-			SendStatus("in function HandleRapidString(): MoveL not supported", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "MoveL not supported", STATUS_TYPE_ERROR);
+			return 0;
 		}
 		else if(strcmp(outputString[0], "MoveJ") == 0) {
 			// setzte betriebsart ??? gibt ja momentan eh nur eine
 		}
 		else {
-			SendStatus("in function HandleRapidString(): No proper Move{C, L, J} comamnd detected", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "No proper Move{C, L, J} comamnd detected", STATUS_TYPE_ERROR);
+			return 0;
 		}
 
 		// check for Offs and/ or point
@@ -177,15 +185,15 @@ int8_t ParseRadpid() {
 					pointMode = true;
 				}
 				else {
-					char string[128];
-					sprintf(string, "in function HandleRapidString(): point P%i does not exist", pointIdx);
-					SendStatus(string, STATUS_TYPE_ERROR);
-					return -1;
+					char msg[64];
+					sprintf(msg, "point P%i does not exist", pointIdx);
+					SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+					return 0;
 				}
 			}
 			else {
-				SendStatus("in function HandleRapidString(): point definition expected for offset movement", STATUS_TYPE_ERROR);
-				return -1;
+				SendStatus("in function HandleRapidString(): ", "point definition expected for offset movement", STATUS_TYPE_ERROR);
+				return 0;
 			}
 		}
 		else if(strchr(outputString[1], 'p')) {
@@ -195,10 +203,10 @@ int8_t ParseRadpid() {
 				pointMode = true;
 			}
 			else {
-				char string[128];
-				sprintf(string, "in function HandleRapidString(): point P%i does not exist", pointIdx);
-				SendStatus(string, STATUS_TYPE_ERROR);
-				return -1;
+				char msg[64];
+				sprintf(msg, "point P%i does not exist", pointIdx);
+				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+				return 0;
 			}
 		}
 
@@ -217,8 +225,10 @@ int8_t ParseRadpid() {
 				dataToWrite[zPos] = pPosRegData[2] + (uint16_t)strtol(outputString[5], NULL, 10);
 			}
 			else {
-				SendStatus("in function HandleRapidString(): point P%i does not exist", STATUS_TYPE_ERROR);
-				return -1;
+				char msg[64];
+				sprintf(msg, "point P%i does not exist", pointIdx);
+				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+				return 0;
 			}
 		}
 		else if(pointMode && !offsetMode) {
@@ -230,8 +240,10 @@ int8_t ParseRadpid() {
 				dataToWrite[zPos] = pPosRegData[2];
 			}
 			else {
-				SendStatus("in function HandleRapidString(): point P%i does not exist", STATUS_TYPE_ERROR);
-				return -1;
+				char msg[64];
+				sprintf(msg, "point P%i does not exist", pointIdx);
+				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+				return 0;
 			}
 		}
 
@@ -258,13 +270,27 @@ int8_t ParseRadpid() {
 		}
 		else if(strchr(outputString[2 + idxOffs], 'v')) {
 			uint16_t speed = (uint16_t)strtol(outputString[2 + idxOffs] + 1, NULL, 0);
-			dataToWrite[xSpeed] = speed;
-			dataToWrite[ySpeed] = speed;
-			dataToWrite[zSpeed] = speed;
+
+			if (speed >= X_SPEED_MIN && speed >= Y_SPEED_MIN && speed >= Z_SPEED_MIN) {
+			
+				if (speed <= X_SPEED_MAX && speed <= Y_SPEED_MAX && speed <= Z_SPEED_MAX) {
+					dataToWrite[xSpeed] = speed;
+					dataToWrite[ySpeed] = speed;
+					dataToWrite[zSpeed] = speed;
+				}
+				else {
+					SendStatus("in function HandleRapidString(): ", "speed value to high", STATUS_TYPE_ERROR);
+					return 0;
+				}
+			}
+			else {
+				SendStatus("in function HandleRapidString(): ", "speed value to low", STATUS_TYPE_ERROR);
+				return 0;
+			}
 		}
 		else {
-			SendStatus("in function HandleRapidString(): speed value expected", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "speed value expected", STATUS_TYPE_ERROR);
+			return 0;
 		}
 
 		// check for zone value
@@ -272,12 +298,12 @@ int8_t ParseRadpid() {
 			// mache weiter :)
 		}
 		else if(strchr(outputString[3 + idxOffs], 'z')) {
-			SendStatus("in function HandleRapidString(): fly-by point not supported (use fine)", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "fly-by point not supported (use fine)", STATUS_TYPE_ERROR);
+			return 0;
 		}
 		else {
-			SendStatus("in function HandleRapidString(): zone value expected", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "zone value expected", STATUS_TYPE_ERROR);
+			return 0;
 		}
 
 		// check for tool and add offset to position value
@@ -287,43 +313,70 @@ int8_t ParseRadpid() {
 			int16_t *pToolTblOffset = GetToolTblData(tool);
 
 			if(pToolTblOffset == NULL) {
-				SendStatus("in function HandleRapidString(): tool does not exist", STATUS_TYPE_ERROR);
-				return -1;
+				SendStatus("in function HandleRapidString(): ", "tool does not exist", STATUS_TYPE_ERROR);
+				return 0;
 			}
 
-			dataToWrite[xPos] += pToolTblOffset[0];
-			dataToWrite[yPos] += pToolTblOffset[1];
-			dataToWrite[zPos] += pToolTblOffset[2];
+			dataToWrite[xPos] -= pToolTblOffset[0];
+			dataToWrite[yPos] -= pToolTblOffset[1];
+			dataToWrite[zPos] -= pToolTblOffset[2];
 
-			// save speed and position values
-			if(SetObjStructData(0x60, dataToWrite[xSpeed]) != 0) {
-				return -1;
+			if (dataToWrite[xPos] >= X_POS_MIN && dataToWrite[xPos] <= X_POS_MAX) {
+
+				if (dataToWrite[yPos] >= Y_POS_MIN && dataToWrite[yPos] <= Y_POS_MAX) {
+
+					if (dataToWrite[zPos] >= Z_POS_MIN && dataToWrite[zPos] <= Z_POS_MAX) {
+						
+						// save speed and position values
+						if (SetObjStructData(0x60, dataToWrite[xSpeed]) != 0) {
+							return 0;
+						}
+						if (SetObjStructData(0x70, dataToWrite[ySpeed]) != 0) {
+							return 0;
+						}
+						if (SetObjStructData(0x80, dataToWrite[zSpeed]) != 0) {
+							return 0;
+						}
+						if (SetObjStructData(0x10, dataToWrite[xPos]) != 0) {
+							return 0;
+						}
+						if (SetObjStructData(0x20, dataToWrite[yPos]) != 0) {
+							return 0;
+						}
+						if (SetObjStructData(0x30, dataToWrite[zPos]) != 0) {
+							return 0;
+						}
+						return 1;
+					}
+					else {
+						char msg[64];
+						sprintf(msg, "z-position %imm not in allowed range", dataToWrite[zPos]);
+						SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+						return 0;
+					}
+				}
+				else {
+					char msg[64];
+					sprintf(msg, "y-position %imm not in allowed range", dataToWrite[yPos]);
+					SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+					return 0;
+				}
 			}
-			if(SetObjStructData(0x70, dataToWrite[ySpeed]) != 0) {
-				return -1;
+			else {
+				char msg[64];
+				sprintf(msg, "x-position %imm not in allowed range", dataToWrite[xPos]);
+				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+				return 0;
 			}
-			if(SetObjStructData(0x80, dataToWrite[zSpeed]) != 0) { 
-				return -1;
-			}
-			if(SetObjStructData(0x10, dataToWrite[xPos]) != 0) {
-				return -1;
-			}
-			if(SetObjStructData(0x20, dataToWrite[yPos]) != 0) {
-				return -1;
-			}
-			if(SetObjStructData(0x30, dataToWrite[zPos]) != 0) {
-				return -1;
-			}
-			return 0;
 		}
 		else {
-			SendStatus("in function HandleRapidString(): tool expected", STATUS_TYPE_ERROR);
-			return -1;
+			SendStatus("in function HandleRapidString(): ", "tool expected", STATUS_TYPE_ERROR);
+			return 0;
 		}
 	}
 	else {
-		SendStatus("in function HandleRapidString(): Move{C, L, J} command expected", STATUS_TYPE_ERROR);
-		return -1;
+		SendStatus("in function HandleRapidString(): ", "Move{C, L, J} command expected", STATUS_TYPE_ERROR);
+		return 0;
 	}
 }
 
@@ -356,13 +409,13 @@ static void HandleRapidString() {
 			cBuffer[ndx] = Serial.read();
 
 			/* debug*/
-			char string[128];
-			sprintf(string, "cBuffer[%i]: %c", ndx, cBuffer[ndx]);
-			SendStatus(string, STATUS_TYPE_DEBUG);
+			char msg[64];
+			sprintf(msg, "cBuffer[%i]: %c", ndx, cBuffer[ndx]);
+			SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 			/* end debug*/
 
 			if (cBuffer[ndx] == ';') {
-				if (ParseRadpid() == -1) {
+				if (ParseRadpid()) {
 					memset(cBuffer, 0, ndx);
 					ndx = 0;
 					return;
@@ -373,7 +426,7 @@ static void HandleRapidString() {
 		else {
 			memset(cBuffer, 0, ndx);
 			ndx = 0;
-			SendStatus("in function HandleRapidString(): buffer overflow - input string to long", STATUS_TYPE_ERROR);
+			SendStatus("in function HandleRapidString(): buffer overflow - ", "input string to long", STATUS_TYPE_ERROR);
 		}
 	}
 }
@@ -413,14 +466,14 @@ static void HandleScaraData() {
 						}
 					}
 					else
-						SendStatus("in function HandleScaraData(): crc checksum invalid", STATUS_TYPE_WARNING);
+						SendStatus("in function HandleScaraData(): ", "crc checksum invalid", STATUS_TYPE_WARNING);
 				}
 			}
 		}
 		else {
 			memset(buffer, 0, ndx);
 			ndx = 0;
-			SendStatus("in function HandleScaraData(): input data to long", STATUS_TYPE_ERROR);
+			SendStatus("in function HandleScaraData(): ", "input data to long", STATUS_TYPE_ERROR);
 		}
 	}
 }

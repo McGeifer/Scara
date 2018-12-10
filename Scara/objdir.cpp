@@ -53,7 +53,7 @@ static objStruct_t objStruct_data[] = {
 static toolTbl_t toolTbl[] = {
 
 	// tool 0 - machine zero
-	{0x01, OBJ_PROP_R_, 0, 0, 0, true, NULL},		// only change if you really know what you are doing!
+	{0x00, OBJ_PROP_R_, 0, 0, 0, true, NULL},		// only change if you really know what you are doing!
 	
 	// variable tooltable entries
 	{0x10, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},	// custom tools
@@ -172,21 +172,21 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 				}
 			}
 			else {
-				char string[128];
-				sprintf(string, "in function SetPosRegData(): failed to write - position P%i value out of range", idx);
-				SendStatus(string, STATUS_TYPE_ERROR);
+				char msg[64];
+				sprintf(msg, "position P%i value out of range", idx);
+				SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
-			char string[128];
-			sprintf(string, "in function SetPosRegData(): failed to write - position P%i is read only", idx);
-			SendStatus(string, STATUS_TYPE_ERROR);
+			char msg[64];
+			sprintf(msg, "position P%i is read only", idx);
+			SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else {
-		SendStatus("in function SetPosRegData(): failed to write - unknown error", STATUS_TYPE_ERROR);
+		SendStatus("in function SetPosRegData(): failed to write - ", "unknown error", STATUS_TYPE_ERROR);
 		return -1;
 	}
 }
@@ -220,6 +220,10 @@ uint16_t GetObjStructData(uint8_t index) {
 	if (p != NULL) {
 
 		// wenn umrechung von pos von dez zu hex notwendig (pos * 10 + 32768) dann hier, damit das nicht jedes mal von Hand gemacht werden muss
+		/*char msg[64];
+		uint16_t tmp = p->data;
+		sprintf(msg, "return value 0x%x", tmp);
+		SendStatus("GetObjStructData(): ", "test", STATUS_TYPE_INFO);*/
 		return p->data;
 	}
 	else {
@@ -298,28 +302,28 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 				maxValue = 0xFFFF;
 				break;
 			}
-			if (pObjStruct->data >= minValue &&  pObjStruct->data <= maxValue) { //  write data if it's inside the allowed range
+			if (data >= minValue &&  data <= maxValue) { //  write data if it's inside the allowed range
 				pObjStruct->data = data;
 				return 0;
 			}
 			else {
-				char string[128];
-				sprintf(string, "in function SetObjStructData(): failed to write - object 0x%x value out of range", index);
-				SendStatus(string, STATUS_TYPE_ERROR);
+				char msg[64];
+				sprintf(msg, "object 0x%x value out of range", index);
+				SendStatus("in function SetObjStructData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
-			char string[128];
-			sprintf(string, "in function SetObjStructData(): failed to write - object 0x%x is read only", index);
-			SendStatus(string, STATUS_TYPE_ERROR);
+			char msg[64];
+			sprintf(msg, "object 0x%x is read only", index);
+			SendStatus("in function SetObjStructData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else {
-		char string[128];
-		sprintf(string, "in function SetObjStructData(): failed to write - object 0x%x does not exist", index);
-		SendStatus(string, STATUS_TYPE_ERROR);
+		char msg[64];
+		sprintf(msg, "object 0x%x does not exist", index);
+		SendStatus("in function SetObjStructData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 		return -1;
 	}
 }
@@ -349,6 +353,7 @@ int16_t* GetToolTblData(uint8_t index) {
 
 	toolTbl_t *p = NULL;
 	p = LocateTool(index);
+
 
 	if (p != NULL) {
 		static int16_t data[4];

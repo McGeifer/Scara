@@ -95,18 +95,22 @@ enum holding_registers {
 #define SYS_STAT_DYNAMIXEL_ERROR	0x02	// not all 3 dynamixel servo motors could be found
 #define SYS_STAT_DEBUG				0x04	// print additional debug info 
 #define SYS_STAT_UNKOWN_ERROR		0x08	// uknown error - not used jet
+#define SYS_STAT_SILENT				0x10	// no messages will be send
+#define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) // system is in error state
+
+
 				
 
 // ##############################################
 // object dictionary min / max position and angle values
 // attention! min/max[hex] = value(mm or °) * 10 + 32768 for preservation of the mathematical sign and decimal
 // ##############################################
-#define X_POS_MIN 					0x7830	// -200 mm
-#define X_POS_MAX					0x87D0	// 200 mm
-#define Y_POS_MIN					0x7830	// -200 mm
-#define Y_POS_MAX					0x87D0	// 200 mm
-#define Z_POS_MIN					0x7830	// -200 mm
-#define Z_POS_MAX					0x87D0	// 200 mm
+#define X_POS_MIN 					1		//	0x800A	// 1 mm
+#define X_POS_MAX					200		//	0x87D0	// 200 mm
+#define Y_POS_MIN					1		//	0x800A	// 1 mm
+#define Y_POS_MAX					200		//	0x87D0	// 200 mm
+#define Z_POS_MIN					1		//	0x800A	// 1 mm
+#define Z_POS_MAX					200		//	0x87D0	// 200 mm
 
 #define AXIS_1_ANGLE_MIN			0x7BE6	// -105 °
 #define AXIS_1_ANGLE_MAX			0x841A	// 105 °
