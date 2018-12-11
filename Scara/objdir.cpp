@@ -144,7 +144,7 @@ uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *z
 	if (p == NULL) {
 
 		if (*idx <= PosArrayLength - 1) {
-			pArray[idxLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer to in the pArray
+			pArray[idxLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer in the pArray
 			pArray[idxLastPos]->pointIdx = *idx;
 			pArray[idxLastPos]->props = OBJ_PROP_RW;
 			idxLastPos++;
@@ -332,7 +332,7 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 // tool table - help functions
 // ##############################################
 
-static toolTbl_t* LocateTool(uint8_t index) {
+toolTbl_t* LocateTool(uint8_t index) {
 
 	toolTbl_t *p = NULL;
 	p = toolTbl;
