@@ -17,12 +17,11 @@
 typedef struct {
 	const	uint8_t		idx;				// index number of object
 	const	uint8_t		props;				// object properties
-			uint16_t	data;				// object data --- 0xFFFF is reserved for error handling ###
-			int			(*pFunction)(const uint8_t* idx, const uint8_t* props, const uint16_t* data);	// pointer for handler function
+			int16_t	data;					// object data --- 0xFFFF is reserved for error handling ###
+			int			(*pFunction)(const uint8_t* idx, const uint8_t* props, const int16_t* data);	// pointer for handler function
 } objStruct_t;
 
 // The basic data structure for the tool table.
-// Attention! offset[dec] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
 typedef struct {
 	const	uint8_t		toolIdx;			// index number of tool
 	const	uint8_t		props;				// object properties
@@ -34,13 +33,12 @@ typedef struct {
 } toolTbl_t;
 
 // Register to store position values
-// Attention! posReg[dec] = value(mm) * 10 + 32768 for preservation of the mathematical sign and decimal
 typedef struct {
 			uint8_t		pointIdx;
 			uint8_t		props;
-			uint16_t	posRegX;
-			uint16_t	posRegY;
-			uint16_t	posRegZ;
+			int16_t		posRegX;
+			int16_t		posRegY;
+			int16_t		posRegZ;
 } posReg_t;
 
 // ##############################################
@@ -49,17 +47,35 @@ typedef struct {
 
 // modbus holing registers
 enum holding_registers {
-	INDEX_MDB,								// The first register starts at address 0
+	INDEX_MDB,				// The first register starts at address 0
 	DATA_MDB,
 	CRC_MDB,
-	TOTAL_ERRORS_MDB,						// Leave this one
-	TOTAL_REGS_SIZE_MDB						// Total number of registers. Function 3 and 16 share the same register array
+	TOTAL_ERRORS_MDB,		// Leave this one
+	TOTAL_REGS_SIZE_MDB		// Total number of registers. Function 3 and 16 share the same register array
 };
 
 // ##############################################
-// object index
+// object indices
 // ##############################################
-#define OBJ_IDX_X_NEW_TRAGET_POS 0x10
+
+// basic options
+#define OBJ_IDX_ACK						0xF0		// acknowledge
+#define OBJ_IDX_START_MOVE				0xF1		// start movement of robot axis
+
+// internal objects
+#define OBJ_IDX_OP_MODE					0xFE		// operation mode: modbus = 1, rapid = 2 or scara = 3
+#define OBJ_IDX_SYS_STATUS				0xFF		// system status
+
+// position values
+#define OBJ_IDX_X_NEW_TARGET_POS		0x10		// x - new target position
+#define OBJ_IDX_X_ACTUAL_TARGET_POS		0x11		// x - actual target position
+#define OBJ_IDX_X_ACTUAL_POS			0x12		// x - actual position
+#define OBJ_IDX_Y_NEW_TARGET_POS		0x20		// y - new target position
+#define OBJ_IDX_Y_ACTUAL_TARGET_POS		0x21		// y - actual target position
+#define OBJ_IDX_Y_ACTUAL_POS			0x22		// y - actual position
+#define OBJ_IDX_Z_NEW_TARGET_POS		0x30		// z - new target position
+#define OBJ_IDX_Z_ACTUAL_TARGET_POS		0x31		// z - actual target position
+#define OBJ_IDX_Z_ACTUAL_POS			0x32		// z - actual position											
 
 
 // ##############################################
@@ -103,39 +119,37 @@ enum holding_registers {
 
 // ##############################################
 // object dictionary min / max position and angle values
-// attention! min/max[hex] = value(mm or °) * 10 + 32768 for preservation of the mathematical sign and decimal
 // ##############################################
-#define X_POS_MIN 					1		//	0x800A	// 1 mm
-#define X_POS_MAX					200		//	0x87D0	// 200 mm
-#define Y_POS_MIN					1		//	0x800A	// 1 mm
-#define Y_POS_MAX					200		//	0x87D0	// 200 mm
-#define Z_POS_MIN					1		//	0x800A	// 1 mm
-#define Z_POS_MAX					200		//	0x87D0	// 200 mm
+#define X_POS_MIN 					1			
+#define X_POS_MAX					200			
+#define Y_POS_MIN					1			
+#define Y_POS_MAX					200			
+#define Z_POS_MIN					1			
+#define Z_POS_MAX					200			
 
-#define AXIS_1_ANGLE_MIN			0x7BE6	// -105 °
-#define AXIS_1_ANGLE_MAX			0x841A	// 105 °
-#define AXIS_2_ANGLE_MIN			0x7BE6	// -105 °
-#define AXIS_2_ANGLE_MAX			0x841A	// 105 °
+#define AXIS_1_ANGLE_MIN			-105	
+#define AXIS_1_ANGLE_MAX			105		
+#define AXIS_2_ANGLE_MIN			-105	
+#define AXIS_2_ANGLE_MAX			105		
 
 // ##############################################
 // object dictionary min / max speed values
 // ##############################################
-#define X_SPEED_MIN 0x00											
-#define X_SPEED_MAX 0xFF
-#define Y_SPEED_MIN 0x00											
-#define Y_SPEED_MAX 0xFF
-#define Z_SPEED_MIN 0x00											
-#define Z_SPEED_MAX 0xFF
+#define X_SPEED_MIN 1											
+#define X_SPEED_MAX 255
+#define Y_SPEED_MIN 1											
+#define Y_SPEED_MAX 255
+#define Z_SPEED_MIN 1											
+#define Z_SPEED_MAX 255
 
-#define AXIS_1_SPEED_MIN 0x00
-#define AXIS_1_SPEED_MAX 0xFF
-#define AXIS_2_SPEED_MIN 0x00
-#define AXIS_2_SPEED_MAX 0xFF
+#define AXIS_1_SPEED_MIN 1
+#define AXIS_1_SPEED_MAX 255
+#define AXIS_2_SPEED_MIN 1
+#define AXIS_2_SPEED_MAX 255
 
 // ##############################################
 // miscellaneous
 // ##############################################
-
 #define PosArrayLength 64
 
 // ##############################################
@@ -143,17 +157,17 @@ enum holding_registers {
 // ##############################################
 
 // Function to return the x, y & z values for a given index stored in the position register.
-uint16_t* GetPosRegData(uint8_t *idx);
+int16_t* GetPosRegData(uint8_t *idx);
 
 // Funtion for writing data to the position register.
-uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *zValue);
+uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *zValue);
 
 // Function to return the stored data of an object.
 uint16_t GetObjStructData(uint8_t index);
 
 // Funtion for writing data to the object dictionary.
 // Warning! Make sure the calling function only bypasses valid data, this function will not check it. !?!?????????????????????????????!?!??!?!?!?!?!?!?!?
-int8_t SetObjStructData(uint8_t index, uint16_t data);
+int8_t SetObjStructData(uint8_t index, int16_t data);
 
 // Function to return the stored offset values for a given tool.
 int16_t* GetToolTblData(uint8_t index);

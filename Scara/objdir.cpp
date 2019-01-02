@@ -6,35 +6,35 @@
 #include "handler.h"
 #include "status.h"
 
-// Initial definition of the object dictionary entries.
+// object dictionary
 static objStruct_t objStruct_data[] = {
 
 	// basic options
-	{0xF0, OBJ_PROP__W, 0, &SetACK},				// acknowledge
-	{0xF1, OBJ_PROP__W, 0, &SetStartMove},			// start movement of robot axis
+	{OBJ_IDX_ACK,					OBJ_PROP__W, 0, &SetACK},
+	{OBJ_IDX_START_MOVE,			OBJ_PROP__W, 0, &SetStartMove},
 
 	// internal objects
-	{0xFE, OBJ_PROP_RW, 0, NULL},					// operation mode: modbus = 1, rapid = 2 or scara = 3
-	{0xFF, OBJ_PROP_RW, 0x04, NULL},					// system status
+	{OBJ_IDX_OP_MODE,				OBJ_PROP_RW, 0, NULL},
+	{OBJ_IDX_SYS_STATUS,			OBJ_PROP_RW, 0x04, NULL}, // 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!
 	
 	// position values
-	{0x10, OBJ_PROP__W, 0, &SetNewTargetPos},		// x - new target position
-	{0x11, OBJ_PROP_R_, 0, &GetActualTargetPos},	// x - actual target position
-	{0x12, OBJ_PROP_R_, 0, &GetActualPos},			// x - actual position
-	{0x20, OBJ_PROP__W, 0, &SetNewTargetPos},		// y - new target position
-	{0x21, OBJ_PROP_R_, 0, &GetActualTargetPos},	// y - actual target position
-	{0x22, OBJ_PROP_R_, 0, &GetActualPos},			// y - actual position
-	{0x30, OBJ_PROP__W, 0, &SetNewTargetPos},		// z - new target position
-	{0x31, OBJ_PROP_R_, 0, &GetActualTargetPos},	// z - actual target position
-	{0x32, OBJ_PROP_R_, 0, &GetActualPos},			// z - actual position
+	{OBJ_IDX_X_NEW_TARGET_POS,		OBJ_PROP__W, 0, &SetNewTargetPos},		
+	{OBJ_IDX_X_ACTUAL_TARGET_POS,	OBJ_PROP_R_, 0, &GetActualTargetPos},	
+	{OBJ_IDX_X_ACTUAL_POS,			OBJ_PROP_R_, 0, &GetActualPos},			
+	{OBJ_IDX_Y_NEW_TARGET_POS,		OBJ_PROP__W, 0, &SetNewTargetPos},		
+	{OBJ_IDX_Y_ACTUAL_TARGET_POS,	OBJ_PROP_R_, 0, &GetActualTargetPos},	
+	{OBJ_IDX_Y_ACTUAL_POS,			OBJ_PROP_R_, 0, &GetActualPos},			
+	{OBJ_IDX_Z_NEW_TARGET_POS,		OBJ_PROP__W, 0, &SetNewTargetPos},		
+	{OBJ_IDX_Z_ACTUAL_TARGET_POS,	OBJ_PROP_R_, 0, &GetActualTargetPos},	
+	{OBJ_IDX_Z_ACTUAL_POS,			OBJ_PROP_R_, 0, &GetActualPos},			
 	
 	// angle values
 	{0x40, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
 	{0x41, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
 	{0x42, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
-	{0x50, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
-	{0x51, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
-	{0x52, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
+	{0x50, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 2 - new target angle
+	{0x51, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 2 - actual target angle
+	{0x52, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 2 - actual angle
 
 	// speed values
 	{0x60, OBJ_PROP__W, 0, NULL},					// x - new target speed
@@ -49,38 +49,28 @@ static objStruct_t objStruct_data[] = {
 	{0xA1, OBJ_PROP_R_, 0, NULL},					// axis 2 - actual speed
 };
 
-// Initial definition of the tool table.
+// tool table
 static toolTbl_t toolTbl[] = {
 
 	// tool 0 - machine zero
 	{0x00, OBJ_PROP_R_, 0, 0, 0, true, NULL},		// only change if you really know what you are doing!
 	
 	// variable tooltable entries
-	{0x10, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},	// custom tools
-	{0x11, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x20, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x21, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x30, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x31, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x40, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x41, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x50, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x51, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x60, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x61, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x70, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x71, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x80, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x81, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
-	{0x90, OBJ_PROP_R_, 0, 0, 0, false, &GetTool},
-	{0x91, OBJ_PROP__W, 0, 0, 0, false, &SetTool},
+	//{0x01, OBJ_PROP_RW, 0, 0, 0, false, NULL},		// custom tools
+	//{0x02, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x03, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x04, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x05, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x06, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x07, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x08, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{0x09, OBJ_PROP_RW, 0, 0, 0, false, NULL},
 };
 
-// Static position register
+// static position register
 static posReg_t posRegStatic[] = {
 
 	// fixed positions 240 - 255 - only change if you really know what you are doing!
-	// to keep the
 	{0xF0, OBJ_PROP_R_, 0, 0, 0},			// homing position
 	{0xF1, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 1
 	{0xF2, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 2
@@ -99,7 +89,7 @@ static posReg_t posRegStatic[] = {
 // dynamic position register
 static posReg_t *pArray[PosArrayLength] = { NULL };
 // index of the last position in the position register
-static uint8_t idxLastPos = 0;
+static uint8_t pArrayLastPos = 0;
 
 // ##############################################
 // pos register - help functions
@@ -117,13 +107,13 @@ static posReg_t* LocatePos(uint8_t *idx) {
 	return NULL;
 }
 
-uint16_t* GetPosRegData(uint8_t *idx) {
+int16_t* GetPosRegData(uint8_t *idx) {
 
 	posReg_t *p = NULL;
 	p = LocatePos(idx);
 
 	if (p != NULL) {
-		static uint16_t data[3]; // static?
+		static int16_t data[3]; // static?
 		data[0] = p->posRegX;
 		data[1] = p->posRegY;
 		data[2] = p->posRegZ;
@@ -134,20 +124,18 @@ uint16_t* GetPosRegData(uint8_t *idx) {
 	}
 }
 
-uint8_t SetPosRegData(uint8_t *idx, uint8_t *xValue, uint8_t *yValue, uint8_t *zValue) {
+uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *zValue) {
 
 	posReg_t *p = NULL;
 	p = LocatePos(idx);
-	//uint16_t minValue;
-	//uint16_t maxValue;
 
 	if (p == NULL) {
 
 		if (*idx <= PosArrayLength - 1) {
-			pArray[idxLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer in the pArray
-			pArray[idxLastPos]->pointIdx = *idx;
-			pArray[idxLastPos]->props = OBJ_PROP_RW;
-			idxLastPos++;
+			pArray[pArrayLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer in the pArray
+			pArray[pArrayLastPos]->pointIdx = *idx;
+			pArray[pArrayLastPos]->props = OBJ_PROP_RW;
+			pArrayLastPos++;
 			p = LocatePos(idx);
 		}
 		else {
@@ -199,17 +187,13 @@ static objStruct_t* LocateObj(uint8_t index) {
 	
 	objStruct_t *p = NULL;
 	p = objStruct_data;
-
-	if (p != NULL) {
-		for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++) {
-			if (p->idx == index) {
-				return p;
-			}
+	
+	for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++) {
+		if (p->idx == index) {
+			return p;
 		}
 	}
-	else {
-		return NULL;
-	}
+	return NULL;
 }
 
 uint16_t GetObjStructData(uint8_t index) {
@@ -231,15 +215,15 @@ uint16_t GetObjStructData(uint8_t index) {
 	}
 }
 
-int8_t SetObjStructData(uint8_t index, uint16_t data) {
+int8_t SetObjStructData(uint8_t index, int16_t data) {
 
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Muss ggf. Handlerfunktion ausführen !!!!!!!!!!!!!!!!!!!!!!! falls Fehler in Handler -> return -1:
 
 
 	objStruct_t *pObjStruct = NULL;
 	pObjStruct = LocateObj(index);
-	uint16_t minValue = 0;
-	uint16_t maxValue = 0;
+	int16_t minValue = 0;
+	int16_t maxValue = 0;
 
 	if (pObjStruct != NULL) {	// make sure object does exist
 
@@ -298,8 +282,8 @@ int8_t SetObjStructData(uint8_t index, uint16_t data) {
 				break;
 
 			default:
-				minValue = 0x0000;
-				maxValue = 0xFFFF;
+				minValue = -32768;
+				maxValue = 32767;
 				break;
 			}
 			if (data >= minValue &&  data <= maxValue) { //  write data if it's inside the allowed range
@@ -336,17 +320,16 @@ toolTbl_t* LocateTool(uint8_t index) {
 
 	toolTbl_t *p = NULL;
 	p = toolTbl;
-
-	if (p != NULL) {
-		for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
-			if (p->toolIdx == index) {
-				return p;
-			}
+	
+	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
+		if (p->toolIdx == index) {
+			char msg[64];
+			sprintf(msg, "tool %i found", p->toolIdx);
+			SendStatus("LocateTool(): ", msg, STATUS_TYPE_DEBUG);
+			return p;
 		}
 	}
-	else {
-		return NULL;
-	}
+	return NULL;
 }
 
 int16_t* GetToolTblData(uint8_t index) {
@@ -354,13 +337,15 @@ int16_t* GetToolTblData(uint8_t index) {
 	toolTbl_t *p = NULL;
 	p = LocateTool(index);
 
-
 	if (p != NULL) {
 		static int16_t data[4];
 		data[0] = p->offsetX;
 		data[1] = p->offsetY;
 		data[2] = p->offsetZ;
 		data[3] = p->active;
+		char msg[64];
+		sprintf(msg, "tool offset values: x: %i, y: %i, z: %i", p->offsetX, p->offsetY, p->offsetZ);
+		SendStatus("GetToolTblData(): ", msg, STATUS_TYPE_DEBUG);
 		return data;
 	}
 	else {

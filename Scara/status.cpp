@@ -88,7 +88,7 @@ void SystemStatus() {
 		break;
 
 	case SYS_STAT_UNKOWN_ERROR:
-		SendStatus(NULL, "Unknown error, check and restart the system.", STATUS_TYPE_ERROR);
+		SendStatus(NULL, "Unknown error, check wiring and restart the system.", STATUS_TYPE_ERROR);
 		run = false;
 		break;
 

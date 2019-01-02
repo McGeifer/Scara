@@ -14,14 +14,14 @@ void InitGPIO() {
 	pinMode(MAGNET_PIN, OUTPUT);	// pin to switch the lifting magnet on/off
 	
 	pinMode(WATCH_PIN, INPUT);		// interrupt pin for the light barrier
-	attachInterrupt(INTERRUPT_PIN, InterruptRoutine, CHANGE);	// Attaches interrupt for counting the impulses
+	attachInterrupt(INTERRUPT_PIN, InterruptRoutine, CHANGE);	// attache interrupt for light barrier impulse count
 }
 
 void InitOperationMode() {
 
 	if (digitalRead(RAPID_PIN) == LOW && digitalRead(MODBUS_PIN) == HIGH) {
 		if (SetObjStructData(0xFE, OP_MODE_MODBUS) == 0) {
-			// no message
+			// modbus protocoll selected
 			return;
 		}
 	}

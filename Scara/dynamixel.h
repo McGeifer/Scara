@@ -8,7 +8,7 @@
 #else
 	#include "WProgram.h"
 #endif
-
+/* */
 void InitDynamixel();
 
 #endif
