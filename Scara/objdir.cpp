@@ -3,91 +3,94 @@
 // 
 
 #include "objdir.h"
-#include "handler.h"
 #include "status.h"
 
 // object dictionary
 static objStruct_t objStruct_data[] = {
 
 	// basic options
-	{OBJ_IDX_ACK,					OBJ_PROP__W, 0, &SetACK},
-	{OBJ_IDX_START_MOVE,			OBJ_PROP__W, 0, &SetStartMove},
+	{OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0, NULL},
 
 	// internal objects
-	{OBJ_IDX_OP_MODE,				OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,			OBJ_PROP_RW, 0x04, NULL}, // 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!
+	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, // 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!
 	
 	// position values
-	{OBJ_IDX_X_NEW_TARGET_POS,		OBJ_PROP__W, 0, &SetNewTargetPos},		
-	{OBJ_IDX_X_ACTUAL_TARGET_POS,	OBJ_PROP_R_, 0, &GetActualTargetPos},	
-	{OBJ_IDX_X_ACTUAL_POS,			OBJ_PROP_R_, 0, &GetActualPos},			
-	{OBJ_IDX_Y_NEW_TARGET_POS,		OBJ_PROP__W, 0, &SetNewTargetPos},		
-	{OBJ_IDX_Y_ACTUAL_TARGET_POS,	OBJ_PROP_R_, 0, &GetActualTargetPos},	
-	{OBJ_IDX_Y_ACTUAL_POS,			OBJ_PROP_R_, 0, &GetActualPos},			
-	{OBJ_IDX_Z_NEW_TARGET_POS,		OBJ_PROP__W, 0, &SetNewTargetPos},		
-	{OBJ_IDX_Z_ACTUAL_TARGET_POS,	OBJ_PROP_R_, 0, &GetActualTargetPos},	
-	{OBJ_IDX_Z_ACTUAL_POS,			OBJ_PROP_R_, 0, &GetActualPos},			
+	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_X_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_X_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Y_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_Y_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Y_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Z_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_Z_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Z_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
 	
 	// angle values
-	{0x40, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 1 - new target angle
-	{0x41, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 1 - actual target angle
-	{0x42, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 1 - actual angle
-	{0x50, OBJ_PROP__W, 0, &SetNewTargetAngle},		// axis 2 - new target angle
-	{0x51, OBJ_PROP_R_, 0, &GetActualTargetAngle},	// axis 2 - actual target angle
-	{0x52, OBJ_PROP_R_, 0, &GetActualAngle},		// axis 2 - actual angle
+	{OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_1_ACTUAL_ANGLE,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_2_ACTUAL_ANGLE,			OBJ_PROP_R_, 0, NULL},
 
 	// speed values
-	{0x60, OBJ_PROP__W, 0, NULL},					// x - new target speed
-	{0x61, OBJ_PROP_R_, 0, NULL},					// x - actual speed
-	{0x70, OBJ_PROP__W, 0, NULL},					// y - new target speed
-	{0x71, OBJ_PROP_R_, 0, NULL},					// y - actual speed
-	{0x80, OBJ_PROP__W, 0, NULL},					// z - new target speed
-	{0x81, OBJ_PROP_R_, 0, NULL},					// z - actual speed
-	{0x90, OBJ_PROP__W, 0, NULL},					// axis 1 - new target speed
-	{0x91, OBJ_PROP_R_, 0, NULL},					// axis 1 - actual speed
-	{0xA0, OBJ_PROP__W, 0, NULL},					// axis 2 - new target speed
-	{0xA1, OBJ_PROP_R_, 0, NULL},					// axis 2 - actual speed
+	{OBJ_IDX_X_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_X_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_X_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Y_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_Y_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Y_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Z_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_Z_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_Z_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_1_NEW_TARGET_SPEED,		OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED,	OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_1_ACTUAL_SPEED,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_2_NEW_TARGET_SPEED,		OBJ_PROP__W, 0, NULL},
+	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED,	OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_2_ACTUAL_SPEED,			OBJ_PROP_R_, 0, NULL},
 };
 
 // tool table
 static toolTbl_t toolTbl[] = {
 
 	// tool 0 - machine zero
-	{0x00, OBJ_PROP_R_, 0, 0, 0, true, NULL},		// only change if you really know what you are doing!
+	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true, NULL},
 	
 	// variable tooltable entries
-	//{0x01, OBJ_PROP_RW, 0, 0, 0, false, NULL},		// custom tools
-	//{0x02, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x03, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x04, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x05, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x06, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x07, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x08, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{0x09, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_1, OBJ_PROP_RW, 25, -100, 75, true, NULL},
+	{OBJ_IDX_TOOL_2, OBJ_PROP_RW, -50, 50, 25, true, NULL},
+	{OBJ_IDX_TOOL_3, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_4, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_5, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_6, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_7, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_8, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_9, OBJ_PROP_RW, 0, 0, 0, false, NULL},
 };
 
-// static position register
+// static position register ..................... ist das überhaupt notwendig!?!?!?!?!?!??!?!?!?!?!
 static posReg_t posRegStatic[] = {
 
-	// fixed positions 240 - 255 - only change if you really know what you are doing!
-	{0xF0, OBJ_PROP_R_, 0, 0, 0},			// homing position
-	{0xF1, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 1
-	{0xF2, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 2
-	{0xF3, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 3
-	{0xF4, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 4
-	{0xF5, OBJ_PROP_R_, 0, 0, 0},			// pos of red "coin" 5
-	{0xF6, OBJ_PROP_R_, 0, 0, 0},			// pos of green "coin" 1
-	{0xF7, OBJ_PROP_R_, 0, 0, 0},			// pos of green "coin" 2
-	{0xF8, OBJ_PROP_R_, 0, 0, 0},			// pos of green "coin" 3
-	{0xF9, OBJ_PROP_R_, 0, 0, 0},			// pos of green "coin" 4
-	{0xFA, OBJ_PROP_R_, 0, 0, 0},			// pos of green "coin" 5
-
 	// positions 0 - 63 (0x3F) - dynamicly allocated
+	{OBJ_IDX_STAT_POS_HOME,			OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_RD_COIN_1,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_RD_COIN_2,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_RD_COIN_3,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_RD_COIN_4,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_RD_COIN_5,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_GN_COIN_1,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_GN_COIN_2,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_GN_COIN_3,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_GN_COIN_4,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_GN_COIN_5,	OBJ_PROP_R_, 0, 0, 0},
 };
 
 // dynamic position register
 static posReg_t *pArray[PosArrayLength] = { NULL };
+
 // index of the last position in the position register
 static uint8_t pArrayLastPos = 0;
 
@@ -97,13 +100,13 @@ static uint8_t pArrayLastPos = 0;
 
 static posReg_t* LocatePos(uint8_t *idx) {
 
-	uint8_t i = 0;
-
-	for (i = 0; i = PosArrayLength - 1; i++) {
+	for (uint8_t i = 0; i < PosArrayLength; i++) {
 		if (pArray[i]->pointIdx == *idx) {
+			SendStatus("LocatePos() ", "pos found", STATUS_TYPE_DEBUG);
 			return pArray[i];
 		}
 	}
+	SendStatus("LocatePos() ", "pos not found", STATUS_TYPE_DEBUG);
 	return NULL;
 }
 
@@ -113,7 +116,7 @@ int16_t* GetPosRegData(uint8_t *idx) {
 	p = LocatePos(idx);
 
 	if (p != NULL) {
-		static int16_t data[3]; // static?
+		static int16_t data[3];
 		data[0] = p->posRegX;
 		data[1] = p->posRegY;
 		data[2] = p->posRegZ;
@@ -131,15 +134,19 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *z
 
 	if (p == NULL) {
 
-		if (*idx <= PosArrayLength - 1) {
+		if (*idx < PosArrayLength) {
 			pArray[pArrayLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer in the pArray
 			pArray[pArrayLastPos]->pointIdx = *idx;
 			pArray[pArrayLastPos]->props = OBJ_PROP_RW;
 			pArrayLastPos++;
 			p = LocatePos(idx);
+			if (p == NULL) {
+				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", STATUS_TYPE_ERROR);
+				return -1;
+			}
 		}
 		else {
-			SendStatus("in function SetPosRegData():", "failed to write - max number of points (64) reached ", STATUS_TYPE_ERROR);
+			SendStatus("in function SetPosRegData(): ", "failed to write - max number of points (64) reached", STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
@@ -196,7 +203,7 @@ static objStruct_t* LocateObj(uint8_t index) {
 	return NULL;
 }
 
-uint16_t GetObjStructData(uint8_t index) {
+int16_t GetObjStructData(uint8_t index) {
 
 	objStruct_t *p = NULL;
 	p = LocateObj(index);

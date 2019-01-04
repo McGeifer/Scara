@@ -118,18 +118,18 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="calc.h" />
     <ClInclude Include="dynamixel.h" />
     <ClInclude Include="gpio.h" />
-    <ClInclude Include="handler.h" />
     <ClInclude Include="objdir.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="status.h" />
     <ClInclude Include="__vm\.Scara.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="calc.cpp" />
     <ClCompile Include="dynamixel.cpp" />
     <ClCompile Include="gpio.cpp" />
-    <ClCompile Include="handler.cpp" />
     <ClCompile Include="objdir.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="status.cpp" />

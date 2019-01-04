@@ -18,12 +18,12 @@ void InitDynamixel() {
 		tmp = Dynamixel.ping(i);
 
 		if (tmp == -1) {
-			char msg[128];
+			char msg[32];
 			sprintf(msg, "no Dynamixel found @ ID: %d", i);
 			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);
 		}
 		else {
-			char msg[128];
+			char msg[32];
 			sprintf(msg, "Dynamixel found @ ID: %d", i);
 			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_INFO);
 			response++;
@@ -54,7 +54,7 @@ void InitDynamixel() {
 		// Only change if you really know what you are doing!
 		Dynamixel.setCSlope(0, 32, 32);				// compilance slope - default value
 		Dynamixel.setCMargin(0, 0, 0);				// compilance margin - default value
-		Dynamixel.setPunch(0, 32);					// minimum current supplied to the motor - dafault value
+		Dynamixel.setPunch(0, 32);					// minimum current supplied to the motor - default value
 
 		// ########################
 		// Axis 2 (ID - 1)
@@ -71,7 +71,7 @@ void InitDynamixel() {
 		// Only change if you really know what you are doing!
 		Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
 		Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
-		Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - dafault value
+		Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - default value
 
 		// ########################
 		// Axis 3 (ID - 2) (z-axis)
@@ -88,7 +88,7 @@ void InitDynamixel() {
 		// Only change if you really know what you are doing!
 		Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
 		Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
-		Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - dafault value
+		Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - default value
 
 		// enable torque for all servo motors
 		Dynamixel.torqueStatus(0, ON);

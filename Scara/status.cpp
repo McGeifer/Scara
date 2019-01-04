@@ -13,8 +13,8 @@ static void SendStatus(char* optionalDebugMessage, char* message, uint8_t status
 
 		char statusString[10];
 		char finalMsgString[128];
-		uint8_t i = 0x02; // for testing
-		switch (i/*GetObjStructData(0xFE)*/)
+
+		switch (GetObjStructData(OBJ_IDX_OP_MODE))
 		{
 		case OP_MODE_SCARA:
 		case OP_MODE_RAPID:
@@ -76,7 +76,7 @@ static void SendStatus(char* optionalDebugMessage, char* message, uint8_t status
 
 void SystemStatus() {
 
-	switch (GetObjStructData(0xFF))
+	switch (GetObjStructData(OBJ_IDX_SYS_STATUS))
 	{
 	case 0:
 		// no error

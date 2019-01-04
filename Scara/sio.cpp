@@ -38,9 +38,9 @@ void InitSio() {
 void HandleSIO() {
 
 	// get system error state - abort if system is in error state
-	if (!(GetObjStructData(0xFF) & SYS_STAT_ERROR)) {
+	if (!(GetObjStructData(OBJ_IDX_OP_MODE) & SYS_STAT_ERROR)) {
 
-		switch (GetObjStructData(0xFE))	{
+		switch (GetObjStructData(OBJ_IDX_OP_MODE))	{
 
 		case OP_MODE_MODBUS:
 			HandleModbusData();
@@ -75,7 +75,7 @@ int8_t ParseRadpid() {
 	char inputString[bufferLength];
 	char* outputString[bufferLength];
 	char* part;
-	const char delimiter[] = " :=][(),_";
+	const char delimiter[] = " :=][(),_;";
 	
 	int i = 0;
 	int idxOffs = 0;
@@ -91,6 +91,9 @@ int8_t ParseRadpid() {
 	while(part != NULL) {
 		// create tokens
 		outputString[i] = part;
+		char msg[64];
+		sprintf(msg, "token[%i]: %s", i, outputString[i]);
+		SendStatus("ParseRapid(): ", msg, STATUS_TYPE_DEBUG);
 		i++;
 		part = strtok(NULL, delimiter);
 	}
@@ -103,16 +106,20 @@ int8_t ParseRadpid() {
 
 			if (strchr(outputString[2], 'p')) {
 				// get point number
-				int16_t pointIdx = (int16_t)strtol(outputString[2] + 1, NULL, 10);
+				uint8_t pointIdx = (uint8_t)strtol(outputString[2] + 1, NULL, 10);
 
 				// get offset values
 				int16_t posXTmp = (int16_t)strtol(outputString[3], NULL, 10);
 				int16_t posYTmp = (int16_t)strtol(outputString[4], NULL, 10);
 				int16_t posZTmp = (int16_t)strtol(outputString[5], NULL, 10);
 
-				// set rapidPosReg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				// set point idx
-				return -1;
+				if (SetPosRegData(&pointIdx, &posXTmp, &posYTmp, &posZTmp) == 0) {
+					return 0;
+				}
+				else {
+					SendStatus("in function HandleRapidString(): ", "failed to write point data", STATUS_TYPE_ERROR);
+					return -1;
+				}
 			}
 			else {
 				SendStatus("in function HandleRapidString(): ", "point index expected", STATUS_TYPE_ERROR);
@@ -211,7 +218,7 @@ int8_t ParseRadpid() {
 			dataToWrite[yPos] = (int16_t)strtol(outputString[2], NULL, 10);
 			dataToWrite[zPos] = (int16_t)strtol(outputString[3], NULL, 10);
 			char msg[64];
-			sprintf(msg, "dataToWrite[] x: %i, y: %i, z: %i", dataToWrite[xPos], dataToWrite[yPos], dataToWrite[zPos]);
+			sprintf(msg, "normal mode - temporary position values x: %i, y: %i, z: %i", dataToWrite[xPos], dataToWrite[yPos], dataToWrite[zPos]);
 			SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 		}
 		else if (pointMode && offsetMode) {
@@ -219,17 +226,17 @@ int8_t ParseRadpid() {
 			char msg[64];
 			sprintf(msg, "posRegData[] x: %i, y: %i, z: %i", pPosRegData[0], pPosRegData[1], pPosRegData[2]);
 			SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
-
+			
 			if (pPosRegData != NULL) {
 				dataToWrite[xPos] = pPosRegData[0] + (int16_t)strtol(outputString[3], NULL, 10);
 				dataToWrite[yPos] = pPosRegData[1] + (int16_t)strtol(outputString[4], NULL, 10);
 				dataToWrite[zPos] = pPosRegData[2] + (int16_t)strtol(outputString[5], NULL, 10);
 				char msg[64];
-				sprintf(msg, "dataToWrite[] x: %i, y: %i, z: %i", dataToWrite[xPos], dataToWrite[yPos], dataToWrite[zPos]);
+				sprintf(msg, "point & offset mode - temporary position values[] x: %i, y: %i, z: %i", dataToWrite[xPos], dataToWrite[yPos], dataToWrite[zPos]);
 				SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 			}
 			else {
-				char msg[64];
+				char msg[32];
 				sprintf(msg, "point P%i does not exist", pointIdx);
 				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
 				return -1;
@@ -242,9 +249,12 @@ int8_t ParseRadpid() {
 				dataToWrite[xPos] = pPosRegData[0];
 				dataToWrite[yPos] = pPosRegData[1];
 				dataToWrite[zPos] = pPosRegData[2];
+				char msg[64];
+				sprintf(msg, "point mode - temporary position values[] x: %i, y: %i, z: %i", dataToWrite[xPos], dataToWrite[yPos], dataToWrite[zPos]);
+				SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 			}
 			else {
-				char msg[64];
+				char msg[32];
 				sprintf(msg, "point P%i does not exist", pointIdx);
 				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
 				return -1;
@@ -271,6 +281,9 @@ int8_t ParseRadpid() {
 			dataToWrite[xSpeed] = X_SPEED_MAX;
 			dataToWrite[ySpeed] = Y_SPEED_MAX;
 			dataToWrite[zSpeed] = Z_SPEED_MAX;
+			char msg[64];
+			sprintf(msg, "final speed values[] x: %i, y: %i, z: %i", dataToWrite[xSpeed], dataToWrite[ySpeed], dataToWrite[zSpeed]);
+			SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 		}
 		else if (strchr(outputString[2 + idxOffs], 'v')) {
 			int16_t speed = (int16_t)strtol(outputString[2 + idxOffs] + 1, NULL, 0);
@@ -281,6 +294,9 @@ int8_t ParseRadpid() {
 					dataToWrite[xSpeed] = speed;
 					dataToWrite[ySpeed] = speed;
 					dataToWrite[zSpeed] = speed;
+					char msg[64];
+					sprintf(msg, "final speed values[] x: %i, y: %i, z: %i", dataToWrite[xSpeed], dataToWrite[ySpeed], dataToWrite[zSpeed]);
+					SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 				}
 				else {
 					SendStatus("in function HandleRapidString(): ", "speed value to high", STATUS_TYPE_ERROR);
@@ -310,66 +326,78 @@ int8_t ParseRadpid() {
 			return -1;
 		}
 
-		// check for tool and add offset to position value
+		// check for tool & tool status, if all is good add offset to temporary position value
 		if (strstr(outputString[4 + idxOffs], "tool")) {
-
 			uint8_t tool = (uint8_t)strtol(outputString[4 + idxOffs] + 4, NULL, 10);
-			int16_t *pToolTblOffset = GetToolTblData(tool);
+			toolTbl_t *pToolTbl = NULL;
+			pToolTbl = LocateTool(tool);
 
-			if (pToolTblOffset == NULL) {
-				SendStatus("in function HandleRapidString(): ", "tool does not exist", STATUS_TYPE_ERROR);
-				return -1;
-			}
+			if (pToolTbl != NULL) {
 
-			dataToWrite[xPos] -= pToolTblOffset[0];
-			dataToWrite[yPos] -= pToolTblOffset[1];
-			dataToWrite[zPos] -= pToolTblOffset[2];
+				if (pToolTbl->active != false) {
+					int16_t *pToolOffset = GetToolTblData(tool);
+					dataToWrite[xPos] -= pToolOffset[0];
+					dataToWrite[yPos] -= pToolOffset[1];
+					dataToWrite[zPos] -= pToolOffset[2];
+					char msg[64];
+					sprintf(msg, "final position values[] x: %i, y: %i, z: %i", dataToWrite[xPos], dataToWrite[yPos], dataToWrite[zPos]);
+					SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 
-			if (dataToWrite[xPos] >= X_POS_MIN && dataToWrite[xPos] <= X_POS_MAX) {
+					if (dataToWrite[xPos] >= X_POS_MIN && dataToWrite[xPos] <= X_POS_MAX) {
 
-				if (dataToWrite[yPos] >= Y_POS_MIN && dataToWrite[yPos] <= Y_POS_MAX) {
+						if (dataToWrite[yPos] >= Y_POS_MIN && dataToWrite[yPos] <= Y_POS_MAX) {
 
-					if (dataToWrite[zPos] >= Z_POS_MIN && dataToWrite[zPos] <= Z_POS_MAX) {
+							if (dataToWrite[zPos] >= Z_POS_MIN && dataToWrite[zPos] <= Z_POS_MAX) {
 
-						// save speed and position values
-						if (SetObjStructData(0x60, dataToWrite[xSpeed]) != 0) {
+								// save speed and position values
+								if (SetObjStructData(OBJ_IDX_X_NEW_TARGET_POS, dataToWrite[xPos]) != 0) {
+									return -1;
+								}
+								if (SetObjStructData(OBJ_IDX_Y_NEW_TARGET_POS, dataToWrite[yPos]) != 0) {
+									return -1;
+								}
+								if (SetObjStructData(OBJ_IDX_Z_NEW_TARGET_POS, dataToWrite[zPos]) != 0) {
+									return -1;
+								}
+								if (SetObjStructData(OBJ_IDX_X_NEW_TARGET_SPEED, dataToWrite[xSpeed]) != 0) {
+									return -1;
+								}
+								if (SetObjStructData(OBJ_IDX_Y_NEW_TARGET_SPEED, dataToWrite[ySpeed]) != 0) {
+									return -1;
+								}
+								if (SetObjStructData(OBJ_IDX_Z_NEW_TARGET_SPEED, dataToWrite[zSpeed]) != 0) {
+									return -1;
+								}
+								return 0;
+							}
+							else {
+								char msg[32];
+								sprintf(msg, "z-position %i mm out of range", dataToWrite[zPos]);
+								SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+								return -1;
+							}
+						}
+						else {
+							char msg[32];
+							sprintf(msg, "y-position %i mm out of range", dataToWrite[yPos]);
+							SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
 							return -1;
 						}
-						if (SetObjStructData(0x70, dataToWrite[ySpeed]) != 0) {
-							return -1;
-						}
-						if (SetObjStructData(0x80, dataToWrite[zSpeed]) != 0) {
-							return -1;
-						}
-						if (SetObjStructData(0x10, dataToWrite[xPos]) != 0) {
-							return -1;
-						}
-						if (SetObjStructData(0x20, dataToWrite[yPos]) != 0) {
-							return -1;
-						}
-						if (SetObjStructData(0x30, dataToWrite[zPos]) != 0) {
-							return -1;
-						}
-						return 0;
 					}
 					else {
-						char msg[64];
-						sprintf(msg, "z-position %imm not in allowed range", dataToWrite[zPos]);
+						char msg[32];
+						sprintf(msg, "x-position %i mm out of range", dataToWrite[xPos]);
 						SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
 						return -1;
 					}
 				}
 				else {
-					char msg[64];
-					sprintf(msg, "y-position %imm not in allowed range", dataToWrite[yPos]);
-					SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+					SendStatus("in function HandleRapidString(): ", "selected tool is inactive", STATUS_TYPE_ERROR);
 					return -1;
 				}
 			}
 			else {
-				char msg[64];
-				sprintf(msg, "x-position %imm not in allowed range", dataToWrite[xPos]);
-				SendStatus("in function HandleRapidString(): ", msg, STATUS_TYPE_ERROR);
+				SendStatus("in function HandleRapidString(): ", "tool does not exist", STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
@@ -384,7 +412,7 @@ int8_t ParseRadpid() {
 	}
 }
 
-// Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient library.
+// Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient.
 static void HandleModbusData() {
 
 	// function 3 and 16 register array
@@ -409,20 +437,20 @@ static void HandleRapidString() {
 
 	if (Serial.available() > 0) {
 
-		if (idx <= bufferLength - 1) {
+		if (idx < bufferLength) {
 			cBuffer[idx] = Serial.read();
 
 			/* debug*/
-			char msg[64];
+			/*char msg[64];
 			sprintf(msg, "cBuffer[%i]: %c", idx, cBuffer[idx]);
-			SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
+			SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);*/
 			/* end debug*/
 
 			if (cBuffer[idx] == ';') {
 
-				if (idx >= minBufferLength - 1) {
+				if (idx > minBufferLength) {
 					int tmp = ParseRadpid();
-					char msg[64];
+					char msg[32];
 					sprintf(msg, "ParseRadpid() return: %i", tmp);
 					SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
 
@@ -430,10 +458,6 @@ static void HandleRapidString() {
 						char msg[64];
 						sprintf(msg, "memset ""0"" -> idx: %i", idx);
 						SendStatus("HandleRapidString(): ", msg, STATUS_TYPE_DEBUG);
-
-						memset(cBuffer, 0, idx);
-						idx = 0;
-						return;
 					}*/
 				}
 				else {
@@ -453,7 +477,7 @@ static void HandleRapidString() {
 	}
 }
 
-// Receive a Scara data package via UART, check the data package and store it in the object dictionary.
+// Receive a Scara data package via UART, check the data package and store it in the object dir.
 static void HandleScaraData() {
 
 	if (Serial.available() > 0) {
@@ -465,7 +489,6 @@ static void HandleScaraData() {
 			if (idx >= SCARA_PACKET_LENGTH) {
 
 				for (uint8_t i = 0; i < (bufferLength - 3); i++) {
-
 					// check crc for packet
 					uint8_t crc = CRC8.smbus(&buffer[idx - SCARA_PACKET_LENGTH], 3);
 
@@ -484,16 +507,21 @@ static void HandleScaraData() {
 							//	recvP->pFunction(&recvP->idx, &recvP->props, &recvP->data);
 							//}
 						}
+						else {
+
+						}
 					}
-					else
-						SendStatus("in function HandleScaraData(): ", "crc checksum invalid", STATUS_TYPE_WARNING);
+					else {
+						SendStatus("in function HandleScaraData(): ", "invalid crc checksum", STATUS_TYPE_WARNING);
+					}
+						
 				}
 			}
 		}
 		else {
+			SendStatus("in function HandleScaraData(): ", "input data to long", STATUS_TYPE_ERROR);
 			memset(buffer, 0, idx);
 			idx = 0;
-			SendStatus("in function HandleScaraData(): ", "input data to long", STATUS_TYPE_ERROR);
 		}
 	}
 }
