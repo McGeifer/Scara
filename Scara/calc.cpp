@@ -47,8 +47,8 @@ uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
 
 	// calculate b, alpha, beta & gamma
 	b = sqrt(xVal * xVal + yVal * yVal);
-	angleAlpha = acos((b * b + c * c - a * a) / (2 * b * c)); // law of cosine
-	angleBeta = acos((a * a + c * c - b * b) / (2 * a * c));
+	angleAlpha = acos((b * b + c * c - a * a) / (2.0 * b * c)); // law of cosine
+	angleBeta = acos((a * a + c * c - b * b) / (2.0 * a * c));
 	angleGamma = PI - angleAlpha - angleBeta;
 	/*Serial.print("b: ");
 	Serial.println(b, 8);
@@ -72,12 +72,24 @@ uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
 	Serial.print("angleBeta1: ");
 	Serial.println(angleBeta1 * 180 / PI, 8);*/
 
+	
 	/* Calculation of the new axis angle considering a minimum travel distance
-	between actual and new position of the robot arm. The servo motors have a
-	operating angle of 300° ( +/- 180°). Due to the alignment of the robot axis
-	a target angle of 0° for the servos is an angle of -45° at the field.
-	The coordinate origin goes through the axis of rotation of servo 1 with a
-	standard orientation of the x and y-axis (operating in fourth quadrant). */
+	 * between actual and new position of the robot arm. The servo motors have a
+	 * operating angle of 300° ( +/- 180°). Due to the alignment of the robot axis,
+	 * a target angle of 0° for the servos corresponds to an angle of -45° at the field.
+	 * 
+	 * The coordinate origin runs through the axis of rotation of servo 1 with a
+	 * standard orientation of the x and y-axis (operating in fourth quadrant). 
+	 */
+
+
+	// propper calculation of axis angles
+	
+
+	// set new target angles for axis 1 & 2
+	// Wie sicherstellen das immer beide Werte oder keiner geschrieben wird? Evtl. muss es noch einen Parameter check/set geben?
+	SetObjStructData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo1)) * 10);
+	SetObjStructData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo2)) * 10);
 
 
 }

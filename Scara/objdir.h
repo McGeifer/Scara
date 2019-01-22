@@ -63,7 +63,7 @@ enum holding_registers {
 #define OBJ_IDX_START_MOVE					0xF1	// start movement of robot axis
 
 // internal objects
-#define OBJ_IDX_OP_MODE						0xFE	// operation mode: modbus = 1, rapid = 2 or scara = 3
+#define OBJ_IDX_OP_MODE						0xFE	// system operation mode
 #define OBJ_IDX_SYS_STATUS					0xFF	// system status
 
 // position values
@@ -141,9 +141,9 @@ enum holding_registers {
 // ##############################################
 // operation modes
 // ##############################################
-#define OP_MODE_MODBUS				0x01	// use SimpleModbusClient
-#define OP_MODE_RAPID				0x02	// use "Rapid" protocoll
-#define OP_MODE_SCARA				0x03	// use "Scara" protocoll
+#define OP_MODE_MODBUS				0x01	// operation mode modbus - use SimpleModbusClient
+#define OP_MODE_RAPID				0x02	// operation mode rapid - use "Rapid" protocoll
+#define OP_MODE_SCARA				0x03	// operation mode scara - use "Scara" protocoll
 
 // ##############################################
 // status message types
@@ -162,7 +162,7 @@ enum holding_registers {
 #define SYS_STAT_DEBUG				0x04	// print additional debug info 
 #define SYS_STAT_UNKOWN_ERROR		0x08	// uknown error - not used jet
 #define SYS_STAT_SILENT				0x10	// no messages will be send
-#define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) // system is in error state
+#define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) // system in error state
 
 // ##############################################
 // object dir min / max position and angle values

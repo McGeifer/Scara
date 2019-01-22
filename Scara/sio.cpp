@@ -34,7 +34,7 @@ void InitSio() {
 	Dynamixel.begin(1000000, 2);
 }
 
-// Choose the correct handler to process the data received by serial connection (selected by operation mode).
+// Choose the correct handler to process the data received by the serial connection (selected by operation mode).
 void HandleSIO() {
 
 	// get system error state - abort if system is in error state
@@ -85,6 +85,8 @@ int8_t ParseRadpid() {
 	int16_t dataToWrite[sizeof(tmpData)];
 
 	cBuffer[idx + 1] = '\0';	// terminate string
+	// buffer overflow möglich!?
+
 	strcpy(inputString, cBuffer);	// creat copy of the receiveBuffer to prevent change of data by strtok
 	part = strtok(inputString, delimiter);	// split the inputString into multiple tokens
 
@@ -514,7 +516,6 @@ static void HandleScaraData() {
 					else {
 						SendStatus("in function HandleScaraData(): ", "invalid crc checksum", STATUS_TYPE_WARNING);
 					}
-						
 				}
 			}
 		}

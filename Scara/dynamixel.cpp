@@ -2,7 +2,7 @@
 // 
 // 
 
-#include "dynamixel.h""
+#include "dynamixel.h"
 #include "objdir.h"
 #include "status.h"
 
@@ -94,5 +94,60 @@ void InitDynamixel() {
 		Dynamixel.torqueStatus(0, ON);
 		Dynamixel.torqueStatus(1, ON);
 		Dynamixel.torqueStatus(2, ON);
+	}
+}
+
+void DynamixelError(uint8_t errorBit, uint8_t id) {
+
+	switch (errorBit)
+	{
+	case 0x01:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x02:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x04:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x08:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x10:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x20:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x40:
+		char msg[32];
+		sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
+
+	case 0x80:
+	default:
+		char msg[32];
+		sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
+		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+		break;
 	}
 }

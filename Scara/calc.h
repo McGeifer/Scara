@@ -18,6 +18,9 @@
 #define MACHINE_ZERO_OFFS_X_FIELD 170.0		// x-offset between field zero & machine zero
 #define MACHINE_ZERO_OFFS_Y_FIELD 25.0		// y-offset between field zero & machine zero
 
+//#define deg_to_rad(deg) ((deg * 71) / 4068.0) evtl. schnell als über arduino.h
+//#define rad_to_deg(rad) ((rad * 4068) / 71.0)
+
 enum coordinates {
 	x,
 	y

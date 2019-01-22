@@ -121,6 +121,7 @@
     <ClInclude Include="calc.h" />
     <ClInclude Include="dynamixel.h" />
     <ClInclude Include="gpio.h" />
+    <ClInclude Include="move.h" />
     <ClInclude Include="objdir.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="status.h" />
@@ -130,6 +131,7 @@
     <ClCompile Include="calc.cpp" />
     <ClCompile Include="dynamixel.cpp" />
     <ClCompile Include="gpio.cpp" />
+    <ClCompile Include="move.cpp" />
     <ClCompile Include="objdir.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="status.cpp" />

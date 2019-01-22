@@ -4,6 +4,7 @@
  Author:	Jens Schiller
 */
 
+#include "move.h"
 #include "SimpleModbusSlave.h"
 #include "DynamixelSerial2.h"
 
@@ -13,6 +14,7 @@
 #include "dynamixel.h"
 #include "sio.h"
 #include "calc.h"
+#include "move.h"
 
 bool run = false;
 
@@ -47,6 +49,6 @@ void loop() {
 	while (run) {
 		//SystemStatus();
 		HandleSIO();
-		//HandleMove();
+		HandleMove();
 	}
 }
