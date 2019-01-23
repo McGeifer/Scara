@@ -18,6 +18,9 @@
 #define MACHINE_ZERO_OFFS_X_FIELD 170.0		// x-offset between field zero & machine zero
 #define MACHINE_ZERO_OFFS_Y_FIELD 25.0		// y-offset between field zero & machine zero
 
+#define DYNA_TO_DEG(val) (round((val * 300.0) / 1023)) // convert a dynamixel position value (0 - 1023) into an angle (degree)
+#define DEG_TO_DYNA(val) (round((val / 1023.0) * 300)) // convert an anggle (degree) into te dynamixel position value
+
 //#define deg_to_rad(deg) ((deg * 71) / 4068.0) evtl. schnell als über arduino.h
 //#define rad_to_deg(rad) ((rad * 4068) / 71.0)
 
@@ -27,6 +30,8 @@ enum coordinates {
 };
 
 uint8_t CalcAngle(int16_t xPos, int16_t yPos);
+uint8_t CalcPosistion(int16_t angle1, int16_t angle2);
+int16_t CalcZPos(void);
 float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue);
 #endif
 

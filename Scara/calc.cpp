@@ -94,6 +94,15 @@ uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
 
 }
 
+uint8_t CalcPosistion(int16_t angle1, int16_t angle2) {
+
+}
+
+int16_t CalcZPos(void) {
+
+
+}
+
 float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue) {
 
 	static float val[2] = { NULL };

@@ -9,8 +9,6 @@
 	#include "WProgram.h"
 #endif
 
-int8_t UpdatePos(void);
-void HandleMove(void);
 
 #endif
 

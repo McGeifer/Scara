@@ -8,10 +8,10 @@
 #else
 	#include "WProgram.h"
 #endif
-/* */
-
 
 void InitDynamixel();
 void DynamixelError(uint8_t errorBit, uint8_t id);
+void UpdatePos(void);
+void HandleMove(void);
 
 #endif

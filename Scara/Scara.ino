@@ -4,7 +4,6 @@
  Author:	Jens Schiller
 */
 
-#include "move.h"
 #include "SimpleModbusSlave.h"
 #include "DynamixelSerial2.h"
 
@@ -14,7 +13,6 @@
 #include "dynamixel.h"
 #include "sio.h"
 #include "calc.h"
-#include "move.h"
 
 bool run = false;
 
@@ -24,7 +22,6 @@ void setup() {
 	InitGPIO();
 	InitOperationMode();
 	InitDynamixel();
-	run = true;
 
 	/*uint8_t idx1 = 0x01;
 	uint8_t idx2 = 0x02;
@@ -46,8 +43,8 @@ void setup() {
 
 void loop() {
 
-	while (run) {
-		//SystemStatus();
+	while (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
+		UpdatePos();
 		HandleSIO();
 		HandleMove();
 	}

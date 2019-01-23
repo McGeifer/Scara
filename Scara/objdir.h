@@ -10,7 +10,7 @@
 #endif
 
 // ##############################################
-// object dictionary
+// object dictionary, tool table & position register
 // ##############################################
 
 // The basic data structure for the object dictionary.
@@ -53,6 +53,13 @@ enum holding_registers {
 	TOTAL_ERRORS_MDB,		// Leave this one
 	TOTAL_REGS_SIZE_MDB		// Total number of registers. Function 3 and 16 share the same register array
 };
+
+// ##############################################
+// dynamixel axis id's
+// ##############################################
+#define DYNA_ID_AXIS_1 0	// dynamixel id for axis 1
+#define DYNA_ID_AXIS_2 1	// dynamixel id for axis 2
+#define DYNA_ID_AXIS_Z 2	// dynamixel is for z axis
 
 // ##############################################
 // object indices
@@ -158,7 +165,7 @@ enum holding_registers {
 // system status
 // ##############################################
 #define SYS_STAT_RUNNING			0x01	// no error - system operational
-#define SYS_STAT_DYNAMIXEL_ERROR	0x02	// not all 3 dynamixel servo motors could be found
+#define SYS_STAT_DYNAMIXEL_ERROR	0x02	// erro  - dynamixel servo motors
 #define SYS_STAT_DEBUG				0x04	// print additional debug info 
 #define SYS_STAT_UNKOWN_ERROR		0x08	// uknown error - not used jet
 #define SYS_STAT_SILENT				0x10	// no messages will be send

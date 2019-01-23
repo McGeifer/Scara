@@ -5,6 +5,7 @@
 #include "dynamixel.h"
 #include "objdir.h"
 #include "status.h"
+#include "calc.h"
 
 #include <DynamixelSerial2.h>
 
@@ -31,8 +32,9 @@ void InitDynamixel() {
 	}
 
 	if (response != 3) {
+		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		// set system error state to prevent further operations
-		//SetObjStructData(0xFF, SYS_STAT_DYNAMIXEL_ERROR); // achtung bitmaske!
+		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
 		return;
 	}
 	else {
@@ -99,55 +101,86 @@ void InitDynamixel() {
 
 void DynamixelError(uint8_t errorBit, uint8_t id) {
 
-	switch (errorBit)
-	{
-	case 0x01:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+	char msg[64];
 
-	case 0x02:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+	if (errorBit > 0 && errorBit <= 0x80) {
 
-	case 0x04:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+		switch (errorBit) {
 
-	case 0x08:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+		case 0x01:
+			sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
 
-	case 0x10:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+		case 0x02:
+			sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
 
-	case 0x20:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+		case 0x04:
+			sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
 
-	case 0x40:
-		char msg[32];
-		sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+		case 0x08:
+			sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
 
-	case 0x80:
-	default:
-		char msg[32];
-		sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
-		SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
-		break;
+		case 0x10:
+			sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
+
+		case 0x20:
+			sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
+
+		case 0x40:
+			sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
+
+		case 0x80:
+		default:
+			sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
+			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+			break;
+		}
+		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
 	}
+}
+
+void UpdatePos(void) {
+
+	uint8_t id = 0;
+	int16_t data[3] = { 0 };
+	uint8_t error = 0;
+
+	for (id = 0; id < 3; id++) {
+		data[id] = Dynamixel.readPosition(id); // was mit z achse? was für Rückgabewerte bei continous turn modus?
+
+		if (data[id] < 0) {
+			error = data[id] * (-1); // error is negative by dynamixel library
+			DynamixelError(error, id);
+			return;
+		}
+		else {
+			if (id == DYNA_ID_AXIS_1) {
+				SetObjStructData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
+			}
+			else if (id == DYNA_ID_AXIS_2) {
+				SetObjStructData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
+			}
+			else if (DYNA_ID_AXIS_Z) {
+				SetObjStructData(OBJ_IDX_, data[id]);
+			}
+		}
+	}
+}
+
+void HandleMove(void) {
+
+
 }

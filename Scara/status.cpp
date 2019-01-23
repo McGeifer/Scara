@@ -73,26 +73,3 @@ static void SendStatus(char* optionalDebugMessage, char* message, uint8_t status
 		}
 	}
 }
-
-void SystemStatus() {
-
-	switch (GetObjStructData(OBJ_IDX_SYS_STATUS))
-	{
-	case 0:
-		// no error
-		break;
-
-	case SYS_STAT_DYNAMIXEL_ERROR:
-		SendStatus(NULL, "Not all Dynamixel servos could be found, check wiring and restart the system.", STATUS_TYPE_ERROR);
-		run = false;
-		break;
-
-	case SYS_STAT_UNKOWN_ERROR:
-		SendStatus(NULL, "Unknown error, check wiring and restart the system.", STATUS_TYPE_ERROR);
-		run = false;
-		break;
-
-	default:
-		break;
-	}
-}

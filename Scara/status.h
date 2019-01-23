@@ -20,10 +20,4 @@
  */
 void SendStatus(char* optionalDebugMessage, char* message, uint8_t statusType);
 
-/* Detects error states of the system and prevents further processing of
- * data by stopping the main loop if needed.
- */
-void SystemStatus();
-	 
-
 #endif
