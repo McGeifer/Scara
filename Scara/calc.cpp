@@ -90,11 +90,10 @@ uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
 	// Wie sicherstellen das immer beide Werte oder keiner geschrieben wird? Evtl. muss es noch einen Parameter check/set geben?
 	SetObjStructData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo1)) * 10);
 	SetObjStructData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo2)) * 10);
-
-
 }
 
 uint8_t CalcPosistion(int16_t angle1, int16_t angle2) {
+
 
 }
 

@@ -17,7 +17,7 @@
 typedef struct {
 	const	uint8_t		idx;				// index number of object
 	const	uint8_t		props;				// object properties
-			int16_t		data;				// object data --- 0xFFFF is reserved for error handling ###
+			int16_t		data;				// object data
 			int			(*pFunction)(const uint8_t* idx, const uint8_t* props, const int16_t* data);	// pointer for handler function
 } objStruct_t;
 
@@ -70,6 +70,7 @@ enum holding_registers {
 #define OBJ_IDX_START_MOVE					0xF1	// start movement of robot axis
 
 // internal objects
+#define OBJ_IDX_Z_POS_COUNT					0xFD	// z - light barrier counter
 #define OBJ_IDX_OP_MODE						0xFE	// system operation mode
 #define OBJ_IDX_SYS_STATUS					0xFF	// system status
 

@@ -34,7 +34,7 @@ void InitDynamixel() {
 	if (response != 3) {
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		// set system error state to prevent further operations
-		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
+		//SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
 		return;
 	}
 	else {
@@ -148,7 +148,7 @@ void DynamixelError(uint8_t errorBit, uint8_t id) {
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 		}
-		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+		//SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
 	}
 }
 
@@ -173,8 +173,8 @@ void UpdatePos(void) {
 			else if (id == DYNA_ID_AXIS_2) {
 				SetObjStructData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
 			}
-			else if (DYNA_ID_AXIS_Z) {
-				SetObjStructData(OBJ_IDX_, data[id]);
+			else if (id == DYNA_ID_AXIS_Z) {
+				SetObjStructData(OBJ_IDX_Z_ACTUAL_POS, CalcZPos());
 			}
 		}
 	}

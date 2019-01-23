@@ -13,6 +13,7 @@ static objStruct_t objStruct_data[] = {
 	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0, NULL},
 
 	// internal objects
+	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, // 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!
 	

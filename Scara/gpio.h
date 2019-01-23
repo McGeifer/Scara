@@ -12,12 +12,11 @@
 #define MODBUS_PIN		21
 #define RAPID_PIN		20
 #define MAGNET_PIN		13
-#define WATCH_PIN		3	// Interrupt pin for counting the position impulses of the z-axis (digital pin 3)
-#define INTERRUPT_PIN	1	// Interrupt pin 1 is digital pin 3
+#define INTERRUPT_PIN	3	// Interrupt pin for counting the position impulses of the z-axis
 
 
-void InitGPIO();
-void InitOperationMode();
-static void InterruptRoutine();
+void InitGPIO(void);
+void InitOperationMode(void);
+void ISR_LightBarrier(void);
 
 #endif

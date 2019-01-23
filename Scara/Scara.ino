@@ -45,7 +45,7 @@ void loop() {
 
 	while (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		UpdatePos();
-		HandleSIO();
-		HandleMove();
+		//HandleSIO();
+		//HandleMove();
 	}
 }

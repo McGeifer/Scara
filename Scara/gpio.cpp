@@ -12,14 +12,13 @@ void InitGPIO() {
 	pinMode(MODBUS_PIN, INPUT);		// pin to enable Modbus communication
 	pinMode(RAPID_PIN, INPUT);		// pin to enable "Rapid" mode
 	pinMode(MAGNET_PIN, OUTPUT);	// pin to switch the lifting magnet on/off
-	
-	pinMode(WATCH_PIN, INPUT);		// interrupt pin for the light barrier
+	pinMode(INTERRUPT_PIN, INPUT);	// interrupt pin for the light barrier
 
 	// interrupts
-	attachInterrupt(INTERRUPT_PIN, InterruptRoutine, CHANGE);	// attache interrupt for light barrier impulse count
+	attachInterrupt(digitalPinToInterrupt(3), ISR_LightBarrier, CHANGE);	// attache interrupt for light barrier impulse count
 }
 
-void InitOperationMode() {
+void InitOperationMode(void) {
 
 	if (digitalRead(RAPID_PIN) == LOW && digitalRead(MODBUS_PIN) == HIGH) {
 		if (SetObjStructData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS) == 0) {
@@ -42,9 +41,12 @@ void InitOperationMode() {
 	SendStatus("InitOperationMode(): ", "error selecting protocoll", STATUS_TYPE_ERROR);
 }
 
-static void InterruptRoutine() {
+void ISR_LightBarrier(void) {
 
-	noInterrupts();
-	// blub
-	interrupts();
+	if (GetObjStructData(OBJ_IDX_Z_ACTUAL_POS) > GetObjStructData(OBJ_IDX_Z_ACTUAL_TARGET_POS)) {
+		SetObjStructData(OBJ_IDX_Z_POS_COUNT, GetObjStructData(OBJ_IDX_Z_POS_COUNT) - 1);
+	}
+	else {
+		SetObjStructData(OBJ_IDX_Z_POS_COUNT, GetObjStructData(OBJ_IDX_Z_POS_COUNT) + 1);
+	}
 }
