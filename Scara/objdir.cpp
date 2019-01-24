@@ -5,6 +5,8 @@
 #include "objdir.h"
 #include "status.h"
 
+
+
 // object dictionary
 static objStruct_t objStruct_data[] = {
 
@@ -15,7 +17,7 @@ static objStruct_t objStruct_data[] = {
 	// internal objects
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, // 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /*0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!*/
 	
 	// position values
 	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
@@ -165,18 +167,30 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *z
 						p->posRegZ = *zValue;
 						return 0;
 					}
+					else {
+						char msg[64];
+						sprintf(msg, "position P%c value out of range", *idx);
+						SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+						return -1;
+					}
+				}
+				else {
+					char msg[64];
+					sprintf(msg, "position P%c value out of range", *idx);
+					SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+					return -1;
 				}
 			}
 			else {
 				char msg[64];
-				sprintf(msg, "position P%i value out of range", idx);
+				sprintf(msg, "position P%c value out of range", *idx);
 				SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
 			char msg[64];
-			sprintf(msg, "position P%i is read only", idx);
+			sprintf(msg, "position P%c is read only", *idx);
 			SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 			return -1;
 		}
@@ -196,7 +210,7 @@ static objStruct_t* LocateObj(uint8_t index) {
 	objStruct_t *p = NULL;
 	p = objStruct_data;
 	
-	for (int i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++) {
+	for (uint8_t i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++) {
 		if (p->idx == index) {
 			return p;
 		}
@@ -211,7 +225,6 @@ int16_t GetObjStructData(uint8_t index) {
 
 	if (p != NULL) {
 
-		// wenn umrechung von pos von dez zu hex notwendig (pos * 10 + 32768) dann hier, damit das nicht jedes mal von Hand gemacht werden muss
 		/*char msg[64];
 		uint16_t tmp = p->data;
 		sprintf(msg, "return value 0x%x", tmp);
@@ -219,7 +232,7 @@ int16_t GetObjStructData(uint8_t index) {
 		return p->data;
 	}
 	else {
-		return NULL;
+		return 0;
 	}
 }
 
@@ -233,11 +246,11 @@ int8_t SetObjStructData(uint8_t index, int16_t data) {
 	int16_t minValue = 0;
 	int16_t maxValue = 0;
 
-	if (pObjStruct != NULL) {	// make sure object does exist
+	if (pObjStruct != NULL) { /*make sure object does exist*/
 
-		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W) {	// check if object is writable
+		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W) {	/*check if object is writable*/
 
-			switch (pObjStruct->idx)	// set min max vaules for comparison
+			switch (pObjStruct->idx)	/*set min max vaules for comparison*/
 			{
 			case 0x10:
 				minValue = X_POS_MIN;
@@ -294,7 +307,7 @@ int8_t SetObjStructData(uint8_t index, int16_t data) {
 				maxValue = 32767;
 				break;
 			}
-			if (data >= minValue &&  data <= maxValue) { //  write data if it's inside the allowed range
+			if (data >= minValue &&  data <= maxValue) {	/* write data if it's inside the allowed range */
 				pObjStruct->data = data;
 				return 0;
 			}
@@ -329,7 +342,7 @@ toolTbl_t* LocateTool(uint8_t index) {
 	toolTbl_t *p = NULL;
 	p = toolTbl;
 	
-	for (int i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
+	for (uint8_t i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
 		if (p->toolIdx == index) {
 			char msg[64];
 			sprintf(msg, "tool %i found", p->toolIdx);

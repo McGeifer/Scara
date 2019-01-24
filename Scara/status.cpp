@@ -7,7 +7,7 @@
 
 extern bool run;
 
-static void SendStatus(char* optionalDebugMessage, char* message, uint8_t statusType) {
+void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType) {
 	
 	if (!(GetObjStructData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system ist in silent mode
 

@@ -18,6 +18,6 @@
  * messages with the 'DEBUG" statusType will only be printed if the system
  * is in debug mode
  */
-void SendStatus(char* optionalDebugMessage, char* message, uint8_t statusType);
+void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType);
 
 #endif

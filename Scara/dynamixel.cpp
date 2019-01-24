@@ -34,68 +34,68 @@ void InitDynamixel() {
 	if (response != 3) {
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		// set system error state to prevent further operations
-		//SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
+		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
 		return;
 	}
 	else {
 
-		// basic settings for the dynamixel servo motors
+	// basic settings for the dynamixel servo motors
 
-		// ########################
-		// Axis 1 (ID - 0)
-		// ########################
+	// ########################
+	// Axis 1 (ID - 0)
+	// ########################
 
-		Dynamixel.setTempLimit(0, 70);				// max temperatur 70°C
-		Dynamixel.setVoltageLimit(0, 110, 120);		// min voltage 11V, max 12V
-		Dynamixel.setMaxTorque(0, 1023);			// max torque -> max value
-		Dynamixel.setSRL(0, 1);						// return level 0=none, 1=only for read comand, 2= always
-		Dynamixel.setRDT(0, 250);					// return delay time = 2µs * vaule -> 500µs
-		Dynamixel.setLEDAlarm(0, 127);				// LED blink for all error types
-		Dynamixel.setShutdownAlarm(0, 37);			// turn of torque for: overload, overheating and input voltage error
+	Dynamixel.setTempLimit(0, 70);				// max temperatur 70°C
+	Dynamixel.setVoltageLimit(0, 110, 120);		// min voltage 11V, max 12V
+	Dynamixel.setMaxTorque(0, 1023);			// max torque -> max value
+	Dynamixel.setSRL(0, 1);						// return level 0=none, 1=only for read comand, 2= always
+	Dynamixel.setRDT(0, 250);					// return delay time = 2µs * vaule -> 500µs
+	Dynamixel.setLEDAlarm(0, 127);				// LED blink for all error types
+	Dynamixel.setShutdownAlarm(0, 37);			// turn of torque for: overload, overheating and input voltage error
 
-		// Only change if you really know what you are doing!
-		Dynamixel.setCSlope(0, 32, 32);				// compilance slope - default value
-		Dynamixel.setCMargin(0, 0, 0);				// compilance margin - default value
-		Dynamixel.setPunch(0, 32);					// minimum current supplied to the motor - default value
+	// Only change if you really know what you are doing!
+	Dynamixel.setCSlope(0, 32, 32);				// compilance slope - default value
+	Dynamixel.setCMargin(0, 0, 0);				// compilance margin - default value
+	Dynamixel.setPunch(0, 32);					// minimum current supplied to the motor - default value
 
-		// ########################
-		// Axis 2 (ID - 1)
-		// ########################
+	// ########################
+	// Axis 2 (ID - 1)
+	// ########################
 
-		Dynamixel.setTempLimit(1, 70);				// max temperatur 70°C
-		Dynamixel.setVoltageLimit(1, 110, 120);		// min voltage 11V, max 12V
-		Dynamixel.setMaxTorque(1, 1023);			// max torque -> max value
-		Dynamixel.setSRL(1, 1);						// return level 0=none, 1=only for read comand, 2= always
-		Dynamixel.setRDT(1, 250);					// return delay time = 2µs * vaule -> 500µs
-		Dynamixel.setLEDAlarm(1, 127);				// LED blink for all error types
-		Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
+	Dynamixel.setTempLimit(1, 70);				// max temperatur 70°C
+	Dynamixel.setVoltageLimit(1, 110, 120);		// min voltage 11V, max 12V
+	Dynamixel.setMaxTorque(1, 1023);			// max torque -> max value
+	Dynamixel.setSRL(1, 1);						// return level 0=none, 1=only for read comand, 2= always
+	Dynamixel.setRDT(1, 250);					// return delay time = 2µs * vaule -> 500µs
+	Dynamixel.setLEDAlarm(1, 127);				// LED blink for all error types
+	Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
 
-		// Only change if you really know what you are doing!
-		Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
-		Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
-		Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - default value
+	// Only change if you really know what you are doing!
+	Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
+	Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
+	Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - default value
 
-		// ########################
-		// Axis 3 (ID - 2) (z-axis)
-		// ########################
+	// ########################
+	// Axis 3 (ID - 2) (z-axis)
+	// ########################
 
-		Dynamixel.setTempLimit(1, 70);				// max temperatur 70°C
-		Dynamixel.setVoltageLimit(1, 110, 120);		// min voltage 11V, max 12V
-		Dynamixel.setMaxTorque(1, 1023);			// max torque -> max value
-		Dynamixel.setSRL(1, 1);						// return level 0=none, 1=only for read comand, 2= always
-		Dynamixel.setRDT(1, 250);					// return delay time = 2µs * vaule -> 500µs
-		Dynamixel.setLEDAlarm(1, 127);				// LED blink for all error types
-		Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
+	Dynamixel.setTempLimit(1, 70);				// max temperatur 70°C
+	Dynamixel.setVoltageLimit(1, 110, 120);		// min voltage 11V, max 12V
+	Dynamixel.setMaxTorque(1, 1023);			// max torque -> max value
+	Dynamixel.setSRL(1, 1);						// return level 0=none, 1=only for read comand, 2= always
+	Dynamixel.setRDT(1, 250);					// return delay time = 2µs * vaule -> 500µs
+	Dynamixel.setLEDAlarm(1, 127);				// LED blink for all error types
+	Dynamixel.setShutdownAlarm(1, 37);			// turn of torque for: overload, overheating and input voltage error
 
-		// Only change if you really know what you are doing!
-		Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
-		Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
-		Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - default value
+	// Only change if you really know what you are doing!
+	Dynamixel.setCSlope(1, 32, 32);				// compilance slope - default value
+	Dynamixel.setCMargin(1, 0, 0);				// compilance margin - default value
+	Dynamixel.setPunch(1, 32);					// minimum current supplied to the motor - default value
 
-		// enable torque for all servo motors
-		Dynamixel.torqueStatus(0, ON);
-		Dynamixel.torqueStatus(1, ON);
-		Dynamixel.torqueStatus(2, ON);
+	// enable torque for all servo motors
+	Dynamixel.torqueStatus(0, ON);
+	Dynamixel.torqueStatus(1, ON);
+	Dynamixel.torqueStatus(2, ON);
 	}
 }
 
@@ -148,7 +148,8 @@ void DynamixelError(uint8_t errorBit, uint8_t id) {
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 		}
-		//SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+		Serial.println("blub");
 	}
 }
 
@@ -158,29 +159,39 @@ void UpdatePos(void) {
 	int16_t data[3] = { 0 };
 	uint8_t error = 0;
 
-	for (id = 0; id < 3; id++) {
-		data[id] = Dynamixel.readPosition(id); // was mit z achse? was für Rückgabewerte bei continous turn modus?
+	if (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
+		
+		for (id = 0; id < 3; id++) {
+			data[id] = Dynamixel.readPosition(id); /*was mit z achse? was für Rückgabewerte bei continous turn modus?*/
 
-		if (data[id] < 0) {
-			error = data[id] * (-1); // error is negative by dynamixel library
-			DynamixelError(error, id);
-			return;
+			if (data[id] < 0) {
+				error = data[id] * (-1); /*error is negative by dynamixel library*/
+				DynamixelError(error, id);
+				return;
+			}
+			else {
+
+				if (id == DYNA_ID_AXIS_1) {
+					SetObjStructData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
+				}
+				else if (id == DYNA_ID_AXIS_2) {
+					SetObjStructData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
+				}
+				else if (id == DYNA_ID_AXIS_Z) {
+					SetObjStructData(OBJ_IDX_Z_ACTUAL_POS, CalcZPos());
+				}
+			}
 		}
-		else {
-			if (id == DYNA_ID_AXIS_1) {
-				SetObjStructData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
-			}
-			else if (id == DYNA_ID_AXIS_2) {
-				SetObjStructData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
-			}
-			else if (id == DYNA_ID_AXIS_Z) {
-				SetObjStructData(OBJ_IDX_Z_ACTUAL_POS, CalcZPos());
-			}
+		if (CalcPosistion(data[0], data[1]) == -1) {
+			SetObjStructData(OBJ_IDX_SYS_STATUS, (GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR));
 		}
 	}
 }
 
 void HandleMove(void) {
 
+	if (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
 
+		Serial.println("HandleMove();");
+	}
 }

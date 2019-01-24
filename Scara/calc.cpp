@@ -6,7 +6,7 @@
 #include "objdir.h"
 #include "status.h"
 
-uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
+int8_t CalcAngle(int16_t xPos, int16_t yPos) {
 
 	float *coordinates = NULL;		// converted coordinates
 	float xTmp = 0;			// temp value for conversion
@@ -30,8 +30,8 @@ uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
 
 	// convert the input position values based on the field coordinate system
 	// to the coordinate system of the robot axis
-	xTmp = xPos / (float)10.0;
-	yTmp = yPos / (float)10.0;
+	xTmp = xPos / 10.0;
+	yTmp = yPos / 10.0;
 	/*Serial.print("xTmp: ");
 	Serial.println(xTmp, 8);
 	Serial.print("yTmp: ");
@@ -90,21 +90,43 @@ uint8_t CalcAngle(int16_t xPos, int16_t yPos) {
 	// Wie sicherstellen das immer beide Werte oder keiner geschrieben wird? Evtl. muss es noch einen Parameter check/set geben?
 	SetObjStructData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo1)) * 10);
 	SetObjStructData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo2)) * 10);
+
+	return 0;
 }
 
-uint8_t CalcPosistion(int16_t angle1, int16_t angle2) {
+int8_t CalcPosistion(int16_t valA, int16_t valB) {
 
+	float pointA[2] = { 0 };	// punkt durch servo id 1
+	float pointB[2] = { 0 };	// punkt durch z achse -> GESUCHT <-
+	float angleA = 0;			// umgerechneter winkel von dynamixel id 0
+	float angleB = 0;			// umgerechneter winkel von dynamixel id 1
+	float lenghtA = 0;			// gegenkathete von winkel A
+	float lenghtB = 0;			// gegenkathete von winkel B
 
+	lenghtA = asin(angleA) * AXIS_1_LENGTH; 
+	pointA[y] = lenghtA * (-1);
+	pointA[x] = sqrt(lenghtA * lenghtA + AXIS_1_LENGTH * AXIS_1_LENGTH);
+
+	lenghtB = asin(angleB) * AXIS_2_LENGTH;
+	pointB[y] = lenghtA * (-1);
+	pointB[x] = sqrt(lenghtB * lenghtB + AXIS_2_LENGTH * AXIS_2_LENGTH);
+
+	return 0;
 }
 
-int16_t CalcZPos(void) {
+int8_t CalcZPos(void) {
 
-
+	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjStructData(OBJ_IDX_Z_POS_COUNT) * 10);
+	if (SetObjStructData(OBJ_IDX_Z_ACTUAL_POS, val) == -1) {
+		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
+		return -1;
+	}
+	return 0;
 }
 
 float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue) {
 
-	static float val[2] = { NULL };
+	static float val[2] = { 0 };
 	
 	if(direction == CONVERT_COORDINATE_TO_ROBOT) {
 		val[x] = *xValue + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;

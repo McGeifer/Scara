@@ -32,18 +32,16 @@ enum coordinates {
 };
 
 // CalcAngle computes the angles for axis 1 & 2 out of the coordinates x & y
-uint8_t CalcAngle(int16_t xPos, int16_t yPos);
+int8_t CalcAngle(int16_t xVal, int16_t yVal);
 
 // CalcPosistion computes the coordinates x & y out of the angles of axis 1 & 2
-uint8_t CalcPosistion(int16_t angle1, int16_t angle2);
+int8_t CalcPosistion(int16_t angle1, int16_t angle2);
 
 // CalcZPos computes the actual position of the z-axis.
-int16_t CalcZPos(void);
+int8_t CalcZPos(void);
 
 // Help function - ConvertCoordinate converts x and y coordiantes between the different coordinate systems (machine & field).
 float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue);
-
-
 
 #endif
 

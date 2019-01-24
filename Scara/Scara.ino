@@ -37,15 +37,13 @@ void setup() {
 
 	uint16_t xPos = 3066;
 	int16_t yPos = -649;
-
-	CalcAngle(xPos, yPos);
 }
 
 void loop() {
 
 	while (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		UpdatePos();
-		//HandleSIO();
-		//HandleMove();
+		HandleSIO();
+		HandleMove();
 	}
 }

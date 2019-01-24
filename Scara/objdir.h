@@ -18,7 +18,7 @@ typedef struct {
 	const	uint8_t		idx;				// index number of object
 	const	uint8_t		props;				// object properties
 			int16_t		data;				// object data
-			int			(*pFunction)(const uint8_t* idx, const uint8_t* props, const int16_t* data);	// pointer for handler function
+			int8_t		(*pFunction)(int16_t val1, int16_t val2);	// pointer for handler function (*pFunction)(const uint8_t idx, const uint8_t props, const int16_t data)
 } objStruct_t;
 
 // The basic data structure for the tool table.
@@ -206,6 +206,15 @@ enum holding_registers {
 // miscellaneous
 // ##############################################
 #define PosArrayLength 64
+
+// ##############################################
+// mechanical parameters
+// ##############################################
+#define Z_AXIS_GRADIENT 8.0		// gradient of the z axis spindle
+#define Z_AXIS_RESOLUTION 16.0	// number of impluses for a whole turn of the spindle
+#define Z_AXIS_LENGHT 200.0		// length of z axis in mm
+#define AXIS_1_LENGTH 195.0
+#define AXIS_2_LENGTH 200.0
 
 // ##############################################
 // function declarations
