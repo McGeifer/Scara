@@ -88,8 +88,8 @@ int8_t CalcAngle(int16_t xPos, int16_t yPos) {
 
 	// set new target angles for axis 1 & 2
 	// Wie sicherstellen das immer beide Werte oder keiner geschrieben wird? Evtl. muss es noch einen Parameter check/set geben?
-	SetObjStructData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo1)) * 10);
-	SetObjStructData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo2)) * 10);
+	SetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo1)) * 10);
+	SetObjData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, (int16_t)round(degrees(angleServo2)) * 10);
 
 	return 0;
 }
@@ -116,9 +116,9 @@ int8_t CalcPosistion(int16_t valA, int16_t valB) {
 
 int8_t CalcZPos(void) {
 
-	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjStructData(OBJ_IDX_Z_POS_COUNT) * 10);
-	if (SetObjStructData(OBJ_IDX_Z_ACTUAL_POS, val) == -1) {
-		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
+	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10);
+	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val) == -1) {
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
 		return -1;
 	}
 	return 0;

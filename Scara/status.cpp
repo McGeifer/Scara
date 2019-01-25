@@ -5,16 +5,14 @@
 #include "status.h"
 #include "objdir.h"
 
-extern bool run;
-
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType) {
 	
-	if (!(GetObjStructData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system ist in silent mode
+	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system ist in silent mode
 
 		char statusString[10];
 		char finalMsgString[128];
 
-		switch (GetObjStructData(OBJ_IDX_OP_MODE))
+		switch (GetObjData(OBJ_IDX_OP_MODE))
 		{
 		case OP_MODE_SCARA:
 		case OP_MODE_RAPID:
@@ -46,7 +44,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 				break;
 			}
 
-			if (GetObjStructData(0xFF) & SYS_STAT_DEBUG) { // check if system ist in debug mode
+			if (GetObjData(0xFF) & SYS_STAT_DEBUG) { // check if system ist in debug mode
 				if (optionalDebugMessage == NULL) {
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);

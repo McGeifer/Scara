@@ -13,7 +13,7 @@
 
 void InitSio();
 void HandleSIO();
-static void HandleModbusData();
+void HandleModbusData();
 static void HandleRapidString();
 static void HandleScaraData();
 

@@ -5,10 +5,8 @@
 #include "objdir.h"
 #include "status.h"
 
-
-
 // object dictionary
-static objStruct_t objStruct_data[] = {
+static objStruct_t objDir[] = {
 
 	// basic options
 	{OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL},
@@ -208,9 +206,9 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *z
 static objStruct_t* LocateObj(uint8_t index) {
 	
 	objStruct_t *p = NULL;
-	p = objStruct_data;
+	p = objDir;
 	
-	for (uint8_t i = 0; i < (sizeof(objStruct_data) / sizeof(objStruct_data[0])); i++, p++) {
+	for (uint8_t i = 0; i < (sizeof(objDir) / sizeof(objDir[0])); i++, p++) {
 		if (p->idx == index) {
 			return p;
 		}
@@ -218,7 +216,7 @@ static objStruct_t* LocateObj(uint8_t index) {
 	return NULL;
 }
 
-int16_t GetObjStructData(uint8_t index) {
+int16_t GetObjData(uint8_t index) {
 
 	objStruct_t *p = NULL;
 	p = LocateObj(index);
@@ -228,7 +226,7 @@ int16_t GetObjStructData(uint8_t index) {
 		/*char msg[64];
 		uint16_t tmp = p->data;
 		sprintf(msg, "return value 0x%x", tmp);
-		SendStatus("GetObjStructData(): ", "test", STATUS_TYPE_INFO);*/
+		SendStatus("GetObjData(): ", "test", STATUS_TYPE_INFO);*/
 		return p->data;
 	}
 	else {
@@ -236,10 +234,7 @@ int16_t GetObjStructData(uint8_t index) {
 	}
 }
 
-int8_t SetObjStructData(uint8_t index, int16_t data) {
-
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Muss ggf. Handlerfunktion ausführen !!!!!!!!!!!!!!!!!!!!!!! falls Fehler in Handler -> return -1:
-
+int8_t SetObjData(uint8_t index, int16_t data) {
 
 	objStruct_t *pObjStruct = NULL;
 	pObjStruct = LocateObj(index);
@@ -314,21 +309,21 @@ int8_t SetObjStructData(uint8_t index, int16_t data) {
 			else {
 				char msg[64];
 				sprintf(msg, "object 0x%x value out of range", index);
-				SendStatus("in function SetObjStructData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+				SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else {
 			char msg[64];
 			sprintf(msg, "object 0x%x is read only", index);
-			SendStatus("in function SetObjStructData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+			SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else {
 		char msg[64];
 		sprintf(msg, "object 0x%x does not exist", index);
-		SendStatus("in function SetObjStructData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+		SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 		return -1;
 	}
 }
@@ -353,7 +348,7 @@ toolTbl_t* LocateTool(uint8_t index) {
 	return NULL;
 }
 
-int16_t* GetToolTblData(uint8_t index) {
+int16_t* GetToolData(uint8_t index) {
 
 	toolTbl_t *p = NULL;
 	p = LocateTool(index);
@@ -366,7 +361,7 @@ int16_t* GetToolTblData(uint8_t index) {
 		data[3] = p->active;
 		char msg[64];
 		sprintf(msg, "tool offset values: x: %i, y: %i, z: %i", p->offsetX, p->offsetY, p->offsetZ);
-		SendStatus("GetToolTblData(): ", msg, STATUS_TYPE_DEBUG);
+		SendStatus("GetToolData(): ", msg, STATUS_TYPE_DEBUG);
 		return data;
 	}
 	else {

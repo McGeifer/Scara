@@ -38,9 +38,9 @@ void InitSio() {
 void HandleSIO() {
 
 	// get system error state - abort if system is in error state
-	if (!(GetObjStructData(OBJ_IDX_OP_MODE) & SYS_STAT_ERROR)) {
+	if (!(GetObjData(OBJ_IDX_OP_MODE) & SYS_STAT_ERROR)) {
 
-		switch (GetObjStructData(OBJ_IDX_OP_MODE))	{
+		switch (GetObjData(OBJ_IDX_OP_MODE))	{
 
 		case OP_MODE_MODBUS:
 			HandleModbusData();
@@ -73,8 +73,8 @@ int8_t ParseRadpid() {
 	};
 
 	char inputString[bufferLength];
-	char* outputString[bufferLength];
-	char* part;
+	char *outputString[bufferLength];
+	char *part;
 	const char delimiter[] = " :=][(),_;";
 	
 	int i = 0;
@@ -90,8 +90,7 @@ int8_t ParseRadpid() {
 	strcpy(inputString, cBuffer);	// creat copy of the receiveBuffer to prevent change of data by strtok
 	part = strtok(inputString, delimiter);	// split the inputString into multiple tokens
 
-	while(part != NULL) {
-		// create tokens
+	while(part != NULL) { /*create tokens*/
 		outputString[i] = part;
 		char msg[64];
 		sprintf(msg, "token[%i]: %s", i, outputString[i]);
@@ -101,7 +100,7 @@ int8_t ParseRadpid() {
 	}
 	
 	// for example parse -> CONST robtarget p1:=[[1, 119, 100],,,];
-	// outputString	index:	  0		 1	     2	  3	  4	   5
+	// outputString	index:    0      1      2     3   4    5
 	if (strcmp(outputString[0], "CONST") == 0) {
 
 		if (strcmp(outputString[1], "robtarget") == 0) {
@@ -136,7 +135,7 @@ int8_t ParseRadpid() {
 
 	// switch the magnetic gripper on or off
 	// for example parse -> Magnet_on();
-	// outputstring index:	  0     1
+	// outputstring index:    0    1
 	else if (strcmp(outputString[0], "Magnet") == 0) {
 
 		if (strcmp(outputString[1], "on") == 0) {
@@ -159,7 +158,7 @@ int8_t ParseRadpid() {
 	// for example parse -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
 	// or				 -> MoveJ p1, vmax, fine, tool0;
 	// or				 -> MoveJ (1,  119,  100), vmax, fine, tool0;
-	// outputString	index:	  0		1   2	  3		4	   5	6	   7	8
+	// outputString	index:    0    1    2     3     4      5     6     7     8
 	else if (strstr(outputString[0], "Move")) {
 
 		if (strcmp(outputString[0], "MoveC") == 0) {
@@ -265,9 +264,9 @@ int8_t ParseRadpid() {
 
 		// set outputstring[] offset for speed, positioning mode & tool (based on "lowest" position of the speed value in the outputString[])
 		//					 -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
-		//					 -> MoveJ p1, vmax, fine, tool0;		<- offset based on this type of message
+		//					 -> MoveJ p1, vmax, fine, tool0;  <<<<- offset based on this type of message
 		//					 -> MoveJ (1,  119,  100), vmax, fine, tool0;
-		// outputString	index:	  0		1   2	  3		4	   5	6	   7	8
+		// outputString	index:    0    1    2     3     4     5      6     7     8
 		if (pointMode && offsetMode) {
 			idxOffs = 4;
 		}
@@ -337,7 +336,7 @@ int8_t ParseRadpid() {
 			if (pToolTbl != NULL) {
 
 				if (pToolTbl->active != false) {
-					int16_t *pToolOffset = GetToolTblData(tool);
+					int16_t *pToolOffset = GetToolData(tool);
 					dataToWrite[xPos] -= pToolOffset[0];
 					dataToWrite[yPos] -= pToolOffset[1];
 					dataToWrite[zPos] -= pToolOffset[2];
@@ -352,24 +351,28 @@ int8_t ParseRadpid() {
 							if (dataToWrite[zPos] >= Z_POS_MIN && dataToWrite[zPos] <= Z_POS_MAX) {
 
 								// save speed and position values
-								if (SetObjStructData(OBJ_IDX_X_NEW_TARGET_POS, dataToWrite[xPos]) != 0) {
+								if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, dataToWrite[xPos]) != 0) {
 									return -1;
 								}
-								if (SetObjStructData(OBJ_IDX_Y_NEW_TARGET_POS, dataToWrite[yPos]) != 0) {
+								if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, dataToWrite[yPos]) != 0) {
 									return -1;
 								}
-								if (SetObjStructData(OBJ_IDX_Z_NEW_TARGET_POS, dataToWrite[zPos]) != 0) {
+								if (SetObjData(OBJ_IDX_Z_NEW_TARGET_POS, dataToWrite[zPos]) != 0) {
 									return -1;
 								}
-								if (SetObjStructData(OBJ_IDX_X_NEW_TARGET_SPEED, dataToWrite[xSpeed]) != 0) {
+								if (SetObjData(OBJ_IDX_X_NEW_TARGET_SPEED, dataToWrite[xSpeed]) != 0) {
 									return -1;
 								}
-								if (SetObjStructData(OBJ_IDX_Y_NEW_TARGET_SPEED, dataToWrite[ySpeed]) != 0) {
+								if (SetObjData(OBJ_IDX_Y_NEW_TARGET_SPEED, dataToWrite[ySpeed]) != 0) {
 									return -1;
 								}
-								if (SetObjStructData(OBJ_IDX_Z_NEW_TARGET_SPEED, dataToWrite[zSpeed]) != 0) {
+								if (SetObjData(OBJ_IDX_Z_NEW_TARGET_SPEED, dataToWrite[zSpeed]) != 0) {
 									return -1;
 								}
+
+								// "starte Bewegung" nach erfolgreichem Schreiben
+
+
 								return 0;
 							}
 							else {
@@ -415,7 +418,7 @@ int8_t ParseRadpid() {
 }
 
 // Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient.
-static void HandleModbusData() {
+void HandleModbusData() {
 
 	// function 3 and 16 register array
 	static unsigned int holdingRegs[TOTAL_REGS_SIZE_MDB];
@@ -424,7 +427,7 @@ static void HandleModbusData() {
 	holdingRegs[TOTAL_ERRORS_MDB] = modbus_update(holdingRegs);
 
 	// write modbus packet to object
-	if (SetObjStructData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB]) == 0) {
+	if (SetObjData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB]) == 0) {
 		//objStruct_t *recvP = LocateObj(holdingRegs[INDEX_MDB]);
 		//
 		//if (recvP->pFunction != NULL) {
@@ -499,7 +502,7 @@ static void HandleScaraData() {
 						uint16_t recvData = (buffer[idx - SCARA_PACKET_LENGTH + 2] << 8) | buffer[idx - SCARA_PACKET_LENGTH + 3];
 
 						// save data in object
-						if (SetObjStructData(recvIndex, recvData) == 0) {
+						if (SetObjData(recvIndex, recvData) == 0) {
 							/*objStruct_t *recvP = LocateObj(recvIndex);*/
 							memset(buffer, 0, idx);
 							idx = 0;

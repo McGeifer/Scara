@@ -227,14 +227,14 @@ int16_t* GetPosRegData(uint8_t *idx);
 uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *zValue);
 
 // Function to return the stored data of an object.
-int16_t GetObjStructData(uint8_t index);
+int16_t GetObjData(uint8_t index);
 
 // Funtion for writing data to the object dictionary.
 // Warning! Make sure the calling function only bypasses valid data, this function will not check it. !?!?????????????????????????????!?!??!?!?!?!?!?!?!?
-int8_t SetObjStructData(uint8_t index, int16_t data);
+int8_t SetObjData(uint8_t index, int16_t data);
 
 // Function to return the stored offset values for a given tool.
-int16_t* GetToolTblData(uint8_t index);
+int16_t* GetToolData(uint8_t index);
 
 // Function to search the position register. If the given index is found it returns TRUE if not FALSE.
 //posReg_t* LocatePos(uint8_t *idx);

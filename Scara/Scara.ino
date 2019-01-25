@@ -1,8 +1,8 @@
 /*
- Name:		Scara.ino
- Created:	06.09.2018 14:50:44
- Author:	Jens Schiller
-*/
+ *  Name:		Scara.ino
+ *  Created:	06.09.2018 14:50:44
+ *  Author:		Jens Schiller
+ */
 
 #include "SimpleModbusSlave.h"
 #include "DynamixelSerial2.h"
@@ -14,15 +14,12 @@
 #include "sio.h"
 #include "calc.h"
 
-bool run = false;
-
 void setup() {
 
 	InitSio();
 	InitGPIO();
 	InitOperationMode();
 	InitDynamixel();
-
 	/*uint8_t idx1 = 0x01;
 	uint8_t idx2 = 0x02;
 	int16_t x1 = 25;
@@ -41,7 +38,7 @@ void setup() {
 
 void loop() {
 
-	while (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
+	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		UpdatePos();
 		HandleSIO();
 		HandleMove();

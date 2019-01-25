@@ -34,7 +34,7 @@ void InitDynamixel() {
 	if (response != 3) {
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		// set system error state to prevent further operations
-		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
 		return;
 	}
 	else {
@@ -148,8 +148,7 @@ void DynamixelError(uint8_t errorBit, uint8_t id) {
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 		}
-		SetObjStructData(OBJ_IDX_SYS_STATUS, GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
-		Serial.println("blub");
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
 	}
 }
 
@@ -159,7 +158,7 @@ void UpdatePos(void) {
 	int16_t data[3] = { 0 };
 	uint8_t error = 0;
 
-	if (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
+	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
 		
 		for (id = 0; id < 3; id++) {
 			data[id] = Dynamixel.readPosition(id); /*was mit z achse? was für Rückgabewerte bei continous turn modus?*/
@@ -172,26 +171,41 @@ void UpdatePos(void) {
 			else {
 
 				if (id == DYNA_ID_AXIS_1) {
-					SetObjStructData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
 				}
 				else if (id == DYNA_ID_AXIS_2) {
-					SetObjStructData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
 				}
 				else if (id == DYNA_ID_AXIS_Z) {
-					SetObjStructData(OBJ_IDX_Z_ACTUAL_POS, CalcZPos());
+					SetObjData(OBJ_IDX_Z_ACTUAL_POS, CalcZPos());
 				}
 			}
 		}
 		if (CalcPosistion(data[0], data[1]) == -1) {
-			SetObjStructData(OBJ_IDX_SYS_STATUS, (GetObjStructData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR));
+			SetObjData(OBJ_IDX_SYS_STATUS, (GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR));
 		}
 	}
 }
 
 void HandleMove(void) {
 
-	if (!(GetObjStructData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
-
+	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
 		Serial.println("HandleMove();");
+
+		if (start_move) {
+
+			if (target_pos != actual_pos) {
+
+			}
+		}
+
+
+
+
+
+		
+	}
+	else {
+		// stoppe Bewegung, deaktiviere Drehmoment
 	}
 }

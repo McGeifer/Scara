@@ -17,6 +17,6 @@
 
 void InitGPIO(void);
 void InitOperationMode(void);
-void ISR_LightBarrier(void);
+void LightBarrierISR(void);
 
 #endif
