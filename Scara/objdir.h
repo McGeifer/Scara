@@ -42,16 +42,14 @@ typedef struct {
 } posReg_t;
 
 // ##############################################
-// modbus
+// modbus holding registers
 // ##############################################
-
-// modbus holing registers
 enum holding_registers {
-	INDEX_MDB,				// The first register starts at address 0
+	INDEX_MDB,				// the first register starts at address 0
 	DATA_MDB,
 	CRC_MDB,
-	TOTAL_ERRORS_MDB,		// Leave this one
-	TOTAL_REGS_SIZE_MDB		// Total number of registers. Function 3 and 16 share the same register array
+	TOTAL_ERRORS_MDB,		// leave this one
+	TOTAL_REGS_SIZE_MDB		// total number of registers. Function 3 and 16 share the same register array
 };
 
 // ##############################################
@@ -68,6 +66,7 @@ enum holding_registers {
 // basic options
 #define OBJ_IDX_ACK							0xF0	// acknowledge
 #define OBJ_IDX_START_MOVE					0xF1	// start movement of robot axis
+#define OBJ_IDX_MOVING						0xF2	// system is moving
 
 // internal objects
 #define OBJ_IDX_Z_POS_COUNT					0xFD	// z - light barrier counter

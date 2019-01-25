@@ -192,18 +192,49 @@ void HandleMove(void) {
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
 		Serial.println("HandleMove();");
 
-		if (start_move) {
+		int16_t moving = GetObjData(OBJ_IDX_MOVING);
+		int16_t start = GetObjData(OBJ_IDX_START_MOVE);
 
-			if (target_pos != actual_pos) {
+		if (start && !moving) {
+
+			/*  - zulässiges Pos.fenster der Istpositionen berechen
+			 */
+
+			if (/* istpositionsfenster != zielposition */) {
+
+				/*  - schreibe neue Zielpos in aktuelle Zielpos
+				 *  - übergebe neue Zielpos an Dynamixel
+				 *	- starte Bewegung der Motoren (synch Start?)
+				 *  - setze moving
+				 *  - startkomando zurück setzten
+				 *  - ende
+				 */
+
+			}
+			else {
+				/*  - startkomando zurück setzten
+				 *  - ende
+				 */
+			}
+		}
+		else if (start && moving) {
+			/*  - nix
+			 *  -
+			 */
+
+		}
+		else if (!start && moving) {
+
+			if (/* soll = ziel */) {
+
+			/*  - moving rücksetzen
+			 *  - 
+			 */
+			}
+			else {
 
 			}
 		}
-
-
-
-
-
-		
 	}
 	else {
 		// stoppe Bewegung, deaktiviere Drehmoment
