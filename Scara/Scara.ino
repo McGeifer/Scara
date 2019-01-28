@@ -32,14 +32,15 @@ void setup() {
 	SetPosRegData(&idx1, &x1, &y1, &z1);
 	SetPosRegData(&idx2, &x2, &y2, &z2);*/
 
-	uint16_t xPos = 3066;
-	int16_t yPos = -649;
+	//uint16_t xPos = 3066;
+	//int16_t yPos = -649;
 }
 
 void loop() {
 
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		UpdatePos();
+		// UpdateSpeed(); ???
 		HandleSIO();
 		HandleMove();
 	}

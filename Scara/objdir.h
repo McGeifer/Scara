@@ -52,12 +52,23 @@ enum holding_registers {
 	TOTAL_REGS_SIZE_MDB		// total number of registers. Function 3 and 16 share the same register array
 };
 
+enum minMaxPos {
+	minPos,
+	maxPos
+};
+
+enum axisIDs {
+	x,
+	y,
+	z
+};
+
 // ##############################################
 // dynamixel axis id's
 // ##############################################
-#define DYNA_ID_AXIS_1 0	// dynamixel id for axis 1
-#define DYNA_ID_AXIS_2 1	// dynamixel id for axis 2
-#define DYNA_ID_AXIS_Z 2	// dynamixel is for z axis
+#define DYNA_ID_AXIS_1 x	// dynamixel id for axis 1
+#define DYNA_ID_AXIS_2 y	// dynamixel id for axis 2
+#define DYNA_ID_AXIS_Z z	// dynamixel is for z axis
 
 // ##############################################
 // object indices
@@ -67,6 +78,7 @@ enum holding_registers {
 #define OBJ_IDX_ACK							0xF0	// acknowledge
 #define OBJ_IDX_START_MOVE					0xF1	// start movement of robot axis
 #define OBJ_IDX_MOVING						0xF2	// system is moving
+#define OBJ_IDX_POS_REACHED					0xF3	// target position reached
 
 // internal objects
 #define OBJ_IDX_Z_POS_COUNT					0xFD	// z - light barrier counter
@@ -155,7 +167,7 @@ enum holding_registers {
 // ##############################################
 // status message types
 // ##############################################
-#define STATUS_TYPE_NOTYPE			0x01	// display a message without status type (try not to use)
+#define STATUS_TYPE_NONE			0x01	// display a message without status type (try not to use)
 #define STATUS_TYPE_INFO			0x02	// display normal info message
 #define STATUS_TYPE_WARNING			0x03	// display a warning message
 #define STATUS_TYPE_ERROR			0x04	// display a error message
@@ -172,7 +184,7 @@ enum holding_registers {
 #define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) // system in error state
 
 // ##############################################
-// object dir min / max position and angle values
+// object dir min / max position and angle values and tolerances
 // ##############################################
 #define X_POS_MIN 					-100			
 #define X_POS_MAX					200			
@@ -184,7 +196,9 @@ enum holding_registers {
 #define AXIS_1_ANGLE_MIN			-105	
 #define AXIS_1_ANGLE_MAX			105		
 #define AXIS_2_ANGLE_MIN			-105	
-#define AXIS_2_ANGLE_MAX			105		
+#define AXIS_2_ANGLE_MAX			105
+
+#define POS_TOLERANCE				0.5
 
 // ##############################################
 // object dir min / max speed values

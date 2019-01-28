@@ -9,9 +9,10 @@
 static objStruct_t objDir[] = {
 
 	// basic options
-	{OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL},
+	//{OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_MOVING,						OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_POS_REACHED,					OBJ_PROP_R_, 0, NULL},
 
 	// internal objects
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},

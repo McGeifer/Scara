@@ -438,7 +438,7 @@ void HandleModbusData() {
 }
 
 // Receive a Rapid comand string via UART, check the data for proper length and content.
-static void HandleRapidString() {
+void HandleRapidString() {
 
 	if (Serial.available() > 0) {
 
@@ -483,7 +483,7 @@ static void HandleRapidString() {
 }
 
 // Receive a Scara data package via UART, check the data package and store it in the object dir.
-static void HandleScaraData() {
+void HandleScaraData() {
 
 	if (Serial.available() > 0) {
 

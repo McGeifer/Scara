@@ -26,10 +26,7 @@
 //#undef RAD_TO_DEG
 //#define RAD_TO_DEG(rad) ((rad * 4068) / 71.0)
 
-enum coordinates {
-	x,
-	y
-};
+
 
 // CalcAngle computes the angles for axis 1 & 2 out of the coordinates x & y
 int8_t CalcAngle(int16_t xVal, int16_t yVal);
@@ -37,8 +34,8 @@ int8_t CalcAngle(int16_t xVal, int16_t yVal);
 // CalcPosistion computes the coordinates x & y out of the angles of axis 1 & 2
 int8_t CalcPosistion(int16_t angle1, int16_t angle2);
 
-// CalcZPos computes the actual position of the z-axis.
-int8_t CalcZPos(void);
+// UpdateZPos calculates the actual position of the z-axis.
+int8_t UpdateZPos(void);
 
 // Help function - ConvertCoordinate converts x and y coordiantes between the different coordinate systems (machine & field).
 float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue);

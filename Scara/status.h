@@ -16,8 +16,7 @@
  * visibillity and prefix for the printed staus message. The availabile
  * types are 'NOTYPE', 'INFO', 'WARNING', 'ERROR' and 'DEBUG'. Status
  * messages with the 'DEBUG" statusType will only be printed if the system
- * is in debug mode
- */
+ * is in debug mode */
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType);
 
 #endif

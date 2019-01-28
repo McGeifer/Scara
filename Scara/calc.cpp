@@ -114,7 +114,7 @@ int8_t CalcPosistion(int16_t valA, int16_t valB) {
 	return 0;
 }
 
-int8_t CalcZPos(void) {
+int8_t UpdateZPos(void) {
 
 	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10);
 	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val) == -1) {

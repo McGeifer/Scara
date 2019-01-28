@@ -14,7 +14,7 @@
 void InitSio();
 void HandleSIO();
 void HandleModbusData();
-static void HandleRapidString();
-static void HandleScaraData();
+void HandleRapidString();
+void HandleScaraData();
 
 #endif

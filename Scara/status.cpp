@@ -7,7 +7,7 @@
 
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType) {
 	
-	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system ist in silent mode
+	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system is in silent mode
 
 		char statusString[10];
 		char finalMsgString[128];
@@ -19,7 +19,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 
 			switch (statusType)
 			{
-			case STATUS_TYPE_NOTYPE:
+			case STATUS_TYPE_NONE:
 				sprintf(statusString, "         ");
 				break;
 
