@@ -5,7 +5,7 @@
 #include "objdir.h"
 #include "status.h"
 
-// object dictionary
+/* object dictionary */
 static objStruct_t objDir[] = {
 
 	// basic options
@@ -17,7 +17,7 @@ static objStruct_t objDir[] = {
 	// internal objects
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /*0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!!*/
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
 	
 	// position values
 	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
@@ -56,13 +56,13 @@ static objStruct_t objDir[] = {
 	{OBJ_IDX_AXIS_2_ACTUAL_SPEED,			OBJ_PROP_R_, 0, NULL},
 };
 
-// tool table
+/* tool table */
 static toolTbl_t toolTbl[] = {
 
-	// tool 0 - machine zero
+	/* tool 0 - machine zero */
 	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true, NULL},
 	
-	// variable tooltable entries
+	/* variable tooltable entries */
 	{OBJ_IDX_TOOL_1, OBJ_PROP_RW, 25, -100, 75, true, NULL},
 	{OBJ_IDX_TOOL_2, OBJ_PROP_RW, -50, 50, 25, true, NULL},
 	{OBJ_IDX_TOOL_3, OBJ_PROP_RW, 0, 0, 0, false, NULL},
@@ -74,10 +74,9 @@ static toolTbl_t toolTbl[] = {
 	{OBJ_IDX_TOOL_9, OBJ_PROP_RW, 0, 0, 0, false, NULL},
 };
 
-// static position register ..................... ist das überhaupt notwendig!?!?!?!?!?!??!?!?!?!?!
-static posReg_t posRegStatic[] = {
+/* static position register */
+static posReg_t statPosReg[] = {
 
-	// positions 0 - 63 (0x3F) - dynamicly allocated
 	{OBJ_IDX_STAT_POS_HOME,			OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_RD_COIN_1,	OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_RD_COIN_2,	OBJ_PROP_R_, 0, 0, 0},
@@ -91,11 +90,11 @@ static posReg_t posRegStatic[] = {
 	{OBJ_IDX_STAT_POS_GN_COIN_5,	OBJ_PROP_R_, 0, 0, 0},
 };
 
-// dynamic position register
-static posReg_t *pArray[PosArrayLength] = { NULL };
+/* dynamic position register */
+static posReg_t *dynPosReg[PosArrayLength] = { 0 };
 
-// index of the last position in the position register
-static uint8_t pArrayLastPos = 0;
+/* index of the last position in the position register */
+static uint8_t pLastPos = 0;
 
 // ##############################################
 // pos register - help functions
@@ -104,9 +103,9 @@ static uint8_t pArrayLastPos = 0;
 static posReg_t* LocatePos(uint8_t *idx) {
 
 	for (uint8_t i = 0; i < PosArrayLength; i++) {
-		if (pArray[i]->pointIdx == *idx) {
+		if (dynPosReg[i]->pointIdx == *idx) {
 			SendStatus("LocatePos() ", "pos found", STATUS_TYPE_DEBUG);
-			return pArray[i];
+			return dynPosReg[i];
 		}
 	}
 	SendStatus("LocatePos() ", "pos not found", STATUS_TYPE_DEBUG);
@@ -130,7 +129,7 @@ int16_t* GetPosRegData(uint8_t *idx) {
 	}
 }
 
-uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *zValue) {
+uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal) {
 
 	posReg_t *p = NULL;
 	p = LocatePos(idx);
@@ -138,10 +137,10 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *z
 	if (p == NULL) {
 
 		if (*idx < PosArrayLength) {
-			pArray[pArrayLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); // allocate memory for new PosReg entry and store a pointer in the pArray
-			pArray[pArrayLastPos]->pointIdx = *idx;
-			pArray[pArrayLastPos]->props = OBJ_PROP_RW;
-			pArrayLastPos++;
+			dynPosReg[pLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); /* allocate memory for new PosReg entry and store a pointer in the dynPosReg */
+			dynPosReg[pLastPos]->pointIdx = *idx;
+			dynPosReg[pLastPos]->props = OBJ_PROP_RW;
+			pLastPos++;
 			p = LocatePos(idx);
 			if (p == NULL) {
 				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", STATUS_TYPE_ERROR);
@@ -155,16 +154,16 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xValue, int16_t *yValue, int16_t *z
 	}
 	if (p != NULL) {
 		
-		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) { // check if object is writable
+		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) { /* check if object is writable */
 
-			if (*xValue >= X_POS_MIN && *xValue <= X_POS_MAX) { // check the permissable value range
+			if (*xVal >= X_POS_MIN && *xVal <= X_POS_MAX) { /* check the permissable value range */
 
-				if (*yValue >= Y_POS_MIN && *yValue <= Y_POS_MAX) {
+				if (*yVal >= Y_POS_MIN && *yVal <= Y_POS_MAX) {
 
-					if (*zValue >= Z_POS_MIN && *zValue <= Z_POS_MAX) {
-						p->posRegX = *xValue;
-						p->posRegY = *yValue;
-						p->posRegZ = *zValue;
+					if (*zVal >= Z_POS_MIN && *zVal <= Z_POS_MAX) {
+						p->posRegX = *xVal;
+						p->posRegY = *yVal;
+						p->posRegZ = *zVal;
 						return 0;
 					}
 					else {
@@ -243,11 +242,11 @@ int8_t SetObjData(uint8_t index, int16_t data) {
 	int16_t minValue = 0;
 	int16_t maxValue = 0;
 
-	if (pObjStruct != NULL) { /*make sure object does exist*/
+	if (pObjStruct != NULL) { /* make sure object does exist */
 
-		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W) {	/*check if object is writable*/
+		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W) {	/* check if object is writable */
 
-			switch (pObjStruct->idx)	/*set min max vaules for comparison*/
+			switch (pObjStruct->idx)	/* set min max vaules for comparison */
 			{
 			case 0x10:
 				minValue = X_POS_MIN;

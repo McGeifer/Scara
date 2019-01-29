@@ -421,7 +421,7 @@ int8_t ParseRadpid() {
 void HandleModbusData() {
 
 	// function 3 and 16 register array
-	static unsigned int holdingRegs[TOTAL_REGS_SIZE_MDB];
+	static uint16_t holdingRegs[TOTAL_REGS_SIZE_MDB];
 
 	// returns the total error count since the slave started
 	holdingRegs[TOTAL_ERRORS_MDB] = modbus_update(holdingRegs);
@@ -434,6 +434,9 @@ void HandleModbusData() {
 		//	// execute handler function if available
 		//	recvP->pFunction(&recvP->idx, &recvP->props, &recvP->data);
 		//}
+	}
+	else {
+		// error msg
 	}
 }
 

@@ -14,10 +14,12 @@
 #include "sio.h"
 #include "calc.h"
 
-void setup() {
+uint32_t cycleTime;
+uint16_t cycleCount;
 
-	InitSio();
+void setup() {
 	InitGPIO();
+	InitSio();
 	InitOperationMode();
 	InitDynamixel();
 	/*uint8_t idx1 = 0x01;
@@ -43,5 +45,17 @@ void loop() {
 		// UpdateSpeed(); ???
 		HandleSIO();
 		HandleMove();
+
+		/* measure cycletime */
+		cycleCount++;
+		if (cycleCount >= 10000)
+		{
+			char msg[64];
+			uint32_t tmp = (micros() - cycleTime) / cycleCount;
+			sprintf(msg, "Cycle Time : %lu µs", tmp);
+			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+			cycleCount = 0;
+			cycleTime = micros();
+		}
 	}
 }

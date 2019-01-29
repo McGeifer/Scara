@@ -22,7 +22,7 @@
 #define DEG_TO_DYNA(val) (round((val / 1023.0) * 300)) // convert an angle (degree) into a dynamixel position value
 
 //#undef DEG_TO_RAD
-//#define DEG_TO_RAD(deg) ((deg * 71) / 4068.0) evtl. schneller als über arduino.h
+//#define DEG_TO_RAD(deg) ((deg * 71) / 4068.0) evtl. schneller als über arduino.h  -------------------- TESTEN ---------------------
 //#undef RAD_TO_DEG
 //#define RAD_TO_DEG(rad) ((rad * 4068) / 71.0)
 

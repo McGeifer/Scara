@@ -9,9 +9,9 @@
 
 #include <DynamixelSerial2.h>
 
-void InitDynamixel() {
+void InitDynamixel(void) {
 
-	// Search for servo motors
+	/* Search for servo motors */
 	int tmp = 0;
 	int response = 0;
 
@@ -33,13 +33,11 @@ void InitDynamixel() {
 
 	if (response != 3) {
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
-		// set system error state to prevent further operations
-		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); // bitmask!
+		/* set system error state to prevent further operations */
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); /* bitmask! */
 		return;
 	}
 	else {
-
-	// basic settings for the dynamixel servo motors
 
 	// ########################
 	// Axis 1
@@ -100,9 +98,8 @@ void InitDynamixel() {
 
 void DynamixelError(uint8_t errorBit, uint8_t id) {
 
-	char msg[64];
-
 	if (errorBit > 0 && errorBit <= 0x80) {
+		char msg[64];
 
 		switch (errorBit) {
 
@@ -153,17 +150,16 @@ void DynamixelError(uint8_t errorBit, uint8_t id) {
 
 void UpdatePos(void) {
 
-	uint8_t id = 0;
 	int16_t data[3] = { 0 };
 	uint8_t error = 0;
 
-	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
+	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		
-		for (id = 0; id < 3; id++) {
-			data[id] = Dynamixel.readPosition(id); /*was mit z achse? was für Rückgabewerte bei continous turn modus?*/
+		for (uint8_t id = x; id == z; id++) {
+			data[id] = Dynamixel.readPosition(id); /* was mit z achse? was für Rückgabewerte bei continous turn modus? */
 
 			if (data[id] < 0) {
-				error = data[id] * (-1); /*error is negative by dynamixel library*/
+				error = data[id] * (-1); /* error value is negative by dynamixel library */
 				DynamixelError(error, id);
 				return;
 			}
@@ -188,7 +184,7 @@ void UpdatePos(void) {
 
 void HandleMove(void) {
 
-	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DYNAMIXEL_ERROR)) {
+	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		Serial.println("HandleMove();");
 
 		uint8_t moving = (uint8_t)GetObjData(OBJ_IDX_MOVING);
@@ -209,15 +205,15 @@ void HandleMove(void) {
 			GetObjData(OBJ_IDX_Y_NEW_TARGET_POS) / 10.0,
 			GetObjData(OBJ_IDX_Z_NEW_TARGET_POS) / 10.0,
 		};
-		float posWindow[3][2] = { /* allowed position window */
-			{ actPos[x] - POS_TOLERANCE, actPos[x] + POS_TOLERANCE },
-			{ actPos[y] - POS_TOLERANCE, actPos[y] + POS_TOLERANCE },
-			{ actPos[z] - POS_TOLERANCE, actPos[z] + POS_TOLERANCE },
+		float posWindow[3][2] = { /* allowed position windows */
+			{ actTargetPos[x] - POS_TOLERANCE, actTargetPos[x] + POS_TOLERANCE },
+			{ actTargetPos[y] - POS_TOLERANCE, actTargetPos[y] + POS_TOLERANCE },
+			{ actTargetPos[z] - POS_TOLERANCE, actTargetPos[z] + POS_TOLERANCE },
 		};
 
 		if (start && !moving) {
 
-			/*  - schreibe neue Zielpos in aktuelle Zielpos
+			/*  *  - schreibe neue Zielpos in aktuelle Zielpos
 				*  - übergebe neue Zielpos an Dynamixel
 				*  - starte Bewegung der Motoren (synch Start?)
 				*  - setze moving
@@ -226,7 +222,7 @@ void HandleMove(void) {
 
 			if (actPos[x] < posWindow[x][minPos] || actPos[x] > posWindow[x][maxPos] ||
 				actPos[y] < posWindow[y][minPos] || actPos[y] > posWindow[y][maxPos] ||
-				actPos[z] < posWindow[z][minPos] || actPos[z] > posWindow[z][maxPos]) {
+				actPos[z] < posWindow[z][minPos] || actPos[z] > posWindow[z][maxPos]) { /* goal position changed? */
 
 				if (newTargetPos[x] != actTargetPos[x]) {
 					SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_X_NEW_TARGET_POS));
@@ -238,10 +234,10 @@ void HandleMove(void) {
 					SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS));
 
 					if (newTargetPos[z] > actTargetPos[z]) {
-						Dynamixel.turn(z, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); // besser über moveRW für sync start mit x & y
+						Dynamixel.turn(z, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 					else {
-						Dynamixel.turn(z, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); // besser über moveRW für sync start mit x & y
+						Dynamixel.turn(z, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 				}
 				CalcAngle(GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS), GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS));
@@ -262,17 +258,20 @@ void HandleMove(void) {
 			
 			if (actPos[x] >= posWindow[x][minPos] && actPos[x] <= posWindow[x][maxPos] &&
 				actPos[y] >= posWindow[y][minPos] && actPos[y] <= posWindow[y][maxPos] &&
-				actPos[z] >= posWindow[z][minPos] && actPos[z] <= posWindow[z][maxPos]) {  /* target position reached */
+				actPos[z] >= posWindow[z][minPos] && actPos[z] <= posWindow[z][maxPos]) {  /* target position reached? */
 				
 				SetObjData(OBJ_IDX_MOVING, 0);
-				// send pos reached!?
+				SetObjData(OBJ_IDX_POS_REACHED, 1);
 			}
 			else {
-				// z-achse rampe geschwindigkeit
+				/* z-achse rampe geschwindigkeit */
 			}
+		}
+		else {
+			/* ???? */
 		}
 	}
 	else {
-		// stoppe Bewegung, deaktiviere Drehmoment
+		/* stoppe Bewegung, deaktiviere Drehmoment? */
 	}
 }

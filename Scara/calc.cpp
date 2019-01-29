@@ -127,8 +127,10 @@ int8_t UpdateZPos(void) {
 float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue) {
 
 	static float val[2] = { 0 };
-	
-	if(direction == CONVERT_COORDINATE_TO_ROBOT) {
+
+	switch (direction)
+	{
+	case CONVERT_COORDINATE_TO_ROBOT:
 		val[x] = *xValue + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;
 		val[y] = *yValue + MACHINE_ZERO_OFFS_Y_FIELD - MACHINE_ZERO_OFFS_Y_ROBOT;
 		/*Serial.print("val[x]: ");
@@ -136,13 +138,13 @@ float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue) {
 		Serial.print("val[y]: ");
 		Serial.println(val[y], 8);*/
 		return val;
-	}
-	else if (direction == CONVERT_COORDINATE_TO_FIELD) {
+
+	case CONVERT_COORDINATE_TO_FIELD:
 		val[x] = *xValue + MACHINE_ZERO_OFFS_X_ROBOT - MACHINE_ZERO_OFFS_X_FIELD;
 		val[y] = *yValue + MACHINE_ZERO_OFFS_Y_ROBOT - MACHINE_ZERO_OFFS_Y_FIELD;
 		return val;
-	}
-	else {
+
+	default:
 		return NULL;
 	}
 }

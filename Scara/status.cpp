@@ -7,7 +7,7 @@
 
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType) {
 	
-	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) { // no messages will be send if system is in silent mode
+	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) { /* no messages will be send if system is in silent mode */
 
 		char statusString[10];
 		char finalMsgString[128];
@@ -44,7 +44,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 				break;
 			}
 
-			if (GetObjData(0xFF) & SYS_STAT_DEBUG) { // check if system ist in debug mode
+			if (GetObjData(0xFF) & SYS_STAT_DEBUG) { /* check if system ist in debug mode */
 				if (optionalDebugMessage == NULL) {
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);
@@ -63,7 +63,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 			break;
 
 		case OP_MODE_MODBUS:
-			// no status message available, possible implementation via modbus exeption codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes
+			/* no status message available, possible implementation via modbus exeption codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes */
 			break;
 
 		default:
