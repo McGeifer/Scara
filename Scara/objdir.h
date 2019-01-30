@@ -53,17 +53,16 @@ enum modbusHoldingReg {
 };
 
 enum minMaxPos {
-	minPos,
-	maxPos
+	MIN_POS,
+	MAX_POS
 };
 
 enum axisIDs {
-	x,
-	y,
-	z
+	ID_AXIS_1,
+	ID_AXIS_2,
+	ID_Z_AXIS,
+	ID_TOTAL_SIZE			// leave this one
 };
-
-
 
 // ##############################################
 // object indices
@@ -212,9 +211,9 @@ enum axisIDs {
 // ##############################################
 // dynamixel axis id's
 // ##############################################
-#define DYNA_ID_AXIS_1		x		// dynamixel id for axis 1
-#define DYNA_ID_AXIS_2		y		// dynamixel id for axis 2
-#define DYNA_ID_AXIS_Z		z		// dynamixel is for z axis
+#define DYNA_ID_AXIS_1		ID_AXIS_1		// dynamixel id for axis 1
+#define DYNA_ID_AXIS_2		ID_AXIS_2		// dynamixel id for axis 2
+#define DYNA_ID_AXIS_Z		ID_Z_AXIS		// dynamixel is for z axis
 
 // ##############################################
 // miscellaneous

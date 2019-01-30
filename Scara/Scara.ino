@@ -33,26 +33,24 @@ void setup() {
 
 	SetPosRegData(&idx1, &x1, &y1, &z1);
 	SetPosRegData(&idx2, &x2, &y2, &z2);*/
-
-	//uint16_t xPos = 3066;
-	//int16_t yPos = -649;
+	/* uint16_t xPos = 3066;
+	int16_t yPos = -649; */
 }
 
 void loop() {
 
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
-		UpdatePos();
-		// UpdateSpeed(); ???
+		UpdateObjDir();
 		HandleSIO();
 		HandleMove();
 
 		/* measure cycletime */
 		cycleCount++;
-		if (cycleCount >= 10000)
+		if (cycleCount >= 1000)
 		{
 			char msg[64];
 			uint32_t tmp = (micros() - cycleTime) / cycleCount;
-			sprintf(msg, "Cycle Time : %lu µs", tmp);
+			sprintf(msg, "Cycle Time : %lu us", tmp);
 			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
 			cycleCount = 0;
 			cycleTime = micros();

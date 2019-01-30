@@ -20,13 +20,13 @@ void InitGPIO() {
 
 void InitOperationMode(void) {
 
-	if (digitalRead(RAPID_PIN) == LOW && digitalRead(MODBUS_PIN) == HIGH) {
+	if (!digitalRead(RAPID_PIN) && digitalRead(MODBUS_PIN)) {
 		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS) == 0) {
 			/* modbus protocol selected */
 			return;
 		}
 	}
-	else if (digitalRead(RAPID_PIN) == HIGH && digitalRead(MODBUS_PIN) == LOW) {
+	else if (digitalRead(RAPID_PIN) && !digitalRead(MODBUS_PIN)) {
 		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID) == 0) {
 			SendStatus("InitOperationMode(): ", "Rapid protocoll selected", STATUS_TYPE_INFO);
 			/* rapid protocol selected */

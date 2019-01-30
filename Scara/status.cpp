@@ -44,7 +44,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 				break;
 			}
 
-			if (GetObjData(0xFF) & SYS_STAT_DEBUG) { /* check if system ist in debug mode */
+			if (GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DEBUG) { /* check if system ist in debug mode */
 				if (optionalDebugMessage == NULL) {
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);

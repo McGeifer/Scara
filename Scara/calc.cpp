@@ -38,8 +38,8 @@ int8_t CalcAngle(int16_t xPos, int16_t yPos) {
 	Serial.println(yTmp, 8);*/
 
 	//coordinates = ConvertCoordinate(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
-	xVal = 10.629;//coordinates[x];
-	yVal = -313.209;//coordinates[y];
+	xVal = 10.629;//coordinates[ID_AXIS_1];
+	yVal = -313.209;//coordinates[ID_AXIS_2];
 	/*Serial.print("xVal: ");
 	Serial.println(xVal, 8);
 	Serial.print("yVal: ");
@@ -104,12 +104,12 @@ int8_t CalcPosistion(int16_t valA, int16_t valB) {
 	float lenghtB = 0;			// gegenkathete von winkel B
 
 	lenghtA = asin(angleA) * AXIS_1_LENGTH; 
-	pointA[y] = lenghtA * (-1);
-	pointA[x] = sqrt(lenghtA * lenghtA + AXIS_1_LENGTH * AXIS_1_LENGTH);
+	pointA[ID_AXIS_2] = lenghtA * (-1);
+	pointA[ID_AXIS_1] = sqrt(lenghtA * lenghtA + AXIS_1_LENGTH * AXIS_1_LENGTH);
 
 	lenghtB = asin(angleB) * AXIS_2_LENGTH;
-	pointB[y] = lenghtA * (-1);
-	pointB[x] = sqrt(lenghtB * lenghtB + AXIS_2_LENGTH * AXIS_2_LENGTH);
+	pointB[ID_AXIS_2] = lenghtA * (-1);
+	pointB[ID_AXIS_1] = sqrt(lenghtB * lenghtB + AXIS_2_LENGTH * AXIS_2_LENGTH);
 
 	return 0;
 }
@@ -117,8 +117,12 @@ int8_t CalcPosistion(int16_t valA, int16_t valB) {
 int8_t UpdateZPos(void) {
 
 	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10);
+
 	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val) == -1) {
+
+#ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
+#endif 
 		return -1;
 	}
 	return 0;
@@ -131,17 +135,17 @@ float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue) {
 	switch (direction)
 	{
 	case CONVERT_COORDINATE_TO_ROBOT:
-		val[x] = *xValue + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;
-		val[y] = *yValue + MACHINE_ZERO_OFFS_Y_FIELD - MACHINE_ZERO_OFFS_Y_ROBOT;
-		/*Serial.print("val[x]: ");
-		Serial.println(val[x], 8);
-		Serial.print("val[y]: ");
-		Serial.println(val[y], 8);*/
+		val[ID_AXIS_1] = *xValue + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;
+		val[ID_AXIS_2] = *yValue + MACHINE_ZERO_OFFS_Y_FIELD - MACHINE_ZERO_OFFS_Y_ROBOT;
+		/*Serial.print("val[ID_AXIS_1]: ");
+		Serial.println(val[ID_AXIS_1], 8);
+		Serial.print("val[ID_AXIS_2]: ");
+		Serial.println(val[ID_AXIS_2], 8);*/
 		return val;
 
 	case CONVERT_COORDINATE_TO_FIELD:
-		val[x] = *xValue + MACHINE_ZERO_OFFS_X_ROBOT - MACHINE_ZERO_OFFS_X_FIELD;
-		val[y] = *yValue + MACHINE_ZERO_OFFS_Y_ROBOT - MACHINE_ZERO_OFFS_Y_FIELD;
+		val[ID_AXIS_1] = *xValue + MACHINE_ZERO_OFFS_X_ROBOT - MACHINE_ZERO_OFFS_X_FIELD;
+		val[ID_AXIS_2] = *yValue + MACHINE_ZERO_OFFS_Y_ROBOT - MACHINE_ZERO_OFFS_Y_FIELD;
 		return val;
 
 	default:

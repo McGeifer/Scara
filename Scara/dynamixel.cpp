@@ -34,65 +34,43 @@ void InitDynamixel(void) {
 	if (response != 3) {
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		/* set system error state to prevent further operations */
-		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR); /* bitmask! */
+#ifndef _DEBUG
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+#endif
 		return;
 	}
 	else {
 
-	// ########################
-	// Axis 1
-	// ########################
+		for (uint8_t i = 0; i < ID_TOTAL_SIZE; i++)	{ /* write configuration parameters to dynamixel */
+			
+			for (size_t i = 0; i < length; i++)	{
 
-	Dynamixel.setTempLimit(x, 70);				// max temperatur 70°C
-	Dynamixel.setVoltageLimit(x, 110, 120);		// min voltage 11V, max 12V
-	Dynamixel.setMaxTorque(x, 1023);			// max torque -> max value
-	Dynamixel.setSRL(x, 1);						// return level 0=none, 1=only for read comand, 2= always
-	Dynamixel.setRDT(x, 250);					// return delay time = 2µs * vaule -> 500µs
-	Dynamixel.setLEDAlarm(x, 127);				// LED blink for all error types
-	Dynamixel.setShutdownAlarm(x, 37);			// turn of torque for: overload, overheating and input voltage error
+				uint8_t error = Dynamixel.setTempLimit(i, cfgList[i].tempLimit);
 
-	// Only change if you really know what you are doing!
-	Dynamixel.setCSlope(x, 32, 32);				// compilance slope - default value
-	Dynamixel.setCMargin(x, 0, 0);				// compilance margin - default value
-	Dynamixel.setPunch(x, 32);					// minimum current supplied to the motor - default value
+				if (error < 0) {
+					DynamixelError(error * (-1), i);
+					return;
+				}
+			}
 
-	// ########################
-	// Axis 2
-	// ########################
+			/*
+			Dynamixel.setTempLimit(i, cfgList[i].tempLimit);
+			Dynamixel.setVoltageLimit(i, cfgList[i].minVoltageLimit, cfgList[i].maxVoltageLimit);
+			Dynamixel.setMaxTorque(i, cfgList[i].maxTorque);
+			Dynamixel.setSRL(i, cfgList[i].srl);
+			Dynamixel.setRDT(i, cfgList[i].rdt);
+			Dynamixel.setLEDAlarm(i, cfgList[i].ledAlarm);
+			Dynamixel.setShutdownAlarm(i, cfgList[i].shutdownAlarm);
+			Dynamixel.setCSlope(i, cfgList[i].cwCSlope, cfgList[i].ccwCSlope);
+			Dynamixel.setCMargin(i, cfgList[i].cwCMargin, cfgList[i].ccwCMargin);
+			Dynamixel.setPunch(i, cfgList[i].punch);
+			*/
+		}
+	
+		Dynamixel.setEndless(ID_Z_AXIS, ON);
 
-	Dynamixel.setTempLimit(y, 70);				// max temperatur 70°C
-	Dynamixel.setVoltageLimit(y, 110, 120);		// min voltage 11V, max 12V
-	Dynamixel.setMaxTorque(y, 1023);			// max torque -> max value
-	Dynamixel.setSRL(y, 1);						// return level 0=none, 1=only for read comand, 2= always
-	Dynamixel.setRDT(y, 250);					// return delay time = 2µs * vaule -> 500µs
-	Dynamixel.setLEDAlarm(y, 127);				// LED blink for all error types
-	Dynamixel.setShutdownAlarm(y, 37);			// turn of torque for: overload, overheating and input voltage error
-
-	// Only change if you really know what you are doing!
-	Dynamixel.setCSlope(y, 32, 32);				// compilance slope - default value
-	Dynamixel.setCMargin(y, 0, 0);				// compilance margin - default value
-	Dynamixel.setPunch(y, 32);					// minimum current supplied to the motor - default value
-
-	// ########################
-	// Axis 3 (z-axis)
-	// ########################
-
-	Dynamixel.setTempLimit(z, 70);				// max temperatur 70°C
-	Dynamixel.setVoltageLimit(z, 110, 120);		// min voltage 11V, max 12V
-	Dynamixel.setMaxTorque(z, 1023);			// max torque -> max value
-	Dynamixel.setSRL(z, 1);						// return level 0=none, 1=only for read comand, 2= always
-	Dynamixel.setRDT(z, 250);					// return delay time = 2µs * vaule -> 500µs
-	Dynamixel.setLEDAlarm(z, 127);				// LED blink for all error types
-	Dynamixel.setShutdownAlarm(z, 37);			// turn of torque for: overload, overheating and input voltage error
-
-	// Only change if you really know what you are doing!
-	Dynamixel.setCSlope(z, 32, 32);				// compilance slope - default value
-	Dynamixel.setCMargin(z, 0, 0);				// compilance margin - default value
-	Dynamixel.setPunch(z, 32);					// minimum current supplied to the motor - default value
-	Dynamixel.setEndless(z, ON);
-
-	// enable torque for all servo motors
-	Dynamixel.torqueStatus(BROADCAST_ID, ON);
+		// enable torque for all servo motors
+		Dynamixel.torqueStatus(BROADCAST_ID, ON);
 	}
 }
 
@@ -144,40 +122,66 @@ void DynamixelError(uint8_t errorBit, uint8_t id) {
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 		}
+#ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+#endif
 	}
 }
 
-void UpdatePos(void) {
+void UpdateObjDir(void) {
 
-	int16_t data[3] = { 0 };
+	int16_t data[ID_TOTAL_SIZE][2] = { 0 };
 	uint8_t error = 0;
 
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		
-		for (uint8_t id = x; id == z; id++) {
-			data[id] = Dynamixel.readPosition(id); /* was mit z achse? was für Rückgabewerte bei continous turn modus? */
+		for (uint8_t id = 0; id < (ID_TOTAL_SIZE); id++) {
+			data[id][pos] = Dynamixel.readPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
+			data[id][speed] = Dynamixel.readSpeed(id);
 
-			if (data[id] < 0) {
-				error = data[id] * (-1); /* error value is negative by dynamixel library */
+			if (data[id][pos] < 0 || data[id][speed] < 0) {
+				
+				if (data[id][pos] < 0) { /* error value is negative by dynamixel library */
+					error = data[id][pos] * (-1); 
+				}
+				else {
+					error = data[id][speed] * (-1);
+				}
 				DynamixelError(error, id);
 				return;
 			}
 			else {
 
-				if (id == DYNA_ID_AXIS_1) {
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
-				}
-				else if (id == DYNA_ID_AXIS_2) {
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id]));
-				}
-				else if (id == DYNA_ID_AXIS_Z) {
+				switch (id)	{ /* store actual speed and position values, abort with error state if unknown id is detected */
+
+				case DYNA_ID_AXIS_1:
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]));
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed]);
+					break;
+				case DYNA_ID_AXIS_2:
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]));
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed]);
+					break;
+				case DYNA_ID_AXIS_Z:
 					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos());
+					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed]);
+					break;
+				default:
+					SendStatus("UpdateObjDir(): ", "unknown device ID", SYS_STAT_ERROR);
+					return;
 				}
 			}
 		}
-		if (CalcPosistion(data[0], data[1]) == -1) {
-			SetObjData(OBJ_IDX_SYS_STATUS, (GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR));
+		if (CalcPosistion(data[ID_AXIS_1][pos], data[ID_AXIS_2][pos]) == -1) { /* calcualte related x and y positions */
+#ifndef _DEBUG
+			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
+#endif
+		}
+		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) { /********** Was ist mit z-achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
+			SetObjData(OBJ_IDX_MOVING, 1); /* system is moving */
+		}
+		else {
+			SetObjData(OBJ_IDX_MOVING, 0); /* system is not moving */
 		}
 	}
 }
@@ -185,7 +189,6 @@ void UpdatePos(void) {
 void HandleMove(void) {
 
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
-		Serial.println("HandleMove();");
 
 		uint8_t moving = (uint8_t)GetObjData(OBJ_IDX_MOVING);
 		uint8_t start = (uint8_t)GetObjData(OBJ_IDX_START_MOVE);
@@ -206,12 +209,15 @@ void HandleMove(void) {
 			GetObjData(OBJ_IDX_Z_NEW_TARGET_POS) / 10.0,
 		};
 		float posWindow[3][2] = { /* allowed position windows */
-			{ actTargetPos[x] - POS_TOLERANCE, actTargetPos[x] + POS_TOLERANCE },
-			{ actTargetPos[y] - POS_TOLERANCE, actTargetPos[y] + POS_TOLERANCE },
-			{ actTargetPos[z] - POS_TOLERANCE, actTargetPos[z] + POS_TOLERANCE },
+			{ actTargetPos[ID_AXIS_1] - POS_TOLERANCE, actTargetPos[ID_AXIS_1] + POS_TOLERANCE },
+			{ actTargetPos[ID_AXIS_2] - POS_TOLERANCE, actTargetPos[ID_AXIS_2] + POS_TOLERANCE },
+			{ actTargetPos[ID_Z_AXIS] - POS_TOLERANCE, actTargetPos[ID_Z_AXIS] + POS_TOLERANCE },
 		};
 
-		if (start && !moving) {
+		if (!start && !moving) {
+			return;
+		}
+		else if (start && !moving) {
 
 			/*  *  - schreibe neue Zielpos in aktuelle Zielpos
 				*  - übergebe neue Zielpos an Dynamixel
@@ -220,31 +226,31 @@ void HandleMove(void) {
 				*  - startkomando zurück setzten
 				*  - ende */
 
-			if (actPos[x] < posWindow[x][minPos] || actPos[x] > posWindow[x][maxPos] ||
-				actPos[y] < posWindow[y][minPos] || actPos[y] > posWindow[y][maxPos] ||
-				actPos[z] < posWindow[z][minPos] || actPos[z] > posWindow[z][maxPos]) { /* goal position changed? */
+			if (actPos[ID_AXIS_1] < posWindow[ID_AXIS_1][MIN_POS] || actPos[ID_AXIS_1] > posWindow[ID_AXIS_1][MAX_POS] ||
+				actPos[ID_AXIS_2] < posWindow[ID_AXIS_2][MIN_POS] || actPos[ID_AXIS_2] > posWindow[ID_AXIS_2][MAX_POS] ||
+				actPos[ID_Z_AXIS] < posWindow[ID_Z_AXIS][MIN_POS] || actPos[ID_Z_AXIS] > posWindow[ID_Z_AXIS][MAX_POS]) { /* goal position changed? */
 
-				if (newTargetPos[x] != actTargetPos[x]) {
+				if (newTargetPos[ID_AXIS_1] != actTargetPos[ID_AXIS_1]) {
 					SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_X_NEW_TARGET_POS));
 				}
-				if (newTargetPos[y] != actTargetPos[y]) {
+				if (newTargetPos[ID_AXIS_2] != actTargetPos[ID_AXIS_2]) {
 					SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Y_NEW_TARGET_POS));
 				}
-				if (newTargetPos[z] != actTargetPos[z]) {
+				if (newTargetPos[ID_Z_AXIS] != actTargetPos[ID_Z_AXIS]) {
 					SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS));
 
-					if (newTargetPos[z] > actTargetPos[z]) {
-						Dynamixel.turn(z, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+					if (newTargetPos[ID_Z_AXIS] > actTargetPos[ID_Z_AXIS]) {
+						Dynamixel.turn(ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 					else {
-						Dynamixel.turn(z, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+						Dynamixel.turn(ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 				}
 				CalcAngle(GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS), GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS));
-				Dynamixel.moveSpeedRW(x, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
-				Dynamixel.moveSpeedRW(y, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
+				Dynamixel.moveSpeedRW(ID_AXIS_1, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
+				Dynamixel.moveSpeedRW(ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
 				Dynamixel.action(); /* sync start */
-				SetObjData(OBJ_IDX_MOVING, 1);
+				//SetObjData(OBJ_IDX_MOVING, 1);
 				SetObjData(OBJ_IDX_START_MOVE, 0);
 			}
 			else {
@@ -254,21 +260,18 @@ void HandleMove(void) {
 		else if (start && moving) {
 			SetObjData(OBJ_IDX_START_MOVE, 0);
 		}
-		else if (!start && moving) {
-			
-			if (actPos[x] >= posWindow[x][minPos] && actPos[x] <= posWindow[x][maxPos] &&
-				actPos[y] >= posWindow[y][minPos] && actPos[y] <= posWindow[y][maxPos] &&
-				actPos[z] >= posWindow[z][minPos] && actPos[z] <= posWindow[z][maxPos]) {  /* target position reached? */
+		else /* (!start && moving) */ {
+
+			if (actPos[ID_AXIS_1] >= posWindow[ID_AXIS_1][MIN_POS] && actPos[ID_AXIS_1] <= posWindow[ID_AXIS_1][MAX_POS] &&
+				actPos[ID_AXIS_2] >= posWindow[ID_AXIS_2][MIN_POS] && actPos[ID_AXIS_2] <= posWindow[ID_AXIS_2][MAX_POS] &&
+				actPos[ID_Z_AXIS] >= posWindow[ID_Z_AXIS][MIN_POS] && actPos[ID_Z_AXIS] <= posWindow[ID_Z_AXIS][MAX_POS]) {  /* target position reached? */
 				
-				SetObjData(OBJ_IDX_MOVING, 0);
+				//SetObjData(OBJ_IDX_MOVING, 0);
 				SetObjData(OBJ_IDX_POS_REACHED, 1);
 			}
 			else {
 				/* z-achse rampe geschwindigkeit */
 			}
-		}
-		else {
-			/* ???? */
 		}
 	}
 	else {
