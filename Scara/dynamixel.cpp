@@ -6,7 +6,7 @@
 #include "objdir.h"
 #include "status.h"
 #include "calc.h"
-#include "DynamixelSerial2.h"
+#include "DynamixelSerial2/DynamixelSerial2.h"
 
 void InitDynamixel(void) {
 
@@ -15,7 +15,7 @@ void InitDynamixel(void) {
 	int response = 0;
 
 	for (int i = 0; i <= 2; i++) {
-		tmp = Dynamixel.ping(i);
+		tmp = dynamixelPing(i);
 
 		if (tmp == -1) {
 			char msg[32];
@@ -30,7 +30,7 @@ void InitDynamixel(void) {
 		}
 	}
 
-	if (response != 3) {
+	if (response == 45/*response != 3*/) {
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		/* set system error state to prevent further operations */
 #ifndef _DEBUG
@@ -42,38 +42,23 @@ void InitDynamixel(void) {
 	{
 		for (uint8_t i = 0; i < ID_TOTAL_SIZE; i++) /* write configuration parameters to dynamixel */
 		{ 
-			for (size_t j = 0; j < 14; j++)
+			for (size_t j = 0; j < 13; j++)
 			{
-				uint8_t error = (*testFunc[j]) (i, list[i][j]);
+				const char* funcName;
+				int16_t error = dynaFuncPtr[j](i, list[i][j], &funcName);
 				if (error < 0)
 				{
 					DynamixelError(error * (-1), i);
+					SendStatus("While calling: ", funcName, STATUS_TYPE_ERROR);
 					return;
 				}
 			}
-
-			Dynamixel.setTempLimit(i, cfgList[i].tempLimit);
-			Dynamixel.setVoltageLimit(i, cfgList[i].minVoltageLimit, cfgList[i].maxVoltageLimit);
-			Dynamixel.setMaxTorque(i, cfgList[i].maxTorque);
-			Dynamixel.setSRL(i, cfgList[i].srl);
-			Dynamixel.setRDT(i, cfgList[i].rdt);
-			Dynamixel.setLEDAlarm(i, cfgList[i].ledAlarm);
-			Dynamixel.setShutdownAlarm(i, cfgList[i].shutdownAlarm);
-			Dynamixel.setCSlope(i, cfgList[i].cwCSlope, cfgList[i].ccwCSlope);
-			Dynamixel.setCMargin(i, cfgList[i].cwCMargin, cfgList[i].ccwCMargin);
-			Dynamixel.setPunch(i, cfgList[i].punch);
-
 		}
-	
-		Dynamixel.setEndless(ID_Z_AXIS, ON);
-
-		// enable torque for all servo motors
-		Dynamixel.torqueStatus(BROADCAST_ID, ON);
+		/* enable continous turn for z axis */
+		dynamixelSetEndless(ID_Z_AXIS, ON);
+		/* enable torque for all servo motors */
+		dynamixelTorqueStatus(BROADCAST_ID, ON);
 	}
-}
-
-int DynaSetMinVolLim(unsigned char id, unsigned char minVoltage) {
-
 }
 
 void DynamixelError(uint8_t errorBit, uint8_t id) {
@@ -138,8 +123,8 @@ void UpdateObjDir(void) {
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
 		
 		for (uint8_t id = 0; id < (ID_TOTAL_SIZE); id++) {
-			data[id][pos] = Dynamixel.readPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
-			data[id][speed] = Dynamixel.readSpeed(id);
+			data[id][pos] = dynamixelReadPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
+			data[id][speed] = dynamixelReadSpeed(id);
 
 			if (data[id][pos] < 0 || data[id][speed] < 0) {
 				
@@ -242,16 +227,16 @@ void HandleMove(void) {
 					SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS));
 
 					if (newTargetPos[ID_Z_AXIS] > actTargetPos[ID_Z_AXIS]) {
-						Dynamixel.turn(ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+						dynamixelTurn(ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 					else {
-						Dynamixel.turn(ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+						dynamixelTurn(ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 				}
 				CalcAngle(GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS), GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS));
-				Dynamixel.moveSpeedRW(ID_AXIS_1, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
-				Dynamixel.moveSpeedRW(ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
-				Dynamixel.action(); /* sync start */
+				dynamixelMoveSpeedRW(ID_AXIS_1, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
+				dynamixelMoveSpeedRW(ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
+				dynamixelAction(); /* sync start */
 				//SetObjData(OBJ_IDX_MOVING, 1);
 				SetObjData(OBJ_IDX_START_MOVE, 0);
 			}

@@ -5,17 +5,21 @@
  */
 
 #include "SimpleModbusSlave.h"
-#include "DynamixelSerial2.h"
+#include "DynamixelSerial2/DynamixelSerial2.h"
 
 #include "objdir.h"
 #include "gpio.h"
 #include "status.h"
-#include "dynamixel.h"
+//#include "dynamixel.h"
 #include "sio.h"
 #include "calc.h"
 
 uint32_t cycleTime;
 uint16_t cycleCount;
+
+extern void InitDynamixel(void);
+extern void UpdateObjDir(void);
+extern void HandleMove(void);
 
 void setup() {
 	InitGPIO();

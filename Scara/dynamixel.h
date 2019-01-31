@@ -9,9 +9,11 @@
 	#include "WProgram.h"
 #endif
 
+#include "DynamixelSerial2\DynamixelSerial2.h"
+
 #define DYNA_AXIS_1_TEMP_LIMIT			70		// max temperatur 70°C
-#define DYNA_AXIS_1_MIN_VOLTAGE_LIMIT	110		// min voltage 11V
-#define DYNA_AXIS_1_MAX_VOLTAGE_LIMIT	120		// max voltage 12V
+#define DYNA_AXIS_1_LOW_VOLTAGE_LIMIT	110		// min voltage 11V
+#define DYNA_AXIS_1_HIGH_VOLTAGE_LIMIT	120		// max voltage 12V
 #define DYNA_AXIS_1_MAX_TORQUE			1023	// max torque -> max value
 #define DYNA_AXIS_1_SRL					1		// return level 0=none, 1=only for read comand, 2= always
 #define DYNA_AXIS_1_RDT					250		// return delay time = 2µs * vaule -> 500µs
@@ -24,8 +26,8 @@
 #define DYNA_AXIS_1_PUNCH				32		// minimum current supplied to the motor - default value
 
 #define DYNA_AXIS_2_TEMP_LIMIT			70
-#define DYNA_AXIS_2_MIN_VOLTAGE_LIMIT	110
-#define DYNA_AXIS_2_MAX_VOLTAGE_LIMIT	120
+#define DYNA_AXIS_2_LOW_VOLTAGE_LIMIT	110
+#define DYNA_AXIS_2_HIGH_VOLTAGE_LIMIT	120
 #define DYNA_AXIS_2_MAX_TORQUE			1023
 #define DYNA_AXIS_2_SRL					1
 #define DYNA_AXIS_2_RDT					150
@@ -38,8 +40,8 @@
 #define DYNA_AXIS_2_PUNCH				32
 
 #define DYNA_Z_AXIS_TEMP_LIMIT			70
-#define DYNA_Z_AXIS_MIN_VOLTAGE_LIMIT	110
-#define DYNA_Z_AXIS_MAX_VOLTAGE_LIMIT	120
+#define DYNA_Z_AXIS_LOW_VOLTAGE_LIMIT	110
+#define DYNA_Z_AXIS_HIGH_VOLTAGE_LIMIT	120
 #define DYNA_Z_AXIS_MAX_TORQUE			1023
 #define DYNA_Z_AXIS_SRL					1
 #define DYNA_Z_AXIS_RDT					250
@@ -51,11 +53,11 @@
 #define DYNA_Z_AXIS_CCW_C_MARGIN		0
 #define DYNA_Z_AXIS_PUNCH				32
 
-uint8_t list[3][13] = {
+uint16_t list[3][13] = {
 
 {	DYNA_AXIS_1_TEMP_LIMIT,
-	DYNA_AXIS_1_MIN_VOLTAGE_LIMIT,
-	DYNA_AXIS_1_MAX_VOLTAGE_LIMIT,
+	DYNA_AXIS_1_LOW_VOLTAGE_LIMIT,
+	DYNA_AXIS_1_HIGH_VOLTAGE_LIMIT,
 	DYNA_AXIS_1_MAX_TORQUE,
 	DYNA_AXIS_1_SRL,
 	DYNA_AXIS_1_RDT,
@@ -68,8 +70,8 @@ uint8_t list[3][13] = {
 	DYNA_AXIS_1_PUNCH,
 },
 {	DYNA_Z_AXIS_TEMP_LIMIT,
-	DYNA_AXIS_2_MIN_VOLTAGE_LIMIT,
-	DYNA_AXIS_2_MAX_VOLTAGE_LIMIT,
+	DYNA_AXIS_2_LOW_VOLTAGE_LIMIT,
+	DYNA_AXIS_2_HIGH_VOLTAGE_LIMIT,
 	DYNA_Z_AXIS_MAX_TORQUE,
 	DYNA_Z_AXIS_SRL,
 	DYNA_Z_AXIS_RDT,
@@ -82,8 +84,8 @@ uint8_t list[3][13] = {
 	DYNA_Z_AXIS_PUNCH,
 },
 {	DYNA_Z_AXIS_TEMP_LIMIT,
-	DYNA_Z_AXIS_MIN_VOLTAGE_LIMIT,
-	DYNA_Z_AXIS_MAX_VOLTAGE_LIMIT,
+	DYNA_Z_AXIS_LOW_VOLTAGE_LIMIT,
+	DYNA_Z_AXIS_HIGH_VOLTAGE_LIMIT,
 	DYNA_Z_AXIS_MAX_TORQUE,
 	DYNA_Z_AXIS_SRL,
 	DYNA_Z_AXIS_RDT,
@@ -97,18 +99,23 @@ uint8_t list[3][13] = {
 }
 };
 
-int(*testFunc[])(uint8_t id, uint8_t val) = {
+typedef int16_t(*funcPtr)(uint8_t id, int16_t val, const char **funcName);
+
+funcPtr dynaFuncPtr[] =
 {
-	Dynamixel.setTempLimit,
-	Dynamixel.setVoltageLimit,
-	Dynamixel.setMaxTorque,
-	Dynamixel.setSRL,
-	Dynamixel.setRDT,
-	Dynamixel.setLEDAlarm,
-	Dynamixel.setShutdownAlarm,
-	Dynamixel.setCSlope,
-	Dynamixel.setCMargin,
-	Dynamixel.setPunch
+	dynamixelSetTempLimit,
+	dynamixelSetLowVoltageLimit,
+	dynamixelSetHighVoltageLimit,
+	dynamixelSetMaxTorque,
+	dynamixelSetSRL,
+	dynamixelSetRDT,
+	dynamixelSetLEDAlarm,
+	dynamixelSetShutdownAlarm,
+	dynamixelSetCWCSlope,
+	dynamixelSetCCWCSlope,
+	dynamixelSetCWCMargin,
+	dynamixelSetCCWCMargin,
+	dynamixelSetPunch
 };
 
 enum dataType
@@ -118,15 +125,15 @@ enum dataType
 };
 
 /* Basic configuration of the Dynamixel servos */
-void InitDynamixel(void);
+extern void InitDynamixel(void);
 
 /* Handler function for Dynamixel specific error codes */
-void DynamixelError(uint8_t errorBit, uint8_t id);
+extern void DynamixelError(uint8_t errorBit, uint8_t id);
 
 /* Cyclic function for updating all actual position values in the object dictionary */
-void UpdateObjDir(void);
+extern void UpdateObjDir(void);
 
 /* Cyclic function for detecting and executing movements of Dynamixel servos */
-void HandleMove(void);
+extern void HandleMove(void);
 
 #endif

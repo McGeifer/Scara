@@ -31,23 +31,23 @@
  22/12/2011 - Compatible con la actualizacion Arduino 1.0.
  10/01/2012 - Utilizacion de Macros y eliminacion codigo no necesario.
  11/01/2012 - Agregadas las funciones:
-              int setTempLimit(unsigned char ID, unsigned char Temperature);
-              int setAngleLimit(unsigned char ID, int CWLimit, int CCWLimit);
-              int setVoltageLimit(unsigned char ID, unsigned char DVoltage, unsigned char UVoltage);
-              int setMaxTorque(unsigned char ID, int MaxTorque);
-			  int setSRL(unsigned char ID, unsigned char SRL);
-              int setRDT(unsigned char ID, unsigned char RDT);
-              int setLEDAlarm(unsigned char ID, unsigned char LEDAlarm);
-			  int setShutdownAlarm(unsigned char ID, unsigned char SALARM);
-              int setCMargin(unsigned char ID, unsigned char CWCMargin, unsigned char CCWCMargin);
-              int setCSlope(unsigned char ID, unsigned char CWCSlope, unsigned char CCWCSlope);
+              int16_t setTempLimit(uint8_t ID, uint8_t Temperature);
+              int16_t setAngleLimit(uint8_t ID, int16_t CWLimit, int16_t CCWLimit);
+              int16_t setVoltageLimit(uint8_t ID, uint8_t DVoltage, uint8_t UVoltage);
+              int16_t setMaxTorque(uint8_t ID, int16_t MaxTorque);
+			  int16_t setSRL(uint8_t ID, uint8_t SRL);
+              int16_t setRDT(uint8_t ID, uint8_t RDT);
+              int16_t setLEDAlarm(uint8_t ID, uint8_t LEDAlarm);
+			  int16_t setShutdownAlarm(uint8_t ID, uint8_t SALARM);
+              int16_t setCMargin(uint8_t ID, uint8_t CWCMargin, uint8_t CCWCMargin);
+              int16_t setCSlope(uint8_t ID, uint8_t CWCSlope, uint8_t CCWCSlope);
  15/01/2012 - Agregadas las funciones:
-              int setPunch(unsigned char ID, int Punch);
-              int moving(unsigned char ID);
-              int lockRegister(unsigned char ID);
-              int RWStatus(unsigned char ID);
-              int readSpeed(unsigned char ID);
-              int readLoad(unsigned char ID); 
+              int16_t setPunch(uint8_t ID, int16_t Punch);
+              int16_t moving(uint8_t ID);
+              int16_t lockRegister(uint8_t ID);
+              int16_t RWStatus(uint8_t ID);
+              int16_t readSpeed(uint8_t ID);
+              int16_t readLoad(uint8_t ID); 
  
  TODO:
  
@@ -61,8 +61,14 @@
  
  */
 
-#ifndef DynamixelSerial2_h
-#define DynamixelSerial2_h
+#ifndef _DYNAMIXELSERIAL2_H
+#define _DYNAMIXELSERIAL2_H
+
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "arduino.h"
+#else
+#include "WProgram.h"
+#endif
 
 	// EEPROM AREA  ///////////////////////////////////////////////////////////
 #define AX_MODEL_NUMBER_L           0
@@ -176,84 +182,52 @@
 #define Rx_MODE                     0
 #define LOCK                        1
 
-#include <inttypes.h>
+void dynamixelBegin(int32_t baud, uint8_t directionPin);
+//void begin(int32_t baud);
+void dynamixelEnd(void);
+	
+int16_t dynamixelReset(uint8_t ID);
+int16_t dynamixelPing(uint8_t ID);
+	
+int16_t dynamixelSetID(uint8_t ID, uint8_t newID);
+int16_t dynamixelSetBD(uint8_t ID, int32_t baud);
 
-class DynamixelClass {
-private:
+int16_t dynamixelMove(uint8_t ID, int16_t Position);
+int16_t dynamixelMoveSpeed(uint8_t ID, int16_t Position, int16_t Speed);
+int16_t dynamixelSetEndless(uint8_t ID,bool Status);
+int16_t dynamixelTurn(uint8_t ID, bool SIDE, int16_t Speed);
+int16_t dynamixelMoveRW(uint8_t ID, int16_t Position);
+int16_t dynamixelMoveSpeedRW(uint8_t ID, int16_t Position, int16_t Speed);
 	
-	unsigned char Checksum; 
-	unsigned char Direction_Pin;
-	unsigned char Time_Counter;
-	unsigned char Incoming_Byte;               
-	unsigned char Position_High_Byte;
-	unsigned char Position_Low_Byte;
-	unsigned char Speed_High_Byte;
-	unsigned char Speed_Low_Byte;
-	unsigned char Load_High_Byte;
-	unsigned char Load_Low_Byte;
+void dynamixelAction(void);
 	
-	int Moving_Byte;
-	int RWS_Byte;
-	int Speed_Long_Byte;
-	int Load_Long_Byte;
-	int Position_Long_Byte;
-	int Temperature_Byte;
-	int Voltage_Byte;
-	int Error_Byte; 
-	  
-	int read_error(void);
+int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature, const char **funcName);
+int16_t dynamixelSetCWAngleLimit(uint8_t ID, int16_t CWLimit, const char **funcName);
+int16_t dynamixelSetCCWAngleLimit(uint8_t ID, int16_t CCWLimit, const char **funcName);
+int16_t dynamixelSetLowVoltageLimit(uint8_t ID, int16_t DVoltage, const char **funcName);
+int16_t dynamixelSetHighVoltageLimit(uint8_t ID, int16_t UVoltage, const char **funcName);
+int16_t dynamixelSetMaxTorque(uint8_t ID, int16_t MaxTorque, const char **funcName);
+int16_t dynamixelSetSRL(uint8_t ID, int16_t SRL, const char **funcName);
+int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT, const char **funcName);
+int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm, const char **funcName);
+int16_t dynamixelSetShutdownAlarm(uint8_t ID, int16_t SALARM, const char **funcName);
+int16_t dynamixelSetCWCMargin(uint8_t ID, int16_t CWCMargin, const char **funcName);
+int16_t dynamixelSetCCWCMargin(uint8_t ID, int16_t CCWCMargin, const char **funcName);
+int16_t dynamixelSetCWCSlope(uint8_t ID, int16_t CWCSlope, const char **funcName);
+int16_t dynamixelSetCCWCSlope(uint8_t ID, int16_t CCWCSlope, const char **funcName);
+int16_t dynamixelSetPunch(uint8_t ID, int16_t Punch, const char **funcName);
 	
-public:
+int16_t dynamixelMoving(uint8_t ID);
+int16_t dynamixelLockRegister(uint8_t ID);
+int16_t dynamixelRWStatus(uint8_t ID);
 	
-	void begin(long baud, unsigned char directionPin);
-	void begin(long baud);
-	void end(void);
+int16_t dynamixelReadTemperature(uint8_t ID);
+int16_t dynamixelReadVoltage(uint8_t ID);
+int16_t dynamixelReadPosition(uint8_t ID);
+int16_t dynamixelReadSpeed(uint8_t ID);
+int16_t dynamixelReadLoad(uint8_t ID);
 	
-	int reset(unsigned char ID);
-	int ping(unsigned char ID); 
-	
-	int setID(unsigned char ID, unsigned char newID);
-	int setBD(unsigned char ID, long baud);
-	
-	int move(unsigned char ID, int Position);
-	int moveSpeed(unsigned char ID, int Position, int Speed);
-	int setEndless(unsigned char ID,bool Status);
-	int turn(unsigned char ID, bool SIDE, int Speed);
-	int moveRW(unsigned char ID, int Position);
-	int moveSpeedRW(unsigned char ID, int Position, int Speed);
-	
-	void action(void);
-	
-	int setTempLimit(unsigned char ID, unsigned char Temperature);
-	int setCWAngleLimit(unsigned char ID, int CWLimit);
-	int setCCWAngleLimit(unsigned char ID, int CCWLimit);
-	int setMinVoltageLimit(unsigned char ID, unsigned char UVoltage);
-	int setMaxVoltageLimit(unsigned char ID, unsigned char DVoltage);
-	int setMaxTorque(unsigned char ID, int MaxTorque);
-	int setSRL(unsigned char ID, unsigned char SRL);
-	int setRDT(unsigned char ID, unsigned char RDT);
-	int setLEDAlarm(unsigned char ID, unsigned char LEDAlarm);
-	int setShutdownAlarm(unsigned char ID, unsigned char SALARM);
-	int setCWCMargin(unsigned char ID, unsigned char CWCMargin);
-	int setCCWMargin(unsigned char ID, unsigned char CCWCMargin);
-	int setCWCSlope(unsigned char ID, unsigned char CWCSlope);
-	int setCCWCSlope(unsigned char ID, unsigned char CCWCSlope);
-	int setPunch(unsigned char ID, int Punch);
-	
-	int moving(unsigned char ID);
-	int lockRegister(unsigned char ID);
-	int RWStatus(unsigned char ID);
-	
-	int readTemperature(unsigned char ID);
-	int readVoltage(unsigned char ID);
-	int readPosition(unsigned char ID);
-	int readSpeed(unsigned char ID);
-	int readLoad(unsigned char ID);
-	
-	int torqueStatus(unsigned char ID, bool Status);
-	int ledStatus(unsigned char ID, bool Status);
-};
-
-extern DynamixelClass Dynamixel;
+int16_t dynamixelTorqueStatus(uint8_t ID, bool Status);
+int16_t dynamixelLedStatus(uint8_t ID, bool Status);
 
 #endif

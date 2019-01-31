@@ -21,33 +21,33 @@
  Modifications:
  
  25/07/2011 - Eliminado la modificacion serial para ser modificada dentro del mismo Hardware Serial.
- 25/07/2011 - Modificado la funcion setBD() para aceptar todas la velocidades sin PDF.
+ 25/07/2011 - Modificado la funcion SetBD() para aceptar todas la velocidades sin PDF.
  25/07/2011 - Agregada la funcion de Rotacion Continua.
- 26/07/2011 - Agregada la funcion begin sin seteo de Direction_Pin.
- 25/07/2011 - Agregada la funcion Reset.
+ 26/07/2011 - Agregada la funcion begin sin Seteo de Direction_Pin.
+ 25/07/2011 - Agregada la funcion ReSet.
  26/07/2011 - Agregada la funcion Reg_Write en move y moveSpeed.
  26/07/2011 - Agregada la funcion Action.
  13/12/2011 - Arreglado el manejo y envio de variables.
  22/12/2011 - Compatible con la actualizacion Arduino 1.0.
  10/01/2012 - Utilizacion de Macros y eliminacion codigo no necesario.
  11/01/2012 - Agregadas las funciones:
-              int setTempLimit(unsigned char ID, unsigned char Temperature);
-              int setAngleLimit(unsigned char ID, int CWLimit, int CCWLimit);
-              int setVoltageLimit(unsigned char ID, unsigned char DVoltage, unsigned char UVoltage);
-			  int setMaxTorque(unsigned char ID, int MaxTorque);
-              int setSRL(unsigned char ID, unsigned char SRL);
-              int setRDT(unsigned char ID, unsigned char RDT);
-              int setLEDAlarm(unsigned char ID, unsigned char LEDAlarm);
-              int setShutdownAlarm(unsigned char ID, unsigned char SALARM);
-              int setCMargin(unsigned char ID, unsigned char CWCMargin, unsigned char CCWCMargin);
-			  int setCSlope(unsigned char ID, unsigned char CWCSlope, unsigned char CCWCSlope);
+              int16_t SetTempLimit(uint8_t ID, uint8_t Temperature);
+              int16_t SetAngleLimit(uint8_t ID, int16_t CWLimit, int16_t CCWLimit);
+              int16_t SetVoltageLimit(uint8_t ID, uint8_t DVoltage, uint8_t UVoltage);
+			  int16_t SetMaxTorque(uint8_t ID, int16_t MaxTorque);
+              int16_t SetSRL(uint8_t ID, uint8_t SRL);
+              int16_t SetRDT(uint8_t ID, uint8_t RDT);
+              int16_t SetLEDAlarm(uint8_t ID, uint8_t LEDAlarm);
+              int16_t SetShutdownAlarm(uint8_t ID, uint8_t SALARM);
+              int16_t SetCMargin(uint8_t ID, uint8_t CWCMargin, uint8_t CCWCMargin);
+			  int16_t SetCSlope(uint8_t ID, uint8_t CWCSlope, uint8_t CCWCSlope);
  15/01/2012 - Agregadas las funciones:             
-              int setPunch(unsigned char ID, int Punch);
-              int moving(unsigned char ID);
-              int lockRegister(unsigned char ID);
-			  int RWStatus(unsigned char ID);
-              int readSpeed(unsigned char ID);
-              int readLoad(unsigned char ID);
+              int16_t SetPunch(uint8_t ID, int16_t Punch);
+              int16_t moving(uint8_t ID);
+              int16_t lockRegister(uint8_t ID);
+			  int16_t RWStatus(uint8_t ID);
+              int16_t readSpeed(uint8_t ID);
+              int16_t readLoad(uint8_t ID);
  
  TODO:
  
@@ -84,13 +84,34 @@
 
 // Macro for Comunication Flow Control
 
-#define setDPin(DirPin,Mode)   (pinMode(DirPin,Mode))       // Select the Switch to TX/RX Mode Pin
+#define SetDPin(DirPin,Mode)   (pinMode(DirPin,Mode))       // Select the Switch to TX/RX Mode Pin
 #define switchCom(DirPin,Mode) (digitalWrite(DirPin,Mode))  // Switch to TX/RX Mode
 
+uint8_t Checksum;
+uint8_t Direction_Pin;
+uint8_t Time_Counter;
+uint8_t Incoming_Byte;
+uint8_t Position_High_Byte;
+uint8_t Position_Low_Byte;
+uint8_t Speed_High_Byte;
+uint8_t Speed_Low_Byte;
+uint8_t Load_High_Byte;
+uint8_t Load_Low_Byte;
+
+int16_t Moving_Byte;
+int16_t RWS_Byte;
+int16_t Speed_Long_Byte;
+int16_t Load_Long_Byte;
+int16_t Position_Long_Byte;
+int16_t Temperature_Byte;
+int16_t Voltage_Byte;
+int16_t Error_Byte;
+
+//int16_t ReadError(void);
 
 // Private Methods //////////////////////////////////////////////////////////////
 
-int DynamixelClass::read_error(void)
+int16_t readError(void)
 {
 	Time_Counter = 0;
 	while((availableData() < 5) & (Time_Counter < TIME_OUT)){  // Wait for Data
@@ -113,24 +134,24 @@ int DynamixelClass::read_error(void)
 
 // Public Methods //////////////////////////////////////////////////////////////
 
-void DynamixelClass::begin(long baud, unsigned char directionPin)
+void dynamixelBegin(int32_t baud, uint8_t directionPin)
 {	
 	Direction_Pin = directionPin;
-	setDPin(Direction_Pin,OUTPUT);
+	SetDPin(Direction_Pin,OUTPUT);
 	beginCom(baud);
 }	
 
-void DynamixelClass::begin(long baud)
-{	
-	beginCom(baud);
-}	
+//void dynamixelBegin(int32_t baud)
+//{	
+//	beginCom(baud);
+//}	
 
-void DynamixelClass::end()
+void dynamixelEnd()
 {
 	endCom();
 }
 
-int DynamixelClass::reset(unsigned char ID)
+int16_t dynamixelReset(uint8_t ID)
 {
 	Checksum = (~(ID + AX_RESET_LENGTH + AX_RESET))&0xFF;
 	
@@ -144,10 +165,10 @@ int DynamixelClass::reset(unsigned char ID)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 
-    return (read_error());  
+    return (readError());  
 }
 
-int DynamixelClass::ping(unsigned char ID)
+int16_t dynamixelPing(uint8_t ID)
 {
 	Checksum = (~(ID + AX_READ_DATA + AX_PING))&0xFF;
 	
@@ -161,10 +182,10 @@ int DynamixelClass::ping(unsigned char ID)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());              
+    return (readError());              
 }
 
-int DynamixelClass::setID(unsigned char ID, unsigned char newID)
+int16_t dynamixelSetID(uint8_t ID, uint8_t newID)
 {    
 	Checksum = (~(ID + AX_ID_LENGTH + AX_WRITE_DATA + AX_ID + newID))&0xFF;
 
@@ -180,12 +201,12 @@ int DynamixelClass::setID(unsigned char ID, unsigned char newID)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::setBD(unsigned char ID, long baud)
+int16_t dynamixelSetBD(uint8_t ID, int32_t baud)
 {    
-	unsigned char Baud_Rate = (2000000/baud) - 1;
+	uint8_t Baud_Rate = (2000000/baud) - 1;
     Checksum = (~(ID + AX_BD_LENGTH + AX_WRITE_DATA + AX_BAUD_RATE + Baud_Rate))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -200,12 +221,12 @@ int DynamixelClass::setBD(unsigned char ID, long baud)
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::move(unsigned char ID, int Position)
+int16_t dynamixelMove(uint8_t ID, int16_t Position)
 {
-    char Position_H,Position_L;
+    int8_t Position_H,Position_L;
     Position_H = Position >> 8;           // 16 bits - 2 x 8 bits variables
     Position_L = Position;
 	Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_GOAL_POSITION_L + Position_L + Position_H))&0xFF;
@@ -223,12 +244,12 @@ int DynamixelClass::move(unsigned char ID, int Position)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 
-    return (read_error());                 // Return the read error
+    return (readError());                 // Return the read error
 }
 
-int DynamixelClass::moveSpeed(unsigned char ID, int Position, int Speed)
+int16_t dynamixelMoveSpeed(uint8_t ID, int16_t Position, int16_t Speed)
 {
-    char Position_H,Position_L,Speed_H,Speed_L;
+    int8_t Position_H,Position_L,Speed_H,Speed_L;
     Position_H = Position >> 8;    
     Position_L = Position;                // 16 bits - 2 x 8 bits variables
     Speed_H = Speed >> 8;
@@ -250,13 +271,13 @@ int DynamixelClass::moveSpeed(unsigned char ID, int Position, int Speed)
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());               // Return the read error
+    return (readError());               // Return the read error
 }
 
-int DynamixelClass::setEndless(unsigned char ID, bool Status)
+int16_t dynamixelSetEndless(uint8_t ID, bool Status)
 {
  if ( Status ) {	
-	  char AX_CCW_AL_LT = 0;     // Changing the CCW Angle Limits for Full Rotation.
+	  int8_t AX_CCW_AL_LT = 0;     // Changing the CCW Angle Limits for Full Rotation.
 	  Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_CCW_ANGLE_LIMIT_L))&0xFF;
 	
 	  switchCom(Direction_Pin,Tx_MODE);
@@ -272,11 +293,11 @@ int DynamixelClass::setEndless(unsigned char ID, bool Status)
       delayus(TX_DELAY_TIME);
 	  switchCom(Direction_Pin,Rx_MODE);
 
-	  return(read_error());
+	  return(readError());
  }
  else
  {
-	 turn(ID,0,0);
+	 dynamixelTurn(ID,0,0);
 	 Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_CCW_ANGLE_LIMIT_L + AX_CCW_AL_L + AX_CCW_AL_H))&0xFF;
 	
 	 switchCom(Direction_Pin,Tx_MODE);
@@ -292,15 +313,15 @@ int DynamixelClass::setEndless(unsigned char ID, bool Status)
 	 delayus(TX_DELAY_TIME);
 	 switchCom(Direction_Pin,Rx_MODE);
 	 
-	 return (read_error());                 // Return the read error
+	 return (readError());                 // Return the read error
   }
  } 
 
-int DynamixelClass::turn(unsigned char ID, bool SIDE, int Speed)
+int16_t dynamixelTurn(uint8_t ID, bool SIDE, int16_t Speed)
 {		
 		if (SIDE == 0){                          // Move Left///////////////////////////
 			
-			char Speed_H,Speed_L;
+			int8_t Speed_H,Speed_L;
 			Speed_H = Speed >> 8;
 			Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
 			Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
@@ -318,11 +339,11 @@ int DynamixelClass::turn(unsigned char ID, bool SIDE, int Speed)
 			delayus(TX_DELAY_TIME);
 			switchCom(Direction_Pin,Rx_MODE);
 			
-			return(read_error());               // Return the read error		
+			return(readError());               // Return the read error		
 		}
 		else
 		{                                            // Move Rigth////////////////////
-			char Speed_H,Speed_L;
+			int8_t Speed_H,Speed_L;
 			Speed_H = (Speed >> 8) + 4;
 			Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
 			Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
@@ -340,13 +361,13 @@ int DynamixelClass::turn(unsigned char ID, bool SIDE, int Speed)
 			delayus(TX_DELAY_TIME);
 			switchCom(Direction_Pin,Rx_MODE);
 			
-			return(read_error());                // Return the read error	
+			return(readError());                // Return the read error	
 		}
 }
 
-int DynamixelClass::moveRW(unsigned char ID, int Position)
+int16_t dynamixelMoveRW(uint8_t ID, int16_t Position)
 {
-    char Position_H,Position_L;
+    int8_t Position_H,Position_L;
     Position_H = Position >> 8;           // 16 bits - 2 x 8 bits variables
     Position_L = Position;
     Checksum = (~(ID + AX_GOAL_LENGTH + AX_REG_WRITE + AX_GOAL_POSITION_L + Position_L + Position_H))&0xFF;
@@ -364,12 +385,12 @@ int DynamixelClass::moveRW(unsigned char ID, int Position)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error());                 // Return the read error
+    return (readError());                 // Return the read error
 }
 
-int DynamixelClass::moveSpeedRW(unsigned char ID, int Position, int Speed)
+int16_t dynamixelMoveSpeedRW(uint8_t ID, int16_t Position, int16_t Speed)
 {
-    char Position_H,Position_L,Speed_H,Speed_L;
+    int8_t Position_H,Position_L,Speed_H,Speed_L;
     Position_H = Position >> 8;    
     Position_L = Position;                // 16 bits - 2 x 8 bits variables
     Speed_H = Speed >> 8;
@@ -391,10 +412,10 @@ int DynamixelClass::moveSpeedRW(unsigned char ID, int Position, int Speed)
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());               // Return the read error
+    return (readError());               // Return the read error
 }
 
-void DynamixelClass::action()
+void dynamixelAction()
 {	
 	switchCom(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
@@ -407,7 +428,7 @@ void DynamixelClass::action()
 	switchCom(Direction_Pin,Rx_MODE);
 }
 
-int DynamixelClass::torqueStatus( unsigned char ID, bool Status)
+int16_t dynamixelTorqueStatus( uint8_t ID, bool Status)
 {
     Checksum = (~(ID + AX_TORQUE_LENGTH + AX_WRITE_DATA + AX_TORQUE_ENABLE + Status))&0xFF;
 
@@ -423,10 +444,10 @@ int DynamixelClass::torqueStatus( unsigned char ID, bool Status)
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());              // Return the read error
+    return (readError());              // Return the read error
 }
 
-int DynamixelClass::ledStatus(unsigned char ID, bool Status)
+int16_t dynamixelLedStatus(uint8_t ID, bool Status)
 {    
     Checksum = (~(ID + AX_LED_LENGTH + AX_WRITE_DATA + AX_LED + Status))&0xFF;
 
@@ -442,10 +463,10 @@ int DynamixelClass::ledStatus(unsigned char ID, bool Status)
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());              // Return the read error
+    return (readError());              // Return the read error
 }
 
-int DynamixelClass::readTemperature(unsigned char ID)
+int16_t dynamixelReadTemperature(uint8_t ID)
 {	
     Checksum = (~(ID + AX_TEM_LENGTH  + AX_READ_DATA + AX_PRESENT_TEMPERATURE + AX_BYTE_READ))&0xFF;
     
@@ -482,7 +503,7 @@ int DynamixelClass::readTemperature(unsigned char ID)
 	return (Temperature_Byte);               // Returns the read temperature
 }
 
-int DynamixelClass::readPosition(unsigned char ID)
+int16_t dynamixelReadPosition(uint8_t ID)
 {	
     Checksum = (~(ID + AX_POS_LENGTH  + AX_READ_DATA + AX_PRESENT_POSITION_L + AX_BYTE_READ_POS))&0xFF;
   
@@ -523,7 +544,7 @@ int DynamixelClass::readPosition(unsigned char ID)
 	return (Position_Long_Byte);     // Returns the read position
 }
 
-int DynamixelClass::readVoltage(unsigned char ID)
+int16_t dynamixelReadVoltage(uint8_t ID)
 {    
     Checksum = (~(ID + AX_VOLT_LENGTH  + AX_READ_DATA + AX_PRESENT_VOLTAGE + AX_BYTE_READ))&0xFF;
     
@@ -560,8 +581,9 @@ int DynamixelClass::readVoltage(unsigned char ID)
 	return (Voltage_Byte);               // Returns the read Voltage
 }
 
-int DynamixelClass::setTempLimit(unsigned char ID, unsigned char Temperature)
+int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature, const char **funcName)
 {
+	*funcName = __func__;
 	Checksum = (~(ID + AX_TL_LENGTH +AX_WRITE_DATA+ AX_LIMIT_TEMPERATURE + Temperature))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -576,11 +598,32 @@ int DynamixelClass::setTempLimit(unsigned char ID, unsigned char Temperature)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error()); 
+    return (readError()); 
 }
 
-int DynamixelClass::setHighVoltageLimit(unsigned char ID, unsigned char UVoltage)
+int16_t dynamixelSetLowVoltageLimit(uint8_t ID, int16_t DVoltage, const char **funcName)
 {
+	*funcName = __func__;
+	Checksum = (~(ID + AX_VL_LENGTH + AX_WRITE_DATA + AX_DOWN_LIMIT_VOLTAGE + DVoltage)) & 0xFF;
+
+	switchCom(Direction_Pin, Tx_MODE);
+	sendData(AX_START);
+	sendData(AX_START);
+	sendData(ID);
+	sendData(AX_VL_LENGTH);
+	sendData(AX_WRITE_DATA);
+	sendData(AX_DOWN_LIMIT_VOLTAGE);
+	sendData(DVoltage);
+	sendData(Checksum);
+	delayus(TX_DELAY_TIME);
+	switchCom(Direction_Pin, Rx_MODE);
+
+	return (readError());
+}
+
+int16_t dynamixelSetHighVoltageLimit(uint8_t ID, int16_t UVoltage, const char **funcName)
+{
+	*funcName = __func__;
 	Checksum = (~(ID + AX_VL_LENGTH +AX_WRITE_DATA+ AX_DOWN_LIMIT_VOLTAGE + UVoltage))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -595,36 +638,16 @@ int DynamixelClass::setHighVoltageLimit(unsigned char ID, unsigned char UVoltage
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error()); 
+    return (readError()); 
 }
 
-int DynamixelClass::setLowVoltageLimit(unsigned char ID, unsigned char DVoltage)
+int16_t dynamixelSetCWAngleLimit(uint8_t ID, int16_t CWLimit, const char **funcName)
 {
-	Checksum = (~(ID + AX_VL_LENGTH + AX_WRITE_DATA + AX_DOWN_LIMIT_VOLTAGE + DVoltage )) & 0xFF;
-
-	switchCom(Direction_Pin, Tx_MODE);
-	sendData(AX_START);
-	sendData(AX_START);
-	sendData(ID);
-	sendData(AX_VL_LENGTH);
-	sendData(AX_WRITE_DATA);
-	sendData(AX_DOWN_LIMIT_VOLTAGE);
-	sendData(DVoltage);
-	sendData(Checksum);
-	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin, Rx_MODE);
-
-	return (read_error());
-}
-
-int DynamixelClass::setAngleLimit(unsigned char ID, int CWLimit, int CCWLimit)
-{
-	char CW_H,CW_L,CCW_H,CCW_L;
+	*funcName = __func__;
+	int8_t CW_H,CW_L;
     CW_H = CWLimit >> 8;    
     CW_L = CWLimit;                // 16 bits - 2 x 8 bits variables
-    CCW_H = CCWLimit >> 8;
-    CCW_L = CCWLimit;  
-	Checksum = (~(ID + AX_VL_LENGTH +AX_WRITE_DATA+ AX_CW_ANGLE_LIMIT_L + CW_H + CW_L + AX_CCW_ANGLE_LIMIT_L + CCW_H + CCW_L))&0xFF;
+	Checksum = (~(ID + AX_VL_LENGTH +AX_WRITE_DATA+ AX_CW_ANGLE_LIMIT_L + CW_H + CW_L))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
@@ -635,19 +658,41 @@ int DynamixelClass::setAngleLimit(unsigned char ID, int CWLimit, int CCWLimit)
 	sendData(AX_CW_ANGLE_LIMIT_L);
     sendData(CW_L);
 	sendData(CW_H);
-	sendData(AX_CCW_ANGLE_LIMIT_L);
-    sendData(CCW_L);
-	sendData(CCW_H);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error()); 
+    return (readError()); 
 }
 
-int DynamixelClass::setMaxTorque(unsigned char ID, int MaxTorque)
+int16_t dynamixelSetCCWAngleLimit(uint8_t ID, int16_t CCWLimit, const char **funcName)
 {
-    char MaxTorque_H,MaxTorque_L;
+	*funcName = __func__;
+	int8_t CCW_H, CCW_L;
+	CCW_H = CCWLimit >> 8;
+	CCW_L = CCWLimit;			// 16 bits - 2 x 8 bits variables
+	Checksum = (~(ID + AX_VL_LENGTH + AX_WRITE_DATA + AX_CCW_ANGLE_LIMIT_L + CCW_H + CCW_L)) & 0xFF;
+
+	switchCom(Direction_Pin, Tx_MODE);
+	sendData(AX_START);
+	sendData(AX_START);
+	sendData(ID);
+	sendData(AX_CCW_CW_LENGTH);
+	sendData(AX_WRITE_DATA);
+	sendData(AX_CCW_ANGLE_LIMIT_L);
+	sendData(CCW_L);
+	sendData(CCW_H);
+	sendData(Checksum);
+	delayus(TX_DELAY_TIME);
+	switchCom(Direction_Pin, Rx_MODE);
+
+	return (readError());
+}
+
+int16_t dynamixelSetMaxTorque(uint8_t ID, int16_t MaxTorque, const char **funcName)
+{
+	*funcName = __func__;
+	int8_t MaxTorque_H,MaxTorque_L;
     MaxTorque_H = MaxTorque >> 8;           // 16 bits - 2 x 8 bits variables
     MaxTorque_L = MaxTorque;
 	Checksum = (~(ID + AX_MT_LENGTH + AX_WRITE_DATA + AX_MAX_TORQUE_L + MaxTorque_L + MaxTorque_H))&0xFF;
@@ -665,11 +710,12 @@ int DynamixelClass::setMaxTorque(unsigned char ID, int MaxTorque)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error());                 // Return the read error
+    return (readError());                 // Return the read error
 }
 
-int DynamixelClass::setSRL(unsigned char ID, unsigned char SRL)
+int16_t dynamixelSetSRL(uint8_t ID, int16_t SRL, const char **funcName)
 {    
+	*funcName = __func__;
 	Checksum = (~(ID + AX_SRL_LENGTH + AX_WRITE_DATA + AX_RETURN_LEVEL + SRL))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -684,11 +730,12 @@ int DynamixelClass::setSRL(unsigned char ID, unsigned char SRL)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::setRDT(unsigned char ID, unsigned char RDT)
+int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT, const char **funcName)
 {    
+	*funcName = __func__;
 	Checksum = (~(ID + AX_RDT_LENGTH + AX_WRITE_DATA + AX_RETURN_DELAY_TIME + (RDT/2)))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -703,11 +750,12 @@ int DynamixelClass::setRDT(unsigned char ID, unsigned char RDT)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::setLEDAlarm(unsigned char ID, unsigned char LEDAlarm)
+int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm, const char **funcName)
 {    
+	*funcName = __func__;
 	Checksum = (~(ID + AX_LEDALARM_LENGTH + AX_WRITE_DATA + AX_ALARM_LED + LEDAlarm))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -722,11 +770,12 @@ int DynamixelClass::setLEDAlarm(unsigned char ID, unsigned char LEDAlarm)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::setShutdownAlarm(unsigned char ID, unsigned char SALARM)
+int16_t dynamixelSetShutdownAlarm(uint8_t ID, int16_t SALARM, const char **funcName)
 {    
+	*funcName = __func__;
 	Checksum = (~(ID + AX_SALARM_LENGTH + AX_ALARM_SHUTDOWN + AX_ALARM_LED + SALARM))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -741,12 +790,13 @@ int DynamixelClass::setShutdownAlarm(unsigned char ID, unsigned char SALARM)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::setCMargin(unsigned char ID, unsigned char CWCMargin, unsigned char CCWCMargin)
+int16_t dynamixelSetCWCMargin(uint8_t ID, int16_t CWCMargin, const char **funcName)
 {
-	Checksum = (~(ID + AX_CM_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_MARGIN + CWCMargin + AX_CCW_COMPLIANCE_MARGIN + CCWCMargin))&0xFF;
+	*funcName = __func__;
+	Checksum = (~(ID + AX_CM_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_MARGIN + CWCMargin))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
@@ -756,18 +806,37 @@ int DynamixelClass::setCMargin(unsigned char ID, unsigned char CWCMargin, unsign
 	sendData(AX_WRITE_DATA);
 	sendData(AX_CW_COMPLIANCE_MARGIN);
     sendData(CWCMargin);
-	sendData(AX_CCW_COMPLIANCE_MARGIN);
-    sendData(CCWCMargin);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error()); 
+    return (readError()); 
 }
 
-int DynamixelClass::setCSlope(unsigned char ID, unsigned char CWCSlope, unsigned char CCWCSlope)
+int16_t dynamixelSetCCWCMargin(uint8_t ID, int16_t CCWCMargin, const char **funcName)
 {
-	Checksum = (~(ID + AX_CS_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_SLOPE + CWCSlope + AX_CCW_COMPLIANCE_SLOPE + CCWCSlope))&0xFF;
+	*funcName = __func__;
+	Checksum = (~(ID + AX_CM_LENGTH + AX_WRITE_DATA + AX_CCW_COMPLIANCE_MARGIN + CCWCMargin)) & 0xFF;
+
+	switchCom(Direction_Pin, Tx_MODE);
+	sendData(AX_START);
+	sendData(AX_START);
+	sendData(ID);
+	sendData(AX_CM_LENGTH);
+	sendData(AX_WRITE_DATA);
+	sendData(AX_CCW_COMPLIANCE_MARGIN);
+	sendData(CCWCMargin);
+	sendData(Checksum);
+	delayus(TX_DELAY_TIME);
+	switchCom(Direction_Pin, Rx_MODE);
+
+	return (readError());
+}
+
+int16_t dynamixelSetCWCSlope(uint8_t ID, int16_t CWCSlope, const char **funcName)
+{
+	*funcName = __func__;
+	Checksum = (~(ID + AX_CS_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_SLOPE + CWCSlope))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
@@ -777,18 +846,37 @@ int DynamixelClass::setCSlope(unsigned char ID, unsigned char CWCSlope, unsigned
 	sendData(AX_WRITE_DATA);
 	sendData(AX_CW_COMPLIANCE_SLOPE);
     sendData(CWCSlope);
-	sendData(AX_CCW_COMPLIANCE_SLOPE);
-    sendData(CCWCSlope);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error()); 
+    return (readError()); 
 }
 
-int DynamixelClass::setPunch(unsigned char ID, int Punch)
+int16_t dynamixelSetCCWCSlope(uint8_t ID, int16_t CCWCSlope, const char **funcName)
 {
-    char Punch_H,Punch_L;
+	*funcName = __func__;
+	Checksum = (~(ID + AX_CS_LENGTH + AX_WRITE_DATA + AX_CCW_COMPLIANCE_SLOPE + CCWCSlope)) & 0xFF;
+
+	switchCom(Direction_Pin, Tx_MODE);
+	sendData(AX_START);
+	sendData(AX_START);
+	sendData(ID);
+	sendData(AX_CS_LENGTH);
+	sendData(AX_WRITE_DATA);
+	sendData(AX_CCW_COMPLIANCE_SLOPE);
+	sendData(CCWCSlope);
+	sendData(Checksum);
+	delayus(TX_DELAY_TIME);
+	switchCom(Direction_Pin, Rx_MODE);
+
+	return (readError());
+}
+
+int16_t dynamixelSetPunch(uint8_t ID, int16_t Punch, const char **funcName)
+{
+	*funcName = __func__;
+	int8_t Punch_H,Punch_L;
     Punch_H = Punch >> 8;           // 16 bits - 2 x 8 bits variables
     Punch_L = Punch;
 	Checksum = (~(ID + AX_PUNCH_LENGTH + AX_WRITE_DATA + AX_PUNCH_L + Punch_L + Punch_H))&0xFF;
@@ -806,10 +894,10 @@ int DynamixelClass::setPunch(unsigned char ID, int Punch)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
 	
-    return (read_error());                 // Return the read error
+    return (readError());                 // Return the read error
 }
 
-int DynamixelClass::moving(unsigned char ID)
+int16_t dynamixelMoving(uint8_t ID)
 {	
     Checksum = (~(ID + AX_MOVING_LENGTH  + AX_READ_DATA + AX_MOVING + AX_BYTE_READ))&0xFF;
     
@@ -846,7 +934,7 @@ int DynamixelClass::moving(unsigned char ID)
 	return (Moving_Byte);               // Returns the read temperature
 }
 
-int DynamixelClass::lockRegister(unsigned char ID)
+int16_t dynamixelLockRegister(uint8_t ID)
 {    
 	Checksum = (~(ID + AX_LR_LENGTH + AX_WRITE_DATA + AX_LOCK + LOCK))&0xFF;
 	
@@ -862,10 +950,10 @@ int DynamixelClass::lockRegister(unsigned char ID)
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
     
-    return (read_error());                // Return the read error
+    return (readError());                // Return the read error
 }
 
-int DynamixelClass::RWStatus(unsigned char ID)
+int16_t dynamixelRWStatus(uint8_t ID)
 {	
     Checksum = (~(ID + AX_RWS_LENGTH  + AX_READ_DATA + AX_REGISTERED_INSTRUCTION + AX_BYTE_READ))&0xFF;
     
@@ -902,7 +990,7 @@ int DynamixelClass::RWStatus(unsigned char ID)
 	return (RWS_Byte);               // Returns the read temperature
 }
 
-int DynamixelClass::readSpeed(unsigned char ID)
+int16_t dynamixelReadSpeed(uint8_t ID)
 {	
     Checksum = (~(ID + AX_POS_LENGTH  + AX_READ_DATA + AX_PRESENT_SPEED_L + AX_BYTE_READ_POS))&0xFF;
 	
@@ -943,7 +1031,7 @@ int DynamixelClass::readSpeed(unsigned char ID)
 	return (Speed_Long_Byte);     // Returns the read position
 }
 
-int DynamixelClass::readLoad(unsigned char ID)
+int16_t dynamixelReadLoad(uint8_t ID)
 {	
     Checksum = (~(ID + AX_POS_LENGTH  + AX_READ_DATA + AX_PRESENT_LOAD_L + AX_BYTE_READ_POS))&0xFF;
 	
@@ -983,5 +1071,3 @@ int DynamixelClass::readLoad(unsigned char ID)
     }
 	return (Load_Long_Byte);     // Returns the read position
 }
-
-DynamixelClass Dynamixel;
