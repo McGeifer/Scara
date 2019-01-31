@@ -8,8 +8,8 @@
 #include "objdir.h"
 #include "gpio.h"
 #include "status.h"
+#include "DynamixelSerial2.h"
 
-#include <DynamixelSerial2.h>
 #include <SimpleModbusSlave.h>
 #include <FastCRC.h>
 

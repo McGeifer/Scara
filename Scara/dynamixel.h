@@ -51,23 +51,9 @@
 #define DYNA_Z_AXIS_CCW_C_MARGIN		0
 #define DYNA_Z_AXIS_PUNCH				32
 
-struct dynaConfig {
-	uint8_t tempLimit;
-	uint8_t minVoltageLimit;
-	uint8_t maxVoltageLimit;
-	uint8_t maxTorque;
-	uint8_t srl;
-	uint8_t rdt;
-	uint8_t ledAlarm;
-	uint8_t shutdownAlarm;
-	uint8_t cwCSlope;
-	uint8_t ccwCSlope;
-	uint8_t cwCMargin;
-	uint8_t ccwCMargin;
-	uint8_t punch;
-} cfgList[] = {
+uint8_t list[3][13] = {
 
-{ 	DYNA_AXIS_1_TEMP_LIMIT,
+{	DYNA_AXIS_1_TEMP_LIMIT,
 	DYNA_AXIS_1_MIN_VOLTAGE_LIMIT,
 	DYNA_AXIS_1_MAX_VOLTAGE_LIMIT,
 	DYNA_AXIS_1_MAX_TORQUE,
@@ -79,7 +65,7 @@ struct dynaConfig {
 	DYNA_AXIS_1_CCW_C_SLOPE,
 	DYNA_AXIS_1_CW_C_MARGIN,
 	DYNA_AXIS_1_CCW_C_MARGIN,
-	DYNA_AXIS_1_PUNCH
+	DYNA_AXIS_1_PUNCH,
 },
 {	DYNA_Z_AXIS_TEMP_LIMIT,
 	DYNA_AXIS_2_MIN_VOLTAGE_LIMIT,
@@ -93,7 +79,7 @@ struct dynaConfig {
 	DYNA_Z_AXIS_CCW_C_SLOPE,
 	DYNA_Z_AXIS_CW_C_MARGIN,
 	DYNA_Z_AXIS_CCW_C_MARGIN,
-	DYNA_Z_AXIS_PUNCH
+	DYNA_Z_AXIS_PUNCH,
 },
 {	DYNA_Z_AXIS_TEMP_LIMIT,
 	DYNA_Z_AXIS_MIN_VOLTAGE_LIMIT,
@@ -107,18 +93,29 @@ struct dynaConfig {
 	DYNA_Z_AXIS_CCW_C_SLOPE,
 	DYNA_Z_AXIS_CW_C_MARGIN,
 	DYNA_Z_AXIS_CCW_C_MARGIN,
-	DYNA_Z_AXIS_PUNCH
-} };
+	DYNA_Z_AXIS_PUNCH,
+}
+};
+
+int(*testFunc[])(uint8_t id, uint8_t val) = {
+{
+	Dynamixel.setTempLimit,
+	Dynamixel.setVoltageLimit,
+	Dynamixel.setMaxTorque,
+	Dynamixel.setSRL,
+	Dynamixel.setRDT,
+	Dynamixel.setLEDAlarm,
+	Dynamixel.setShutdownAlarm,
+	Dynamixel.setCSlope,
+	Dynamixel.setCMargin,
+	Dynamixel.setPunch
+};
 
 enum dataType
 {
 	pos,
 	speed
 };
-
-uint8_t(*func[])(uint8_t arg1, uint8_t arg2) = {
-
-}
 
 /* Basic configuration of the Dynamixel servos */
 void InitDynamixel(void);

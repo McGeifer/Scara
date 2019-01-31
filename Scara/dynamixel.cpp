@@ -6,8 +6,7 @@
 #include "objdir.h"
 #include "status.h"
 #include "calc.h"
-
-#include <DynamixelSerial2.h>
+#include "DynamixelSerial2.h"
 
 void InitDynamixel(void) {
 
@@ -39,21 +38,20 @@ void InitDynamixel(void) {
 #endif
 		return;
 	}
-	else {
-
-		for (uint8_t i = 0; i < ID_TOTAL_SIZE; i++)	{ /* write configuration parameters to dynamixel */
-			
-			for (size_t i = 0; i < length; i++)	{
-
-				uint8_t error = Dynamixel.setTempLimit(i, cfgList[i].tempLimit);
-
-				if (error < 0) {
+	else
+	{
+		for (uint8_t i = 0; i < ID_TOTAL_SIZE; i++) /* write configuration parameters to dynamixel */
+		{ 
+			for (size_t j = 0; j < 14; j++)
+			{
+				uint8_t error = (*testFunc[j]) (i, list[i][j]);
+				if (error < 0)
+				{
 					DynamixelError(error * (-1), i);
 					return;
 				}
 			}
 
-			/*
 			Dynamixel.setTempLimit(i, cfgList[i].tempLimit);
 			Dynamixel.setVoltageLimit(i, cfgList[i].minVoltageLimit, cfgList[i].maxVoltageLimit);
 			Dynamixel.setMaxTorque(i, cfgList[i].maxTorque);
@@ -64,7 +62,7 @@ void InitDynamixel(void) {
 			Dynamixel.setCSlope(i, cfgList[i].cwCSlope, cfgList[i].ccwCSlope);
 			Dynamixel.setCMargin(i, cfgList[i].cwCMargin, cfgList[i].ccwCMargin);
 			Dynamixel.setPunch(i, cfgList[i].punch);
-			*/
+
 		}
 	
 		Dynamixel.setEndless(ID_Z_AXIS, ON);
@@ -72,6 +70,10 @@ void InitDynamixel(void) {
 		// enable torque for all servo motors
 		Dynamixel.torqueStatus(BROADCAST_ID, ON);
 	}
+}
+
+int DynaSetMinVolLim(unsigned char id, unsigned char minVoltage) {
+
 }
 
 void DynamixelError(uint8_t errorBit, uint8_t id) {
