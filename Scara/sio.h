@@ -11,10 +11,10 @@
 
 #define SCARA_PACKET_LENGTH 4
 
-void InitSio();
-void HandleSIO();
-void HandleModbusData();
-void HandleRapidString();
-void HandleScaraData();
+void InitSio(void);
+void HandleSIO(void);
+void HandleModbusData(void);
+void HandleRapidString(void);
+void HandleScaraData(void);
 
 #endif

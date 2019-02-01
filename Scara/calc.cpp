@@ -6,27 +6,27 @@
 #include "objdir.h"
 #include "status.h"
 
-int8_t CalcAngle(int16_t xPos, int16_t yPos) {
-
-	float *coordinates = NULL;		// converted coordinates
-	float xTmp = 0;			// temp value for conversion
-	float yTmp = 0;			// temp value for conversion
+int8_t CalcAngle(int16_t xPos, int16_t yPos)
+{
+	float *coordinates = NULL;	// converted coordinates
+	float xTmp = 0;				// temp value for conversion
+	float yTmp = 0;				// temp value for conversion
 	float xVal = 0;
 	float yVal = 0;
 
-	float a = 200.0;		// 
-	float b = 0;			// 
-	float c = 195.0;		// 
+	float a = 200.0;			// 
+	float b = 0;				// 
+	float c = 195.0;			// 
 
 	// all angles in radians!
-	float angleAlpha =	0;	// inner angle of triangle at point A (between a & c)
-	float angleAlpha1 = 0;	// angle between a & x-axis (angle for servo 1)
-	float angleAlpha2 = 0;	// angle between c & x-axis (orientation of triangle)
-	float angleBeta =	0;	// inner angle of triangle at point B (between a & b)
-	float angleBeta1 =	0;	// outer angle between a & b (angle for servo 2)
-	float angleGamma =	0;	// inner angle of triangle at point C (between b & c)
-	float angleServo1 = 0;	// angle for servo motor 1 (alpha1)
-	float angleServo2 = 0;	// angle for servo motor 2 (beta1)
+	float angleAlpha =	0;		// inner angle of triangle at point A (between a & c)
+	float angleAlpha1 = 0;		// ????????????????? angle between a & x-axis (angle for servo 1)
+	float angleAlpha2 = 0;		// ????????????????? angle between c & x-axis (orientation of triangle)
+	float angleBeta =	0;		// inner angle of triangle at point B (between a & b)
+	float angleBeta1 =	0;		// ????????????????? outer angle between a & b (angle for servo 2)
+	float angleGamma =	0;		// inner angle of triangle at point C (between b & c)
+	float angleServo1 = 0;		// angle for servo motor 1 (alpha1)
+	float angleServo2 = 0;		// angle for servo motor 2 (beta1)
 
 	// convert the input position values based on the field coordinate system
 	// to the coordinate system of the robot axis
@@ -38,8 +38,8 @@ int8_t CalcAngle(int16_t xPos, int16_t yPos) {
 	Serial.println(yTmp, 8);*/
 
 	//coordinates = ConvertCoordinate(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
-	xVal = 10.629;//coordinates[ID_AXIS_1];
-	yVal = -313.209;//coordinates[ID_AXIS_2];
+	/*xVal = 10.629;*/ coordinates[ID_AXIS_1];
+	/*yVal = -313.209;*/ coordinates[ID_AXIS_2];
 	/*Serial.print("xVal: ");
 	Serial.println(xVal, 8);
 	Serial.print("yVal: ");
@@ -94,10 +94,10 @@ int8_t CalcAngle(int16_t xPos, int16_t yPos) {
 	return 0;
 }
 
-int8_t CalcPosistion(int16_t valA, int16_t valB) {
-
+int8_t CalcPosistion(int16_t valA, int16_t valB)
+{
 	float pointA[2] = { 0 };	// punkt durch servo id 1
-	float pointB[2] = { 0 };	// punkt durch z achse -> GESUCHT <-
+	float pointB[2] = { 0 };	// punkt durch servo id 2 (z achse) -> GESUCHT <-
 	float angleA = 0;			// umgerechneter winkel von dynamixel id 0
 	float angleB = 0;			// umgerechneter winkel von dynamixel id 1
 	float lenghtA = 0;			// gegenkathete von winkel A
@@ -114,12 +114,12 @@ int8_t CalcPosistion(int16_t valA, int16_t valB) {
 	return 0;
 }
 
-int8_t UpdateZPos(void) {
-
+int8_t UpdateZPos(void)
+{
 	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10);
 
-	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val) == -1) {
-
+	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val) == -1)
+	{
 #ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
 #endif 
@@ -128,8 +128,8 @@ int8_t UpdateZPos(void) {
 	return 0;
 }
 
-float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue) {
-
+float* ConvertCoordinate(uint8_t direction, float *xValue, float *yValue)
+{
 	static float val[2] = { 0 };
 
 	switch (direction)

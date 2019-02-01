@@ -6,8 +6,8 @@
 #include "status.h"
 
 /* object dictionary */
-static objStruct_t objDir[] = {
-
+static objStruct_t objDir[] =
+{
 	// basic options
 	//{OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0, NULL},
@@ -57,8 +57,8 @@ static objStruct_t objDir[] = {
 };
 
 /* tool table */
-static toolTbl_t toolTbl[] = {
-
+static toolTbl_t toolTbl[] =
+{
 	/* tool 0 - machine zero */
 	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true, NULL},
 	
@@ -75,8 +75,8 @@ static toolTbl_t toolTbl[] = {
 };
 
 /* static position register */
-static posReg_t statPosReg[] = {
-
+static posReg_t statPosReg[] =
+{
 	{OBJ_IDX_STAT_POS_HOME,			OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_RD_COIN_1,	OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_RD_COIN_2,	OBJ_PROP_R_, 0, 0, 0},
@@ -100,10 +100,12 @@ static uint8_t pLastPos = 0;
 // pos register - help functions
 // ##############################################
 
-static posReg_t* LocatePos(uint8_t *idx) {
-
-	for (uint8_t i = 0; i < PosArrayLength; i++) {
-		if (dynPosReg[i]->pointIdx == *idx) {
+static posReg_t* LocatePos(uint8_t *idx)
+{
+	for (uint8_t i = 0; i < PosArrayLength; i++)
+	{
+		if (dynPosReg[i]->pointIdx == *idx)
+		{
 			SendStatus("LocatePos() ", "pos found", STATUS_TYPE_DEBUG);
 			return dynPosReg[i];
 		}
@@ -112,89 +114,100 @@ static posReg_t* LocatePos(uint8_t *idx) {
 	return NULL;
 }
 
-int16_t* GetPosRegData(uint8_t *idx) {
-
+int16_t* GetPosRegData(uint8_t *idx)
+{
 	posReg_t *p = NULL;
 	p = LocatePos(idx);
 
-	if (p != NULL) {
+	if (p != NULL)
+	{
 		static int16_t data[3];
 		data[0] = p->posRegX;
 		data[1] = p->posRegY;
 		data[2] = p->posRegZ;
 		return data;
 	}
-	else {
+	else
+	{
 		return NULL;
 	}
 }
 
-uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal) {
-
+uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
+{
 	posReg_t *p = NULL;
 	p = LocatePos(idx);
 
-	if (p == NULL) {
-
-		if (*idx < PosArrayLength) {
+	if (p == NULL)
+	{
+		if (*idx < PosArrayLength)
+		{
 			dynPosReg[pLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); /* allocate memory for new PosReg entry and store a pointer in the dynPosReg */
 			dynPosReg[pLastPos]->pointIdx = *idx;
 			dynPosReg[pLastPos]->props = OBJ_PROP_RW;
 			pLastPos++;
 			p = LocatePos(idx);
-			if (p == NULL) {
+			if (p == NULL)
+			{
 				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
-		else {
+		else
+		{
 			SendStatus("in function SetPosRegData(): ", "failed to write - max number of points (64) reached", STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
-	if (p != NULL) {
-		
-		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) { /* check if object is writable */
-
-			if (*xVal >= X_POS_MIN && *xVal <= X_POS_MAX) { /* check the permissable value range */
-
-				if (*yVal >= Y_POS_MIN && *yVal <= Y_POS_MAX) {
-
-					if (*zVal >= Z_POS_MIN && *zVal <= Z_POS_MAX) {
+	if (p != NULL)
+	{
+		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) /* check if object is writable */
+		{
+			if (*xVal >= X_POS_MIN && *xVal <= X_POS_MAX) /* check the permissable value range */
+			{
+				if (*yVal >= Y_POS_MIN && *yVal <= Y_POS_MAX)
+				{
+					if (*zVal >= Z_POS_MIN && *zVal <= Z_POS_MAX)
+					{
 						p->posRegX = *xVal;
 						p->posRegY = *yVal;
 						p->posRegZ = *zVal;
 						return 0;
 					}
-					else {
+					else
+					{
 						char msg[64];
 						sprintf(msg, "position P%c value out of range", *idx);
 						SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 						return -1;
 					}
 				}
-				else {
+				else
+				{
 					char msg[64];
 					sprintf(msg, "position P%c value out of range", *idx);
 					SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 					return -1;
 				}
 			}
-			else {
+			else
+			{
 				char msg[64];
 				sprintf(msg, "position P%c value out of range", *idx);
 				SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
-		else {
+		else
+		{
 			char msg[64];
 			sprintf(msg, "position P%c is read only", *idx);
 			SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
-	else {
+	else
+	{
 		SendStatus("in function SetPosRegData(): failed to write - ", "unknown error", STATUS_TYPE_ERROR);
 		return -1;
 	}
@@ -204,33 +217,36 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 // objDir - help functions
 // ##############################################
 
-static objStruct_t* LocateObj(uint8_t index) {
-	
+static objStruct_t* LocateObj(uint8_t index)
+{
 	objStruct_t *p = NULL;
 	p = objDir;
 	
-	for (uint8_t i = 0; i < (sizeof(objDir) / sizeof(objDir[0])); i++, p++) {
-		if (p->idx == index) {
+	for (uint8_t i = 0; i < (sizeof(objDir) / sizeof(objDir[0])); i++, p++)
+	{
+		if (p->idx == index)
+		{
 			return p;
 		}
 	}
 	return NULL;
 }
 
-int16_t GetObjData(uint8_t index) {
-
+int16_t GetObjData(uint8_t index)
+{
 	objStruct_t *p = NULL;
 	p = LocateObj(index);
 
-	if (p != NULL) {
-
+	if (p != NULL)
+	{
 		/*char msg[64];
 		uint16_t tmp = p->data;
 		sprintf(msg, "return value 0x%x", tmp);
 		SendStatus("GetObjData(): ", "test", STATUS_TYPE_INFO);*/
 		return p->data;
 	}
-	else {
+	else
+	{
 		return 0;
 	}
 }
@@ -333,13 +349,15 @@ int8_t SetObjData(uint8_t index, int16_t data) {
 // tool table - help functions
 // ##############################################
 
-toolTbl_t* LocateTool(uint8_t index) {
-
+toolTbl_t* LocateTool(uint8_t index)
+{
 	toolTbl_t *p = NULL;
 	p = toolTbl;
 	
-	for (uint8_t i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++) {
-		if (p->toolIdx == index) {
+	for (uint8_t i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++)
+	{
+		if (p->toolIdx == index)
+		{
 			char msg[64];
 			sprintf(msg, "tool %i found", p->toolIdx);
 			SendStatus("LocateTool(): ", msg, STATUS_TYPE_DEBUG);
@@ -349,12 +367,13 @@ toolTbl_t* LocateTool(uint8_t index) {
 	return NULL;
 }
 
-int16_t* GetToolData(uint8_t index) {
-
+int16_t* GetToolData(uint8_t index)
+{
 	toolTbl_t *p = NULL;
 	p = LocateTool(index);
 
-	if (p != NULL) {
+	if (p != NULL)
+	{
 		static int16_t data[4];
 		data[0] = p->offsetX;
 		data[1] = p->offsetY;
@@ -365,7 +384,8 @@ int16_t* GetToolData(uint8_t index) {
 		SendStatus("GetToolData(): ", msg, STATUS_TYPE_DEBUG);
 		return data;
 	}
-	else {
+	else
+	{
 		return NULL;
 	}
 }

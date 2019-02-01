@@ -107,21 +107,21 @@ int16_t Temperature_Byte;
 int16_t Voltage_Byte;
 int16_t Error_Byte;
 
-//int16_t ReadError(void);
-
-// Private Methods //////////////////////////////////////////////////////////////
 
 int16_t readError(void)
 {
 	Time_Counter = 0;
-	while((availableData() < 5) & (Time_Counter < TIME_OUT)){  // Wait for Data
+	while((availableData() < 5) & (Time_Counter < TIME_OUT))  // Wait for Data
+	{
 		Time_Counter++;
 		delayus(1000);
 	}
 	
-	while (availableData() > 0){
+	while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                                    // Start Bytes
 			readData();                                    // Ax-12 ID
 			readData();                                    // Length
@@ -131,8 +131,6 @@ int16_t readError(void)
 	}
 	return (-1);											 // No Ax Response
 }
-
-// Public Methods //////////////////////////////////////////////////////////////
 
 void dynamixelBegin(int32_t baud, uint8_t directionPin)
 {	
@@ -276,7 +274,8 @@ int16_t dynamixelMoveSpeed(uint8_t ID, int16_t Position, int16_t Speed)
 
 int16_t dynamixelSetEndless(uint8_t ID, bool Status)
 {
- if ( Status ) {	
+ if ( Status )
+ {	
 	  int8_t AX_CCW_AL_LT = 0;     // Changing the CCW Angle Limits for Full Rotation.
 	  Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_CCW_ANGLE_LIMIT_L))&0xFF;
 	
@@ -319,50 +318,50 @@ int16_t dynamixelSetEndless(uint8_t ID, bool Status)
 
 int16_t dynamixelTurn(uint8_t ID, bool SIDE, int16_t Speed)
 {		
-		if (SIDE == 0){                          // Move Left///////////////////////////
+	if (SIDE == 0) // Move Left///////////////////////////
+	{                          
+		int8_t Speed_H,Speed_L;
+		Speed_H = Speed >> 8;
+		Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
+		Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
 			
-			int8_t Speed_H,Speed_L;
-			Speed_H = Speed >> 8;
-			Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
-			Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
+		switchCom(Direction_Pin,Tx_MODE);
+		sendData(AX_START);                // Send Instructions over Serial
+		sendData(AX_START);
+		sendData(ID);
+		sendData(AX_SPEED_LENGTH);
+		sendData(AX_WRITE_DATA);
+		sendData(AX_GOAL_SPEED_L);
+		sendData(Speed_L);
+		sendData(Speed_H);
+		sendData(Checksum);
+		delayus(TX_DELAY_TIME);
+		switchCom(Direction_Pin,Rx_MODE);
 			
-			switchCom(Direction_Pin,Tx_MODE);
-			sendData(AX_START);                // Send Instructions over Serial
-			sendData(AX_START);
-			sendData(ID);
-			sendData(AX_SPEED_LENGTH);
-			sendData(AX_WRITE_DATA);
-			sendData(AX_GOAL_SPEED_L);
-			sendData(Speed_L);
-			sendData(Speed_H);
-			sendData(Checksum);
-			delayus(TX_DELAY_TIME);
-			switchCom(Direction_Pin,Rx_MODE);
+		return(readError());               // Return the read error		
+	}
+	else
+	{                                            // Move Rigth////////////////////
+		int8_t Speed_H,Speed_L;
+		Speed_H = (Speed >> 8) + 4;
+		Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
+		Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
 			
-			return(readError());               // Return the read error		
-		}
-		else
-		{                                            // Move Rigth////////////////////
-			int8_t Speed_H,Speed_L;
-			Speed_H = (Speed >> 8) + 4;
-			Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
-			Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
+		switchCom(Direction_Pin,Tx_MODE);
+		sendData(AX_START);                // Send Instructions over Serial
+		sendData(AX_START);
+		sendData(ID);
+		sendData(AX_SPEED_LENGTH);
+		sendData(AX_WRITE_DATA);
+		sendData(AX_GOAL_SPEED_L);
+		sendData(Speed_L);
+		sendData(Speed_H);
+		sendData(Checksum);
+		delayus(TX_DELAY_TIME);
+		switchCom(Direction_Pin,Rx_MODE);
 			
-			switchCom(Direction_Pin,Tx_MODE);
-			sendData(AX_START);                // Send Instructions over Serial
-			sendData(AX_START);
-			sendData(ID);
-			sendData(AX_SPEED_LENGTH);
-			sendData(AX_WRITE_DATA);
-			sendData(AX_GOAL_SPEED_L);
-			sendData(Speed_L);
-			sendData(Speed_H);
-			sendData(Checksum);
-			delayus(TX_DELAY_TIME);
-			switchCom(Direction_Pin,Rx_MODE);
-			
-			return(readError());                // Return the read error	
-		}
+		return(readError());                // Return the read error	
+	}
 }
 
 int16_t dynamixelMoveRW(uint8_t ID, int16_t Position)
@@ -484,14 +483,17 @@ int16_t dynamixelReadTemperature(uint8_t ID)
 	
     Temperature_Byte = -1;
     Time_Counter = 0;
-    while((availableData() < 6) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 6) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
-    while (availableData() > 0){
+    while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length
@@ -521,14 +523,17 @@ int16_t dynamixelReadPosition(uint8_t ID)
 	
     Position_Long_Byte = -1;
 	Time_Counter = 0;
-    while((availableData() < 7) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 7) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
-    while (availableData() > 0){
+    while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length
@@ -562,14 +567,16 @@ int16_t dynamixelReadVoltage(uint8_t ID)
 	
     Voltage_Byte = -1;
 	Time_Counter = 0;
-    while((availableData() < 6) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 6) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
     while (availableData() > 0){
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length
@@ -915,14 +922,17 @@ int16_t dynamixelMoving(uint8_t ID)
 	
     Moving_Byte = -1;
     Time_Counter = 0;
-    while((availableData() < 6) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 6) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
-    while (availableData() > 0){
+    while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length
@@ -971,14 +981,17 @@ int16_t dynamixelRWStatus(uint8_t ID)
 	
     RWS_Byte = -1;
     Time_Counter = 0;
-    while((availableData() < 6) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 6) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
-    while (availableData() > 0){
+    while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length
@@ -1008,14 +1021,17 @@ int16_t dynamixelReadSpeed(uint8_t ID)
 	
     Speed_Long_Byte = -1;
 	Time_Counter = 0;
-    while((availableData() < 7) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 7) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
-    while (availableData() > 0){
+    while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length
@@ -1049,14 +1065,17 @@ int16_t dynamixelReadLoad(uint8_t ID)
 	
     Load_Long_Byte = -1;
 	Time_Counter = 0;
-    while((availableData() < 7) & (Time_Counter < TIME_OUT)){
+    while((availableData() < 7) & (Time_Counter < TIME_OUT))
+	{
 		Time_Counter++;
 		delayus(1000);
     }
 	
-    while (availableData() > 0){
+    while (availableData() > 0)
+	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) ){
+		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
 			readData();                            // Length

@@ -183,7 +183,6 @@
 #define LOCK                        1
 
 void dynamixelBegin(int32_t baud, uint8_t directionPin);
-//void begin(int32_t baud);
 void dynamixelEnd(void);
 	
 int16_t dynamixelReset(uint8_t ID);

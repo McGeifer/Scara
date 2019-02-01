@@ -6,8 +6,8 @@
 #include "objdir.h"
 #include "status.h"
 
-void InitGPIO() {
-
+void InitGPIO(void)
+{
 	/* set pin modes */
 	pinMode(MODBUS_PIN, INPUT);		/* pin to enable Modbus communication */
 	pinMode(RAPID_PIN, INPUT);		/* pin to enable "Rapid" mode */
@@ -18,23 +18,28 @@ void InitGPIO() {
 	attachInterrupt(digitalPinToInterrupt(3), LightBarrierISR, CHANGE);	/* attache interrupt for light barrier impulse counter */
 }
 
-void InitOperationMode(void) {
-
-	if (!digitalRead(RAPID_PIN) && digitalRead(MODBUS_PIN)) {
-		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS) == 0) {
+void InitOperationMode(void)
+{
+	if (!digitalRead(RAPID_PIN) && digitalRead(MODBUS_PIN))
+	{
+		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS) == 0)
+		{
 			/* modbus protocol selected */
 			return;
 		}
 	}
-	else if (digitalRead(RAPID_PIN) && !digitalRead(MODBUS_PIN)) {
-		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID) == 0) {
+	else if (digitalRead(RAPID_PIN) && !digitalRead(MODBUS_PIN))
+	{
+		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID) == 0)
+		{
 			SendStatus("InitOperationMode(): ", "Rapid protocoll selected", STATUS_TYPE_INFO);
 			/* rapid protocol selected */
 			return;
 		}
 	}
 	else {
-		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_SCARA) == 0) {
+		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_SCARA) == 0)
+		{
 			SendStatus("InitOperationMode(): ", "Scara protocoll selected", STATUS_TYPE_INFO);
 			/* scara protocol selected */
 			return;
@@ -43,12 +48,14 @@ void InitOperationMode(void) {
 	SendStatus("InitOperationMode(): ", "error selecting protocoll", STATUS_TYPE_ERROR);
 }
 
-void LightBarrierISR(void) {
-
-	if (GetObjData(OBJ_IDX_Z_ACTUAL_POS) > GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS)) {
+void LightBarrierISR(void)
+{
+	if (GetObjData(OBJ_IDX_Z_ACTUAL_POS) > GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS))
+	{
 		SetObjData(OBJ_IDX_Z_POS_COUNT, GetObjData(OBJ_IDX_Z_POS_COUNT) - 1);
 	}
-	else {
+	else
+	{
 		SetObjData(OBJ_IDX_Z_POS_COUNT, GetObjData(OBJ_IDX_Z_POS_COUNT) + 1);
 	}
 }

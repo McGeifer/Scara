@@ -7,8 +7,8 @@
 
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType) {
 	
-	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) { /* no messages will be send if system is in silent mode */
-
+	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) /* no messages will be send if system is in silent mode */
+	{ 
 		char statusString[10];
 		char finalMsgString[128];
 
@@ -45,17 +45,21 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 			}
 
 			if (GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DEBUG) { /* check if system ist in debug mode */
-				if (optionalDebugMessage == NULL) {
+				if (optionalDebugMessage == NULL)
+				{
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);
 				}
-				else {
+				else
+				{
 					sprintf(finalMsgString, "%s %s %s", statusString, optionalDebugMessage, message);
 					Serial.println(finalMsgString);
 				}
 			}
-			else {
-				if (statusType != STATUS_TYPE_DEBUG) {
+			else
+			{
+				if (statusType != STATUS_TYPE_DEBUG)
+				{
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);
 				}

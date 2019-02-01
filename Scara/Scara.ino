@@ -4,6 +4,7 @@
  *  Author:		Jens Schiller
  */
 
+#include "vector.h"
 #include "SimpleModbusSlave.h"
 #include "DynamixelSerial2/DynamixelSerial2.h"
 
@@ -21,7 +22,8 @@ extern void InitDynamixel(void);
 extern void UpdateObjDir(void);
 extern void HandleMove(void);
 
-void setup() {
+void setup()
+{
 	InitGPIO();
 	InitSio();
 	InitOperationMode();
@@ -39,11 +41,13 @@ void setup() {
 	SetPosRegData(&idx2, &x2, &y2, &z2);*/
 	/* uint16_t xPos = 3066;
 	int16_t yPos = -649; */
+	
 }
 
-void loop() {
-
-	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR)) {
+void loop()
+{
+	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
+	{
 		UpdateObjDir();
 		HandleSIO();
 		HandleMove();
