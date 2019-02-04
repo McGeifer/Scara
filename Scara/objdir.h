@@ -118,14 +118,14 @@ enum axisIDs {
 /* tools */
 #define OBJ_IDX_TOOL_0						0x00	// tool 0 - machine zero - only change if you really know what you are doing!
 #define OBJ_IDX_TOOL_1						0x01	// custom tool 1 - 9
-#define OBJ_IDX_TOOL_2						0x02
-#define OBJ_IDX_TOOL_3						0x03
-#define OBJ_IDX_TOOL_4						0x04
-#define OBJ_IDX_TOOL_5						0x05
-#define OBJ_IDX_TOOL_6						0x06
-#define OBJ_IDX_TOOL_7						0x07
-#define OBJ_IDX_TOOL_8						0x08
-#define OBJ_IDX_TOOL_9						0x09
+#define OBJ_IDX_TOOL_2						0x02	
+#define OBJ_IDX_TOOL_3						0x03	
+#define OBJ_IDX_TOOL_4						0x04	
+#define OBJ_IDX_TOOL_5						0x05	
+#define OBJ_IDX_TOOL_6						0x06	
+#define OBJ_IDX_TOOL_7						0x07	
+#define OBJ_IDX_TOOL_8						0x08	
+#define OBJ_IDX_TOOL_9						0x09	
 
 /* static positions - only change if you really know what you are doing! */
 #define OBJ_IDX_STAT_POS_HOME				0x00	
@@ -179,28 +179,28 @@ enum axisIDs {
 // ##############################################
 // object dir - min/ max position/ angle values and tolerances
 // ##############################################
-#define X_POS_MIN 			-100			
-#define X_POS_MAX			200			
-#define Y_POS_MIN			-100			
-#define Y_POS_MAX			200			
-#define Z_POS_MIN			-100			
-#define Z_POS_MAX			200			
+#define X_POS_MIN 			0
+#define X_POS_MAX			2000
+#define Y_POS_MIN			0
+#define Y_POS_MAX			2000
+#define Z_POS_MIN			0
+#define Z_POS_MAX			2000
 
-#define AXIS_1_ANGLE_MIN	-105	
-#define AXIS_1_ANGLE_MAX	105		
-#define AXIS_2_ANGLE_MIN	-105	
-#define AXIS_2_ANGLE_MAX	105
+#define AXIS_1_ANGLE_MIN	0
+#define AXIS_1_ANGLE_MAX	3000
+#define AXIS_2_ANGLE_MIN	0
+#define AXIS_2_ANGLE_MAX	3000
 
 #define POS_TOLERANCE		0.5
 
 // ##############################################
 // object dir - min/ max speed values
 // ##############################################
-#define X_SPEED_MIN			1											
+#define X_SPEED_MIN			1
 #define X_SPEED_MAX			255
-#define Y_SPEED_MIN			1											
+#define Y_SPEED_MIN			1
 #define Y_SPEED_MAX			255
-#define Z_SPEED_MIN			1											
+#define Z_SPEED_MIN			1
 #define Z_SPEED_MAX			255
 
 #define AXIS_1_SPEED_MIN	1

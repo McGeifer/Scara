@@ -21,12 +21,13 @@
 #define DYNA_TO_DEG(val) (round((val * 300.0) / 1023)) // convert a dynamixel position value (0 - 1023) into an angle (degree)
 #define DEG_TO_DYNA(val) (round((val / 1023.0) * 300)) // convert an angle (degree) into a dynamixel position value
 
+#define SOLUTION_A 0x01
+#define SOLUTION_B 0x02
+
 //#undef DEG_TO_RAD
-//#define DEG_TO_RAD(deg) ((deg * 71) / 4068.0) evtl. schneller als über arduino.h  -------------------- TESTEN ---------------------
+//#define DEG_TO_RAD(deg) ((deg * 71) / 4068.0) evtl. schneller als über arduino.h  -------------------- TESTEN --------------------- !!!!!!!!!!!!!
 //#undef RAD_TO_DEG
 //#define RAD_TO_DEG(rad) ((rad * 4068) / 71.0)
-
-
 
 // CalcAngle computes the angles for axis 1 & 2 out of the coordinates x & y
 int8_t CalcAngle(int16_t xVal, int16_t yVal);
