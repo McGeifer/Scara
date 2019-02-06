@@ -31,13 +31,7 @@
 //       /
 //    x /
 
-enum vector
-{
-	X,
-	Y,
-	Z,
-	V_SIZE
-};
+
 
 // Vektoren Addieren v1+v2=v3 
 void vAdd(float *v1[V_SIZE], float *v2[V_SIZE], float *v3[V_SIZE]);

@@ -393,27 +393,27 @@ int8_t ParseRadpid(void)
 							if (dataToWrite[zPos] >= Z_POS_MIN && dataToWrite[zPos] <= Z_POS_MAX)
 							{
 								// save speed and position values
-								if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, dataToWrite[xPos]) != 0)
+								if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, dataToWrite[xPos], false) != 0)
 								{
 									return -1;
 								}
-								if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, dataToWrite[yPos]) != 0)
+								if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, dataToWrite[yPos], false) != 0)
 								{
 									return -1;
 								}
-								if (SetObjData(OBJ_IDX_Z_NEW_TARGET_POS, dataToWrite[zPos]) != 0)
+								if (SetObjData(OBJ_IDX_Z_NEW_TARGET_POS, dataToWrite[zPos], false) != 0)
 								{
 									return -1;
 								}
-								if (SetObjData(OBJ_IDX_X_NEW_TARGET_SPEED, dataToWrite[xSpeed]) != 0)
+								if (SetObjData(OBJ_IDX_X_NEW_TARGET_SPEED, dataToWrite[xSpeed], false) != 0)
 								{
 									return -1;
 								}
-								if (SetObjData(OBJ_IDX_Y_NEW_TARGET_SPEED, dataToWrite[ySpeed]) != 0)
+								if (SetObjData(OBJ_IDX_Y_NEW_TARGET_SPEED, dataToWrite[ySpeed], false) != 0)
 								{
 									return -1;
 								}
-								if (SetObjData(OBJ_IDX_Z_NEW_TARGET_SPEED, dataToWrite[zSpeed]) != 0)
+								if (SetObjData(OBJ_IDX_Z_NEW_TARGET_SPEED, dataToWrite[zSpeed], false) != 0)
 								{
 									return -1;
 								}
@@ -479,7 +479,7 @@ void HandleModbusData(void)
 	holdingRegs[TOTAL_ERRORS_MDB] = modbus_update(holdingRegs);
 
 	// write modbus packet to object
-	if (SetObjData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB]) == 0)
+	if (SetObjData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB], false) == 0)
 	{
 		//objStruct_t *recvP = LocateObj(holdingRegs[INDEX_MDB]);
 		//
@@ -566,7 +566,7 @@ void HandleScaraData(void)
 						uint16_t recvData = (buffer[idx - SCARA_PACKET_LENGTH + 2] << 8) | buffer[idx - SCARA_PACKET_LENGTH + 3];
 
 						// save data in object
-						if (SetObjData(recvIndex, recvData) == 0)
+						if (SetObjData(recvIndex, recvData, false) == 0)
 						{
 							/*objStruct_t *recvP = LocateObj(recvIndex);*/
 							memset(buffer, 0, idx);

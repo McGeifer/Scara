@@ -131,7 +131,6 @@
     <ClInclude Include="objdir.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="status.h" />
-    <ClInclude Include="vector.h" />
     <ClInclude Include="__vm\.Scara.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
@@ -142,7 +141,6 @@
     <ClCompile Include="objdir.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="status.cpp" />
-    <ClCompile Include="vector.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

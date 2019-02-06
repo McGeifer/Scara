@@ -22,7 +22,7 @@ void InitOperationMode(void)
 {
 	if (!digitalRead(RAPID_PIN) && digitalRead(MODBUS_PIN))
 	{
-		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS) == 0)
+		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS, false) == 0)
 		{
 			/* modbus protocol selected */
 			return;
@@ -30,7 +30,7 @@ void InitOperationMode(void)
 	}
 	else if (digitalRead(RAPID_PIN) && !digitalRead(MODBUS_PIN))
 	{
-		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID) == 0)
+		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID, false) == 0)
 		{
 			SendStatus("InitOperationMode(): ", "Rapid protocoll selected", STATUS_TYPE_INFO);
 			/* rapid protocol selected */
@@ -38,7 +38,7 @@ void InitOperationMode(void)
 		}
 	}
 	else {
-		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_SCARA) == 0)
+		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_SCARA, false) == 0)
 		{
 			SendStatus("InitOperationMode(): ", "Scara protocoll selected", STATUS_TYPE_INFO);
 			/* scara protocol selected */
@@ -52,10 +52,10 @@ void LightBarrierISR(void)
 {
 	if (GetObjData(OBJ_IDX_Z_ACTUAL_POS) > GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS))
 	{
-		SetObjData(OBJ_IDX_Z_POS_COUNT, GetObjData(OBJ_IDX_Z_POS_COUNT) - 1);
+		SetObjData(OBJ_IDX_Z_POS_COUNT, GetObjData(OBJ_IDX_Z_POS_COUNT) - 1, false);
 	}
 	else
 	{
-		SetObjData(OBJ_IDX_Z_POS_COUNT, GetObjData(OBJ_IDX_Z_POS_COUNT) + 1);
+		SetObjData(OBJ_IDX_Z_POS_COUNT, GetObjData(OBJ_IDX_Z_POS_COUNT) + 1, false);
 	}
 }

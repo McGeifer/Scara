@@ -4,7 +4,6 @@
  *  Author:		Jens Schiller
  */
 
-#include "vector.h"
 #include "SimpleModbusSlave.h"
 #include "DynamixelSerial2/DynamixelSerial2.h"
 
@@ -39,29 +38,34 @@ void setup()
 
 	SetPosRegData(&idx1, &x1, &y1, &z1);
 	SetPosRegData(&idx2, &x2, &y2, &z2);*/
-	/* uint16_t xPos = 3066;
-	int16_t yPos = -649; */
+	int16_t angle1 = 1735;
+	int16_t angle2 = 680;
+
+	int16_t xPos = 3360;
+	int16_t yPos = -874;
 	
+	//CalcPosistion(&angle1, &angle2);
+	CalcAngle(&xPos, &yPos);
 }
 
 void loop()
 {
-	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
-	{
-		UpdateObjDir();
-		HandleSIO();
-		HandleMove();
+	//while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
+	//{
+	//	UpdateObjDir();
+	//	HandleSIO();
+	//	HandleMove();
 
-		/* measure cycletime */
-		cycleCount++;
-		if (cycleCount >= 1000)
-		{
-			char msg[64];
-			uint32_t tmp = (micros() - cycleTime) / cycleCount;
-			sprintf(msg, "Cycle Time : %lu us", tmp);
-			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
-			cycleCount = 0;
-			cycleTime = micros();
-		}
-	}
+	//	/* measure cycletime */
+	//	cycleCount++;
+	//	if (cycleCount >= 1000)
+	//	{
+	//		char msg[64];
+	//		uint32_t tmp = (micros() - cycleTime) / cycleCount;
+	//		sprintf(msg, "Cycle Time : %lu us", tmp);
+	//		SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+	//		cycleCount = 0;
+	//		cycleTime = micros();
+	//	}
+	//}
 }

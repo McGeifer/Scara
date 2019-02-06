@@ -32,7 +32,7 @@ void InitDynamixel(void) /* Search for servo motors */
 		}
 	}
 
-	if (response == 45/*response != 3*/)
+	if (response != 3)
 	{
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		/* set system error state to prevent further operations */
@@ -153,16 +153,16 @@ void UpdateObjDir(void)
 				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
 				{
 				case DYNA_ID_AXIS_1:
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]));
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed]);
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]), true);
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				case DYNA_ID_AXIS_2:
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]));
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed]);
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]), true);
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				case DYNA_ID_AXIS_Z:
-					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos());
-					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed]);
+					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true);
+					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				default:
 					SendStatus("UpdateObjDir(): ", "unknown device ID", SYS_STAT_ERROR);
@@ -170,7 +170,7 @@ void UpdateObjDir(void)
 				}
 			}
 		}
-		if (CalcPosistion(data[ID_AXIS_1][pos], data[ID_AXIS_2][pos]) == -1) /* calcualte related x and y positions */
+		if (CalcPosistion(&data[ID_AXIS_1][pos], &data[ID_AXIS_2][pos]) == -1) /* calcualte related x and y positions */
 		{
 #ifndef _DEBUG
 			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
@@ -178,11 +178,11 @@ void UpdateObjDir(void)
 		}
 		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
 		{ 
-			SetObjData(OBJ_IDX_MOVING, 1); /* system is moving */
+			SetObjData(OBJ_IDX_MOVING, 1, false); /* system is moving */
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_MOVING, 0); /* system is not moving */
+			SetObjData(OBJ_IDX_MOVING, 0, false); /* system is not moving */
 		}
 	}
 }
@@ -240,15 +240,15 @@ void HandleMove(void) {
 
 				if (newTargetPos[ID_AXIS_1] != actTargetPos[ID_AXIS_1])
 				{
-					SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_X_NEW_TARGET_POS));
+					SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_X_NEW_TARGET_POS), false);
 				}
 				if (newTargetPos[ID_AXIS_2] != actTargetPos[ID_AXIS_2])
 				{
-					SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Y_NEW_TARGET_POS));
+					SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Y_NEW_TARGET_POS), false);
 				}
 				if (newTargetPos[ID_Z_AXIS] != actTargetPos[ID_Z_AXIS])
 				{
-					SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS));
+					SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS), false);
 
 					if (newTargetPos[ID_Z_AXIS] > actTargetPos[ID_Z_AXIS])
 					{
@@ -258,23 +258,25 @@ void HandleMove(void) {
 					{
 						dynamixelTurn(ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
-				}
-				CalcAngle(GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS), GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS));
+				}	
+				int16_t val1 = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
+				int16_t val2 = GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS);
+				CalcAngle(&val1, &val2);
 				dynamixelMoveSpeedRW(ID_AXIS_1, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
 				dynamixelMoveSpeedRW(ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
 				dynamixelAction(); /* sync start */
 
 				//SetObjData(OBJ_IDX_MOVING, 1);
-				SetObjData(OBJ_IDX_START_MOVE, 0);
+				SetObjData(OBJ_IDX_START_MOVE, 0, false);
 			}
 			else
 			{
-				SetObjData(OBJ_IDX_START_MOVE, 0);
+				SetObjData(OBJ_IDX_START_MOVE, 0, false);
 			}
 		}
 		else if (start && moving)
 		{
-			SetObjData(OBJ_IDX_START_MOVE, 0);
+			SetObjData(OBJ_IDX_START_MOVE, 0, false);
 		}
 		else /* (!start && moving) */
 		{
@@ -284,7 +286,7 @@ void HandleMove(void) {
 				actPos[ID_Z_AXIS] >= posWindow[ID_Z_AXIS][MIN_POS] && actPos[ID_Z_AXIS] <= posWindow[ID_Z_AXIS][MAX_POS])
 			{  
 				//SetObjData(OBJ_IDX_MOVING, 0);
-				SetObjData(OBJ_IDX_POS_REACHED, 1);
+				SetObjData(OBJ_IDX_POS_REACHED, 1, false);
 			}
 			else
 			{

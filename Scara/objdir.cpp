@@ -17,7 +17,7 @@ static objStruct_t objDir[] =
 	// internal objects
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* bitmask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
 	
 	// position values
 	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
@@ -251,93 +251,98 @@ int16_t GetObjData(uint8_t index)
 	}
 }
 
-int8_t SetObjData(uint8_t index, int16_t data) {
+int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 
 	objStruct_t *pObjStruct = NULL;
 	pObjStruct = LocateObj(index);
 	int16_t minValue = 0;
 	int16_t maxValue = 0;
 
-	if (pObjStruct != NULL) { /* make sure object does exist */
-
-		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W) {	/* check if object is writable */
-
+	if (pObjStruct != NULL) /* make sure object does exist */
+	{
+		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W || internalCall == true) /* check if object is writable */
+		{
 			switch (pObjStruct->idx)	/* set min max vaules for comparison */
 			{
-			case 0x10:
+			case OBJ_IDX_X_NEW_TARGET_POS: // HEX durch DEFINE ersetzen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				minValue = X_POS_MIN;
 				maxValue = X_POS_MAX;
 				break;
 
-			case 0x20:
+			case OBJ_IDX_Y_NEW_TARGET_POS:
 				minValue = Y_POS_MIN;
 				maxValue = Y_POS_MAX;
 				break;
 
-			case 0x30:
+			case OBJ_IDX_Z_NEW_TARGET_POS:
 				minValue = Z_POS_MIN;
 				maxValue = Z_POS_MAX;
 				break;
 
-			case 0x40:
+			case OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE:
 				minValue = AXIS_1_ANGLE_MIN;
 				maxValue = AXIS_1_ANGLE_MAX;
 				break;
 
-			case 0x50:
+			case OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE:
 				minValue = AXIS_2_ANGLE_MIN;
 				maxValue = AXIS_2_ANGLE_MAX;
 				break;
 
-			case 0x60:
+			case OBJ_IDX_X_NEW_TARGET_SPEED:
 				minValue = X_SPEED_MIN;
 				maxValue = X_SPEED_MAX;
 				break;
 
-			case 0x70:
+			case OBJ_IDX_Y_NEW_TARGET_SPEED:
 				minValue = Y_SPEED_MIN;
 				maxValue = Y_SPEED_MAX;
 				break;
 
-			case 0x80:
+			case OBJ_IDX_Z_NEW_TARGET_SPEED:
 				minValue = Z_SPEED_MIN;
 				maxValue = Z_SPEED_MAX;
 				break;
 
-			case 0x90:
+			case OBJ_IDX_AXIS_1_NEW_TARGET_SPEED:
 				minValue = AXIS_1_SPEED_MIN;
 				maxValue = AXIS_1_SPEED_MAX;
 				break;
 
-			case 0xA0:
+			case OBJ_IDX_AXIS_2_NEW_TARGET_SPEED:
 				minValue = AXIS_2_SPEED_MIN;
 				maxValue = AXIS_2_SPEED_MAX;
 				break;
 
 			default:
-				minValue = -32768;
+				minValue = -32768; // gute Idee?
 				maxValue = 32767;
 				break;
 			}
-			if (data >= minValue &&  data <= maxValue) {	/* write data if it's inside the allowed range */
+
+			if (data >= minValue &&  data <= maxValue) /* write data if it's inside the allowed range */
+			{
 				pObjStruct->data = data;
 				return 0;
 			}
-			else {
+			else
+			{
 				char msg[64];
 				sprintf(msg, "object 0x%x value out of range", index);
 				SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 				return -1;
 			}
 		}
-		else {
+		else
+		{
 			char msg[64];
 			sprintf(msg, "object 0x%x is read only", index);
 			SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
 			return -1;
 		}
 	}
-	else {
+	else
+	{
 		char msg[64];
 		sprintf(msg, "object 0x%x does not exist", index);
 		SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);

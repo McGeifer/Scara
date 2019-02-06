@@ -16,7 +16,7 @@
 /* The basic data structure for the object dictionary */
 typedef struct {
 	const	uint8_t		idx;				// index number of object
-	const	uint8_t		props;				// object properties
+			uint8_t		props;				// object properties
 			int16_t		data;				// object data
 			int8_t		(*pFunction)(int16_t val1, int16_t val2);	// pointer for handler function (*pFunction)(const uint8_t idx, const uint8_t props, const int16_t data)
 } objStruct_t;
@@ -64,6 +64,14 @@ enum axisIDs {
 	ID_TOTAL_SIZE			// leave this one
 };
 
+enum vector
+{
+	X,
+	Y,
+	Z,
+	V_SIZE
+};
+
 // ##############################################
 // object indices
 // ##############################################
@@ -77,7 +85,7 @@ enum axisIDs {
 /* internal objects */
 #define OBJ_IDX_Z_POS_COUNT					0xFD	// z - light barrier counter
 #define OBJ_IDX_OP_MODE						0xFE	// system operation mode
-#define OBJ_IDX_SYS_STATUS					0xFF	// system status
+#define OBJ_IDX_SYS_STATUS					0xFF	// system status - bitmask ! 
 
 /* position values */
 #define OBJ_IDX_X_NEW_TARGET_POS			0x10	// x - new target position
@@ -242,8 +250,9 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 /* Function to return the stored data of an object */
 int16_t GetObjData(uint8_t index);
 
-/* Funtion for writing data to the object dictionary */
-int8_t SetObjData(uint8_t index, int16_t data);
+/* Funtion for writing data to the object dictionary. Objects can only be written if they have the property "writeable". 
+This mechanism can be disabled if the paramater internalCall is set to "true" (use with caution!) */
+int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
 
 /* Function to return the stored offset values for a given tool */
 int16_t* GetToolData(uint8_t index);
