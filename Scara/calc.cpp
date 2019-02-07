@@ -15,6 +15,10 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 	if (servo == 1)
 	{
 		int16_t tmp = (int16_t)round(degrees(*val) * 10);
+#ifdef _DEBUG
+		Serial.print("ChkServoLmt() -> tmp: ");
+		Serial.println(tmp, DEC);
+#endif
 		if (tmp >= AXIS_1_ANGLE_MIN && tmp <= AXIS_1_ANGLE_MAX)
 		{
 			return 1;
@@ -27,6 +31,10 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 	else if (servo == 2)
 	{
 		int16_t tmp = (int16_t)round(*val * RAD_TO_DEG * 10);
+#ifdef _DEBUG
+		Serial.print("ChkServoLmt() -> tmp: ");
+		Serial.println(tmp, DEC);
+#endif
 		if (tmp >= AXIS_2_ANGLE_MIN && tmp <= AXIS_2_ANGLE_MAX)
 		{
 			return 1;
@@ -165,8 +173,8 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 #endif 
 
 	coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
-	xVal = 336.0; //coordinates[ID_AXIS_1];
-	yVal = -87.4; //coordinates[ID_AXIS_2];
+	xVal = 5.50594; //coordinates[ID_AXIS_1];
+	yVal = -245.00286; //coordinates[ID_AXIS_2];
 #ifdef _DEBUG
 	Serial.print("xVal: ");
 	Serial.println(xVal, 8);
@@ -175,22 +183,28 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 #endif 
 
 	// calculate missing lengths and angles
-	b = sqrt(xVal * xVal + yVal * yVal);
+	b = (float)sqrt(xVal * xVal + yVal * yVal);
 	alpha2 = atan(yVal / xVal) * (-1);
 #ifdef _DEBUG
 	Serial.print("b: ");
 	Serial.println(b, 8);
 	Serial.print("alpha2: ");
 	Serial.println(alpha2 * 180 / PI, 8);
+
+	/*Serial.print("Teil1: ");
+	Serial.println(b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH, 8);
+	Serial.print("Teil2: ");
+	Serial.println(2.0 * b * AXIS_2_LENGTH, 8);
+	Serial.print("Teil3: ");
+	Serial.println((b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH) / (2.0 * b * AXIS_2_LENGTH), 8);*/
 #endif 
 
-	// zielfenster ?!?!!?!?!?!?!!
-	alpha = AXIS_1_LENGTH + AXIS_2_LENGTH == b ? 0 : acos((b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH) / (2.0 * b * AXIS_2_LENGTH)); /* if both arms are in a straight line don't use law of cosine - !!!!! test with very small numbers !!!!! */
-	//alpha1a = 2 * PI - alpha - alpha2; /* solution a */
-	//alpha1b = 2 * PI - alpha2; /* solution b */
+	/* if both arms are in a straight line don't use law of cosine - !!!!! test with very small numbers! what about the target window? */
+	alpha = AXIS_1_LENGTH + AXIS_2_LENGTH == b ? 0 : (float)acos((b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH) / (2.0 * b * AXIS_2_LENGTH)); 
+	beta =  AXIS_1_LENGTH + AXIS_2_LENGTH == b ? PI : (float)acos((AXIS_1_LENGTH * AXIS_1_LENGTH + AXIS_2_LENGTH * AXIS_2_LENGTH - b * b) / (2.0 * AXIS_1_LENGTH * AXIS_2_LENGTH));
+	gamma = AXIS_1_LENGTH + AXIS_2_LENGTH == b ? 0 : PI - alpha - beta;
 
-	beta = acos((AXIS_1_LENGTH * AXIS_1_LENGTH + AXIS_2_LENGTH * AXIS_2_LENGTH - b * b) / (2.0 * AXIS_1_LENGTH * AXIS_2_LENGTH));
-	gamma = PI - alpha - beta;
+	// berechnete Winkel und Winkel in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung wobei die Fehlerursache möglicherweise bei GeoGebra liegt!!!!!!!!!!!!!!!!!!
 #ifdef _DEBUG
 	Serial.print("alpha: ");
 	Serial.println(alpha * 180 / PI, 8);
@@ -203,12 +217,12 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 	/* Calculation of the new axis angles considering a minimum travel distance
 	 * between the actual and new position of the robot arm. The servo motors have a
 	 * operating angle of 300° ( 0° - 300°). Due to mechanical requirements this range
-	 * might be reduced and it is neccessary to check if servo1 & servo2 are able to
+	 * might be reduced so it is neccessary to check if servo1 & servo2 are able to
 	 * reach the given coordinates. */
 
-	 /* calculation of the angles based on the orientation of the triangle in the coordinate system */
+	 /* calculation of the servo angles based on the orientation of the triangle in the coordinate system */
 	servo1A = 2 * PI - SERVO_1_OFFS - alpha - alpha2;	/* point B is "left" from b */
-	servo1B = 2 * PI - SERVO_1_OFFS - alpha2;			/* point B is "right" from b */
+	servo1B = 2 * PI - SERVO_1_OFFS - (alpha2 - alpha); /* point B is "right" from b */
 	servo2A = 2 * PI - beta - SERVO_2_OFFS;				/* point B is "left" from b */
 	servo2B = beta - SERVO_2_OFFS;						/* point B is "right" from b */
 #ifdef _DEBUG
@@ -227,17 +241,26 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 	cmp1B = ChkServoLmt(1, &servo1B);
 	cmp2A = ChkServoLmt(2, &servo2A);
 	cmp2B = ChkServoLmt(2, &servo2B);
+#ifdef _DEBUG
+	Serial.print("cmp1A: ");
+	Serial.println(cmp1A, DEC);
+	Serial.print("cmp1B: ");
+	Serial.println(cmp1B, DEC);
+	Serial.print("cmp2A: ");
+	Serial.println(cmp2A, DEC);
+	Serial.print("cmp2B: ");
+	Serial.println(cmp2B, DEC);
+#endif 
 
-	if (cmp1A == 1)
+	if (cmp1A)
 	{
-		if (cmp1B == 1) /* both solutions for servo1 are allowed */
+		if (cmp1B) /* both solutions for servo1 are allowed */
 		{
 			/* check which solution can also be reached by servo2 */
 
-			if (cmp2A == 1 && cmp2B == 1) /* both solutions for servo2 are allowed */
+			if (cmp2A && cmp2B) /* both solutions for servo2 are allowed */
 			{
 				/* decition is based on the shortest way for servo2 */
-
 				float actAngle = radians(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE) / 10);
 				float diffA = actAngle < servo2A ? servo2A - actAngle : actAngle - servo2A;
 				float diffB = actAngle < servo2B ? servo2B - actAngle : actAngle - servo2B;
@@ -251,11 +274,11 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 					return SetNewAngles(&servo1B, &servo2B) == 0 ? 0 : -1;
 				}
 			}
-			else if (cmp2A == 1) /* only solution A for servo2 is allowed */
+			else if (cmp2A) /* only solution A for servo2 is allowed */
 			{
 				return SetNewAngles(&servo1A, &servo2A) == 0 ? 0 : -1; /* A oder B nutzen ??? */
 			}
-			else if (cmp2B == 1) /* only solution B for servo2 is allowed */
+			else if (cmp2B) /* only solution B for servo2 is allowed */
 			{
 				return SetNewAngles(&servo1B, &servo2B) == 0 ? 0 : -1; /* A oder B nutzen ??? */
 			}
@@ -264,13 +287,13 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 				return -1;
 			}
 		}
-		else if (cmp1B == 0) /* only solution A for servo1 is allowed */
+		else if (!cmp1B) /* only solution A for servo1 is allowed */
 		{
-			if (cmp2A == 1)
+			if (cmp2A)
 			{
 				return SetNewAngles(&servo1A, &servo2A) == 0 ? 0 : -1;
 			}
-			else if (cmp2A == 0)
+			else if (cmp2A)
 			{
 				// error
 				return -1;
@@ -285,15 +308,15 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 			return -1;
 		}
 	}
-	else if (cmp1A == 0)
+	else if (!cmp1A)
 	{
-		if (cmp1B == 1) /* only solution B for servo1 is allowed */
+		if (cmp1B) /* only solution B for servo1 is allowed */
 		{
-			if (cmp2B == 1)
+			if (cmp2B)
 			{
 				return SetNewAngles(&servo1B, &servo2B) == 0 ? 0 : -1;
 			}
-			else if (cmp2B == 0)
+			else if (!cmp2B)
 			{
 				// error
 				return -1;

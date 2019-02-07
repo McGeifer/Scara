@@ -61,7 +61,7 @@ enum axisIDs {
 	ID_AXIS_1,
 	ID_AXIS_2,
 	ID_Z_AXIS,
-	ID_TOTAL_SIZE			// leave this one
+	ID_TOTAL_NUMBER			// leave this one
 };
 
 enum vector
@@ -194,10 +194,10 @@ enum vector
 #define Z_POS_MIN			0
 #define Z_POS_MAX			2000
 
-#define AXIS_1_ANGLE_MIN	0
-#define AXIS_1_ANGLE_MAX	3000
-#define AXIS_2_ANGLE_MIN	0
-#define AXIS_2_ANGLE_MAX	3000
+#define AXIS_1_ANGLE_MIN	600
+#define AXIS_1_ANGLE_MAX	2400
+#define AXIS_2_ANGLE_MIN	600
+#define AXIS_2_ANGLE_MAX	2400
 
 #define POS_TOLERANCE		0.5
 

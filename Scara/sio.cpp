@@ -579,7 +579,7 @@ void HandleScaraData(void)
 						}
 						else
 						{
-
+							// fehler
 						}
 					}
 					else

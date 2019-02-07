@@ -4,6 +4,7 @@
 
 #include "objdir.h"
 #include "status.h"
+#include "dynamixel.h"
 
 /* object dictionary */
 static objStruct_t objDir[] =
@@ -264,7 +265,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 		{
 			switch (pObjStruct->idx)	/* set min max vaules for comparison */
 			{
-			case OBJ_IDX_X_NEW_TARGET_POS: // HEX durch DEFINE ersetzen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			case OBJ_IDX_X_NEW_TARGET_POS:
 				minValue = X_POS_MIN;
 				maxValue = X_POS_MAX;
 				break;

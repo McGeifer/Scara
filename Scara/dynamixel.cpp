@@ -43,13 +43,12 @@ void InitDynamixel(void) /* Search for servo motors */
 	}
 	else
 	{
-		for (uint8_t i = 0; i < ID_TOTAL_SIZE; i++) /* write configuration parameters to dynamixel */
+		for (uint8_t i = 0; i < ID_TOTAL_NUMBER; i++) /* write configuration parameters to dynamixel */
 		{ 
 			for (size_t j = 0; j < 13; j++)
 			{
 				const char* funcName;
-				int16_t error = dynaFuncPtr[j](i, list[i][j], &funcName);
-				if (error < 0)
+				if (int16_t error = dynaFuncPtr[j](i, list[i][j], &funcName) < 0)
 				{
 					DynamixelError(error * (-1), i);
 					SendStatus("While calling: ", funcName, STATUS_TYPE_ERROR);
@@ -58,12 +57,19 @@ void InitDynamixel(void) /* Search for servo motors */
 			}
 		}
 		/* enable continous turn for z axis */
-		if (dynamixelSetEndless(ID_Z_AXIS, ON) < 0)
+		if (int16_t error = dynamixelSetEndless(ID_Z_AXIS, ON) < 0)
 		{
-
+			DynamixelError(error * (-1), ID_Z_AXIS);
+			SendStatus(NULL, "While calling: dynamixelSetEndless", STATUS_TYPE_ERROR);
+			return;
 		}
 		/* enable torque for all servo motors */
-		dynamixelTorqueStatus(BROADCAST_ID, ON);
+		if (int16_t error = dynamixelTorqueStatus(BROADCAST_ID, ON) < 0)
+		{
+			DynamixelError(error * (-1), BROADCAST_ID);
+			SendStatus(NULL, "While calling: dynamixelTorqueStatus", STATUS_TYPE_ERROR);
+			return;
+		}
 	}
 }
 
@@ -124,12 +130,12 @@ void DynamixelError(uint8_t errorBit, uint8_t id)
 
 void UpdateObjDir(void)
 {
-	int16_t data[ID_TOTAL_SIZE][2] = { 0 };
+	int16_t data[ID_TOTAL_NUMBER][2] = { 0 };
 	uint8_t error = 0;
 
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		for (uint8_t id = 0; id < (ID_TOTAL_SIZE); id++)
+		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
 		{
 			data[id][pos] = dynamixelReadPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
 			data[id][speed] = dynamixelReadSpeed(id);
@@ -237,7 +243,8 @@ void HandleMove(void) {
 				actPos[ID_AXIS_2] < posWindow[ID_AXIS_2][MIN_POS] || actPos[ID_AXIS_2] > posWindow[ID_AXIS_2][MAX_POS] ||
 				actPos[ID_Z_AXIS] < posWindow[ID_Z_AXIS][MIN_POS] || actPos[ID_Z_AXIS] > posWindow[ID_Z_AXIS][MAX_POS])
 			{
-
+				SetObjData(OBJ_IDX_POS_REACHED, 0, false);
+				
 				if (newTargetPos[ID_AXIS_1] != actTargetPos[ID_AXIS_1])
 				{
 					SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_X_NEW_TARGET_POS), false);
@@ -261,12 +268,13 @@ void HandleMove(void) {
 				}	
 				int16_t val1 = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
 				int16_t val2 = GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS);
+				/* calculate new target position*/
 				CalcAngle(&val1, &val2);
 				dynamixelMoveSpeedRW(ID_AXIS_1, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
 				dynamixelMoveSpeedRW(ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
 				dynamixelAction(); /* sync start */
 
-				//SetObjData(OBJ_IDX_MOVING, 1);
+				SetObjData(OBJ_IDX_MOVING, 1, false);
 				SetObjData(OBJ_IDX_START_MOVE, 0, false);
 			}
 			else
@@ -285,7 +293,7 @@ void HandleMove(void) {
 				actPos[ID_AXIS_2] >= posWindow[ID_AXIS_2][MIN_POS] && actPos[ID_AXIS_2] <= posWindow[ID_AXIS_2][MAX_POS] &&
 				actPos[ID_Z_AXIS] >= posWindow[ID_Z_AXIS][MIN_POS] && actPos[ID_Z_AXIS] <= posWindow[ID_Z_AXIS][MAX_POS])
 			{  
-				//SetObjData(OBJ_IDX_MOVING, 0);
+				SetObjData(OBJ_IDX_MOVING, 0, false);
 				SetObjData(OBJ_IDX_POS_REACHED, 1, false);
 			}
 			else

@@ -27,6 +27,7 @@ void setup()
 	InitSio();
 	InitOperationMode();
 	InitDynamixel();
+	
 	/*uint8_t idx1 = 0x01;
 	uint8_t idx2 = 0x02;
 	int16_t x1 = 25;
@@ -35,37 +36,37 @@ void setup()
 	int16_t x2 = 0;
 	int16_t y2 = -50;
 	int16_t z2 = 10;
-
 	SetPosRegData(&idx1, &x1, &y1, &z1);
 	SetPosRegData(&idx2, &x2, &y2, &z2);*/
-	int16_t angle1 = 1735;
-	int16_t angle2 = 680;
 
-	int16_t xPos = 3360;
-	int16_t yPos = -874;
+	/*int16_t angle1 = 1735;
+	int16_t angle2 = 680;
+	CalcPosistion(&angle1, &angle2);*/
 	
-	//CalcPosistion(&angle1, &angle2);
-	CalcAngle(&xPos, &yPos);
+	/*int16_t xPos = 3360;
+	int16_t yPos = -874;
+	int8_t tmp = CalcAngle(&xPos, &yPos);
+	Serial.print(tmp);*/
 }
 
 void loop()
 {
-	//while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
-	//{
-	//	UpdateObjDir();
-	//	HandleSIO();
-	//	HandleMove();
+	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
+	{
+		UpdateObjDir();
+		HandleSIO();
+		HandleMove();
 
-	//	/* measure cycletime */
-	//	cycleCount++;
-	//	if (cycleCount >= 1000)
-	//	{
-	//		char msg[64];
-	//		uint32_t tmp = (micros() - cycleTime) / cycleCount;
-	//		sprintf(msg, "Cycle Time : %lu us", tmp);
-	//		SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
-	//		cycleCount = 0;
-	//		cycleTime = micros();
-	//	}
-	//}
+		/* measure cycletime */
+		cycleCount++;
+		if (cycleCount >= 1000)
+		{
+			char msg[64];
+			uint32_t tmp = (micros() - cycleTime) / cycleCount;
+			sprintf(msg, "Cycle Time : %lu us", tmp);
+			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+			cycleCount = 0;
+			cycleTime = micros();
+		}
+	}
 }
