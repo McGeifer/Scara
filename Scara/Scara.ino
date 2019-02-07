@@ -59,12 +59,15 @@ void loop()
 
 		/* measure cycletime */
 		cycleCount++;
-		if (cycleCount >= 1000)
+		if (cycleCount >= 100)
 		{
 			char msg[64];
 			uint32_t tmp = (micros() - cycleTime) / cycleCount;
-			sprintf(msg, "Cycle Time : %lu us", tmp);
-			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+			//sprintf(msg, "Cycle Time : %lu us", tmp);
+			//SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+			Serial.print("StopWatch (loop): ");
+			Serial.print(tmp);
+			Serial.println(" us");
 			cycleCount = 0;
 			cycleTime = micros();
 		}

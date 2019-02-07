@@ -37,18 +37,81 @@ void InitDynamixel(void) /* Search for servo motors */
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		/* set system error state to prevent further operations */
 #ifndef _DEBUG
-		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
 		return;
 	}
 	else
 	{
+		uint16_t dynaParamList[3][13] =
+		{
+		{	DYNA_AXIS_1_TEMP_LIMIT,
+			DYNA_AXIS_1_LOW_VOLTAGE_LIMIT,
+			DYNA_AXIS_1_HIGH_VOLTAGE_LIMIT,
+			DYNA_AXIS_1_MAX_TORQUE,
+			DYNA_AXIS_1_SRL,
+			DYNA_AXIS_1_RDT,
+			DYNA_AXIS_1_LED_ALARM,
+			DYNA_AXIS_1_SHUT_DOWN_ALARM,
+			DYNA_AXIS_1_CW_C_SLOPE,
+			DYNA_AXIS_1_CCW_C_SLOPE,
+			DYNA_AXIS_1_CW_C_MARGIN,
+			DYNA_AXIS_1_CCW_C_MARGIN,
+			DYNA_AXIS_1_PUNCH,
+		},
+		{	DYNA_Z_AXIS_TEMP_LIMIT,
+			DYNA_AXIS_2_LOW_VOLTAGE_LIMIT,
+			DYNA_AXIS_2_HIGH_VOLTAGE_LIMIT,
+			DYNA_Z_AXIS_MAX_TORQUE,
+			DYNA_Z_AXIS_SRL,
+			DYNA_Z_AXIS_RDT,
+			DYNA_Z_AXIS_LED_ALARM,
+			DYNA_Z_AXIS_SHUT_DOWN_ALARM,
+			DYNA_Z_AXIS_CW_C_SLOPE,
+			DYNA_Z_AXIS_CCW_C_SLOPE,
+			DYNA_Z_AXIS_CW_C_MARGIN,
+			DYNA_Z_AXIS_CCW_C_MARGIN,
+			DYNA_Z_AXIS_PUNCH,
+		},
+		{	DYNA_Z_AXIS_TEMP_LIMIT,
+			DYNA_Z_AXIS_LOW_VOLTAGE_LIMIT,
+			DYNA_Z_AXIS_HIGH_VOLTAGE_LIMIT,
+			DYNA_Z_AXIS_MAX_TORQUE,
+			DYNA_Z_AXIS_SRL,
+			DYNA_Z_AXIS_RDT,
+			DYNA_Z_AXIS_LED_ALARM,
+			DYNA_Z_AXIS_SHUT_DOWN_ALARM,
+			DYNA_Z_AXIS_CW_C_SLOPE,
+			DYNA_Z_AXIS_CCW_C_SLOPE,
+			DYNA_Z_AXIS_CW_C_MARGIN,
+			DYNA_Z_AXIS_CCW_C_MARGIN,
+			DYNA_Z_AXIS_PUNCH,
+		}
+		};
+
+		funcPtr dynaFuncPtr[] =
+		{
+			dynamixelSetTempLimit,
+			dynamixelSetLowVoltageLimit,
+			dynamixelSetHighVoltageLimit,
+			dynamixelSetMaxTorque,
+			dynamixelSetSRL,
+			dynamixelSetRDT,
+			dynamixelSetLEDAlarm,
+			dynamixelSetShutdownAlarm,
+			dynamixelSetCWCSlope,
+			dynamixelSetCCWCSlope,
+			dynamixelSetCWCMargin,
+			dynamixelSetCCWCMargin,
+			dynamixelSetPunch
+		};
+
 		for (uint8_t i = 0; i < ID_TOTAL_NUMBER; i++) /* write configuration parameters to dynamixel */
 		{ 
 			for (size_t j = 0; j < 13; j++)
 			{
 				const char* funcName;
-				if (int16_t error = dynaFuncPtr[j](i, list[i][j], &funcName) < 0)
+				if (int16_t error = dynaFuncPtr[j](i, dynaParamList[i][j], &funcName) < 0)
 				{
 					DynamixelError(error * (-1), i);
 					SendStatus("While calling: ", funcName, STATUS_TYPE_ERROR);
@@ -60,14 +123,12 @@ void InitDynamixel(void) /* Search for servo motors */
 		if (int16_t error = dynamixelSetEndless(ID_Z_AXIS, ON) < 0)
 		{
 			DynamixelError(error * (-1), ID_Z_AXIS);
-			SendStatus(NULL, "While calling: dynamixelSetEndless", STATUS_TYPE_ERROR);
 			return;
 		}
 		/* enable torque for all servo motors */
 		if (int16_t error = dynamixelTorqueStatus(BROADCAST_ID, ON) < 0)
 		{
 			DynamixelError(error * (-1), BROADCAST_ID);
-			SendStatus(NULL, "While calling: dynamixelTorqueStatus", STATUS_TYPE_ERROR);
 			return;
 		}
 	}
@@ -123,7 +184,7 @@ void DynamixelError(uint8_t errorBit, uint8_t id)
 			break;
 		}
 #ifndef _DEBUG
-		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR);
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
 	}
 }
@@ -179,7 +240,7 @@ void UpdateObjDir(void)
 		if (CalcPosistion(&data[ID_AXIS_1][pos], &data[ID_AXIS_2][pos]) == -1) /* calcualte related x and y positions */
 		{
 #ifndef _DEBUG
-			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
+			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
 #endif
 		}
 		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/

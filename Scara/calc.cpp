@@ -400,7 +400,7 @@ int8_t UpdateZPos(void)
 	else
 	{
 #ifndef _DEBUG
-		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR);
+		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
 #endif 
 		return -1;
 	}
