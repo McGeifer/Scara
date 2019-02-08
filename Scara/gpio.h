@@ -15,7 +15,7 @@
 #define INTERRUPT_PIN	3	/* Interrupt pin for counting the position impulses of the z-axis */
 #define DIRECTION_PIN	2	/* Pin for switching the tristate buffer */
 
-/* Setup and configuration of the digital in- and outputs and interrupts */
+/* Setup and configuration of the digital in/ outputs and interrupts */
 void InitGPIO(void);
 
 /* Detection of the transmission protocol and choice of operating mode  */

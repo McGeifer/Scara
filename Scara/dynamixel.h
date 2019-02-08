@@ -19,10 +19,10 @@
 #define DYNA_AXIS_1_RDT					250		// return delay time = 2µs * vaule -> 500µs
 #define DYNA_AXIS_1_LED_ALARM			127		// LED blink for all error types
 #define DYNA_AXIS_1_SHUT_DOWN_ALARM		37		// turn of torque for: overload, overheating and input voltage error
-#define DYNA_AXIS_1_CW_C_SLOPE			32		// compilance slope - default value
-#define DYNA_AXIS_1_CCW_C_SLOPE			32		
-#define DYNA_AXIS_1_CW_C_MARGIN			0		// compilance margin - default value
-#define DYNA_AXIS_1_CCW_C_MARGIN		0		
+#define DYNA_AXIS_1_CW_C_SLOPE			32		// compilance slope (clock wise) - default value
+#define DYNA_AXIS_1_CCW_C_SLOPE			32		// compilance slope (counter clock wise) - default value
+#define DYNA_AXIS_1_CW_C_MARGIN			0		// compilance margin (clock wise) - default value
+#define DYNA_AXIS_1_CCW_C_MARGIN		0		// compilance margin (counter clock wise) - default value
 #define DYNA_AXIS_1_PUNCH				32		// minimum current supplied to the motor - default value
 
 #define DYNA_AXIS_2_TEMP_LIMIT			70
@@ -53,6 +53,7 @@
 #define DYNA_Z_AXIS_CCW_C_MARGIN		0
 #define DYNA_Z_AXIS_PUNCH				32
 
+/* function pointer typedef for the dynamixel setup functions*/
 typedef int16_t(*funcPtr)(uint8_t id, int16_t val, const char **funcName);
 
 enum dataType
@@ -61,16 +62,19 @@ enum dataType
 	speed
 };
 
-/* Basic configuration of the Dynamixel servos */
+/* Setup function for the Dynamixel servos */
 extern void InitDynamixel(void);
 
-/* Handler function for Dynamixel specific error codes */
+/* Handler function for Dynamixel-specific error codes. If an error code is reported to
+the function, it will issue an error message. In addition, the execution of the main loop
+is stopped to prevent inadvertent behavior */
 extern void DynamixelError(uint8_t errorBit, uint8_t id);
 
-/* Cyclic function for updating all actual position values in the object dictionary */
+/* Cyclic function for updating all actual position/ angle values of the object dictionary */
 extern void UpdateObjDir(void);
 
-/* Cyclic function for detecting and executing movements of Dynamixel servos */
+/* Cyclic function for detecting the move status of the system and if necessary executing
+move commands of the Dynamixel servos */
 extern void HandleMove(void);
 
 #endif

@@ -50,59 +50,6 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 	}
 }
 
-/* Convert and store the given angles in rad for servo1 & servo2 in the objDir.
-   return 0  - operation successful
-   return -1 - operation failed */
-uint8_t SetNewAngles(float *servo1, float *servo2)
-{
-	int16_t actAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE);
-		
-	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
-	{
-		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
-		{
-			return 0;
-		}
-		else
-		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, actAngle1, true); /* try to set the old value of axis 1 to prevent inconsistent angle values */
-			return -1;
-		}
-	}
-	else
-	{
-		return -1;
-	}
-}
-
-/* Convert and store the actual positions for x & y in the objDir.
-   return 0  - operation successful
-   return -1 - operation failed */
-uint8_t SetNewPositions(float *xPos, float *yPos)
-{
-	int16_t actPosX = GetObjData(OBJ_IDX_X_ACTUAL_POS);
-
-	if (SetObjData(OBJ_IDX_X_ACTUAL_POS, round(*xPos * 10.0), true) == 0)
-	{
-		if (SetObjData(OBJ_IDX_Y_ACTUAL_POS, round(*yPos * 10.0), true) == 0)
-		{
-#ifdef _DEBUG
-			Serial.println("SetNewPositions() - erfolgreich");
-#endif
-			return 0;
-		}
-		else
-		{
-			SetObjData(OBJ_IDX_X_ACTUAL_POS, actPosX, true); /* try to set the old value of x to prevent inconsistent position values */
-			return -1;
-		}
-	}
-	else
-	{
-		return -1;
-	}
-}
-
 /* ConvertCoordinates converts x and y coordiantes between the different coordinate systems (machine & field).
    return #    - pointer to array
    return NULL - error */
@@ -134,7 +81,7 @@ float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 	}
 }
 
-int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
+float* CalcAngle(int16_t *xPos, int16_t *yPos)
 {
 	float *coordinates = NULL;	// converted coordinates
 	float xTmp = 0;				// temp value for conversion
@@ -154,10 +101,10 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 	float alpha2 = 0;			// angle between b & x-axis 
 	float beta = 0;				// inner angle of triangle at point B (between a & c)
 	float gamma = 0;			// inner angle of triangle at point C (between b & c)
-	float servo1A = 0;			// angle for servo motor 1
-	float servo1B = 0;	
-	float servo2A = 0;			// 
-	float servo2B = 0;			// 
+	static float servo1A = 0;	// angle for servo motor 1
+	static float servo1B = 0;	// 
+	static float servo2A = 0;	// 
+	static float servo2B = 0;	// 
 
 	// convert the input position values based on the field coordinate system
 	// to the coordinate system of the robot axis
@@ -173,8 +120,8 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 #endif 
 
 	coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
-	xVal = 5.50594; //coordinates[ID_AXIS_1];
-	yVal = -245.00286; //coordinates[ID_AXIS_2];
+	xVal = xTmp; //coordinates[ID_AXIS_1];
+	yVal = yTmp; //coordinates[ID_AXIS_2];
 #ifdef _DEBUG
 	Serial.print("xVal: ");
 	Serial.println(xVal, 8);
@@ -200,9 +147,9 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 #endif 
 
 	/* if both arms are in a straight line don't use law of cosine - !!!!! test with very small numbers! what about the target window? */
-	alpha = AXIS_1_LENGTH + AXIS_2_LENGTH == b ? 0 : (float)acos((b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH) / (2.0 * b * AXIS_2_LENGTH)); 
+	alpha = AXIS_1_LENGTH + AXIS_2_LENGTH == b ?  0 : (float)acos((b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH) / (2.0 * b * AXIS_2_LENGTH)); 
 	beta =  AXIS_1_LENGTH + AXIS_2_LENGTH == b ? PI : (float)acos((AXIS_1_LENGTH * AXIS_1_LENGTH + AXIS_2_LENGTH * AXIS_2_LENGTH - b * b) / (2.0 * AXIS_1_LENGTH * AXIS_2_LENGTH));
-	gamma = AXIS_1_LENGTH + AXIS_2_LENGTH == b ? 0 : PI - alpha - beta;
+	gamma = AXIS_1_LENGTH + AXIS_2_LENGTH == b ?  0 : PI - alpha - beta;
 
 	// berechnete Winkel und Winkel in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung wobei die Fehlerursache möglicherweise bei GeoGebra liegt!!!!!!!!!!!!!!!!!!
 #ifdef _DEBUG
@@ -223,7 +170,7 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 	 /* calculation of the servo angles based on the orientation of the triangle in the coordinate system */
 	servo1A = 2 * PI - SERVO_1_OFFS - alpha - alpha2;	/* point B is "left" from b */
 	servo1B = 2 * PI - SERVO_1_OFFS - (alpha2 - alpha); /* point B is "right" from b */
-	servo2A = 2 * PI - beta - SERVO_2_OFFS;				/* point B is "left" from b */
+	servo2A = 2 * PI - SERVO_2_OFFS - beta;				/* point B is "left" from b */
 	servo2B = beta - SERVO_2_OFFS;						/* point B is "right" from b */
 #ifdef _DEBUG
 	Serial.print("servo1A: ");
@@ -267,20 +214,20 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 
 				if (diffA < diffB)
 				{
-					return SetNewAngles(&servo1A, &servo2A) == 0 ? 0 : -1;
+					return SetActualAngles(&servo1A, &servo2A);
 				}
 				else
 				{
-					return SetNewAngles(&servo1B, &servo2B) == 0 ? 0 : -1;
+					return SetActualAngles(&servo1B, &servo2B);
 				}
 			}
 			else if (cmp2A) /* only solution A for servo2 is allowed */
 			{
-				return SetNewAngles(&servo1A, &servo2A) == 0 ? 0 : -1; /* A oder B nutzen ??? */
+				return SetActualAngles(&servo1A, &servo2A); /* A oder B nutzen ??? */
 			}
 			else if (cmp2B) /* only solution B for servo2 is allowed */
 			{
-				return SetNewAngles(&servo1B, &servo2B) == 0 ? 0 : -1; /* A oder B nutzen ??? */
+				return SetActualAngles(&servo1B, &servo2B); /* A oder B nutzen ??? */
 			}
 			else
 			{
@@ -291,7 +238,7 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 		{
 			if (cmp2A)
 			{
-				return SetNewAngles(&servo1A, &servo2A) == 0 ? 0 : -1;
+				return SetActualAngles(&servo1A, &servo2A);
 			}
 			else if (cmp2A)
 			{
@@ -314,7 +261,7 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 		{
 			if (cmp2B)
 			{
-				return SetNewAngles(&servo1B, &servo2B) == 0 ? 0 : -1;
+				return SetActualAngles(&servo1B, &servo2B);
 			}
 			else if (!cmp2B)
 			{
@@ -339,7 +286,7 @@ int8_t CalcAngle(int16_t *xPos, int16_t *yPos)
 	}
 }
 
-int8_t CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
+float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 {
 	float vecA[2] = { 0, 0 };
 	float vecB[2] = { 0, 0 };
@@ -352,9 +299,9 @@ int8_t CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	vecA[X] = AXIS_1_LENGTH * cos(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
 	vecA[Y] = AXIS_1_LENGTH * sin(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
 
-	alpha1 = radians(*angleAxis1 / 10.0) + SERVO_1_OFFS;
-	beta = 2 * PI - (radians(*angleAxis2 / 10.0) + SERVO_2_OFFS);
-	beta1 = 2 * PI - (beta - (alpha1 - PI));
+	alpha1 =           radians(*angleAxis1 / 10.0) + SERVO_1_OFFS;
+	beta   = 2 * PI - (radians(*angleAxis2 / 10.0) + SERVO_2_OFFS);
+	beta1  = 2 * PI - (beta - (alpha1 - PI));
 
 	vecB[X] = AXIS_2_LENGTH * cos(beta1);
 	vecB[Y] = AXIS_2_LENGTH * sin(beta1);
@@ -362,6 +309,9 @@ int8_t CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	vecR[X] = vecA[X] + vecB[X];
 	vecR[Y] = vecA[Y] + vecB[Y]; // bis hier hin funktioniert sie :D
 
+
+	// Was wenn die Funktion zum umrechnen der actTargetPos o. newTargetPos aufgerufen wurde? Hier fehlt noch ein Mechanismus oder Parameter
+	// evtl über __func__ ?!?!
 	tmp = ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
 #ifdef _DEBUG
 	Serial.println("CalcPosition()");
@@ -386,7 +336,7 @@ int8_t CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	Serial.print("vecR[Y]: ");
 	Serial.println(vecR[Y], DEC);
 #endif 
-	return SetNewPositions(&tmp[X], &tmp[Y]) ? 0 : -1;
+	return SetNewPositions(&tmp[X], &tmp[Y]);
 }
 
 int8_t UpdateZPos(void)

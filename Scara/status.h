@@ -11,7 +11,7 @@
 
 /* Printing of user defined messages via console. The 'optionalDebugMessage' will only be printed when debug mode is active,
  use "NULL" if no optional message should be printed. The 'message' is required and will always be printed if it's 'statusType'
- is not "DEBUG". The 'statusType' defines the visibillity and prefix for the printed staus message. The availabile types are
+ is not "DEBUG". The 'statusType' defines the visibillity and prefix for the printed status message. The availabile types are
  'NOTYPE', 'INFO', 'WARNING', 'ERROR' and 'DEBUG'. Status messages with the 'DEBUG" statusType will only be printed if the
  system is in debug mode */
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType);

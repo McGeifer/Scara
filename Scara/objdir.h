@@ -254,16 +254,43 @@ int16_t GetObjData(uint8_t index);
 This mechanism can be disabled if the paramater internalCall is set to "true" (use with caution!) */
 int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
 
+/* Write "actualAngles" (in rad) in objDir.
+   return 0  - operation successful
+   return -1 - operation failed */
+uint8_t SetActualAngles(float *servo1, float *servo2);
+
+/* Write "actualTargetAngles" (in rad) in objDir.
+   return 0  - operation successful
+   return -1 - operation failed */
+uint8_t SetActualTargetAngles(float *servo1, float *servo2);
+
+/* Write "newTargetAngles" (in rad) in objDir.
+   return 0  - operation successful
+   return -1 - operation failed */
+uint8_t SetNewTargetAngles(float *servo1, float *servo2);
+
+/* Write "actualPos" (in mm) in objDir.
+   return 0  - operation successful
+   return -1 - operation failed */
+uint8_t SetActualPositions(float *xPos, float *yPos);
+
+/* Write "actualTargetPos" (in mm) in objDir.
+   return 0  - operation successful
+   return -1 - operation failed */
+uint8_t SetActualTargetPositions(float *xPos, float *yPos);
+
+/*Write "newTargetPos" (in mm) in objDir.
+return 0 - operation successful
+return -1 - operation failed */
+uint8_t SetNewTargetPositions(float *xPos, float *yPos);
+
 /* Function to return the stored offset values for a given tool */
 int16_t* GetToolData(uint8_t index);
 
-// Function to search the position register. If the given index is found it returns TRUE if not FALSE.
-//posReg_t* LocatePos(uint8_t *idx);
-
-// Function to search the object dictionary. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer.
-//objStruct_t* LocateObj(uint8_t index);
-
 /* Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer */
 toolTbl_t* LocateTool(uint8_t index);
+
+
+
 
 #endif

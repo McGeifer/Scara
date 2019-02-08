@@ -8,11 +8,12 @@
 #include "calc.h"
 #include "DynamixelSerial2/DynamixelSerial2.h"
 
-void InitDynamixel(void) /* Search for servo motors */
+void InitDynamixel(void) 
 {
 	int tmp = 0;
 	int response = 0;
 
+	/* search for servo motors */
 	for (int i = 0; i <= 2; i++)
 	{
 		tmp = dynamixelPing(i);
@@ -35,7 +36,7 @@ void InitDynamixel(void) /* Search for servo motors */
 	if (response != 3)
 	{
 		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
-		/* set system error state to prevent further operations */
+		/* if one of the servos could not be found then set the system error state to prevent further operations */
 #ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
@@ -43,6 +44,7 @@ void InitDynamixel(void) /* Search for servo motors */
 	}
 	else
 	{
+		/* initialization of the parameter list for setting up the dynamixel servos when starting the controller */
 		uint16_t dynaParamList[3][13] =
 		{
 		{	DYNA_AXIS_1_TEMP_LIMIT,
@@ -89,6 +91,7 @@ void InitDynamixel(void) /* Search for servo motors */
 		}
 		};
 
+		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamisel servos by using the paramter list dynaParamList[][] */
 		funcPtr dynaFuncPtr[] =
 		{
 			dynamixelSetTempLimit,
@@ -106,12 +109,13 @@ void InitDynamixel(void) /* Search for servo motors */
 			dynamixelSetPunch
 		};
 
-		for (uint8_t i = 0; i < ID_TOTAL_NUMBER; i++) /* write configuration parameters to dynamixel */
+		/* execute setup functions */
+		for (uint8_t i = 0; i < ID_TOTAL_NUMBER; i++) /* outer loop for iterating the servo ids */
 		{ 
-			for (size_t j = 0; j < 13; j++)
+			for (size_t j = 0; j < sizeof(dynaFuncPtr) / sizeof(dynaFuncPtr[0]); j++) /* inner loop for iterating the setup functions */
 			{
 				const char* funcName;
-				if (int16_t error = dynaFuncPtr[j](i, dynaParamList[i][j], &funcName) < 0)
+				if (int16_t error = dynaFuncPtr[j](i, dynaParamList[i][j], &funcName) < 0) /* executing the setup functions */
 				{
 					DynamixelError(error * (-1), i);
 					SendStatus("While calling: ", funcName, STATUS_TYPE_ERROR);
@@ -206,7 +210,7 @@ void UpdateObjDir(void)
 				
 				if (data[id][pos] < 0) /* error value is negative by dynamixel library */
 				{ 
-					error = data[id][pos] * (-1); 
+					error = data[id][pos] * (-1);
 				}
 				else
 				{
@@ -300,7 +304,7 @@ void HandleMove(void) {
 				*  - ende */
 
 				/* goal position changed? */
-			if (actPos[ID_AXIS_1] < posWindow[ID_AXIS_1][MIN_POS] || actPos[ID_AXIS_1] > posWindow[ID_AXIS_1][MAX_POS] ||  
+			if (actPos[ID_AXIS_1] < posWindow[ID_AXIS_1][MIN_POS] || actPos[ID_AXIS_1] > posWindow[ID_AXIS_1][MAX_POS] ||
 				actPos[ID_AXIS_2] < posWindow[ID_AXIS_2][MIN_POS] || actPos[ID_AXIS_2] > posWindow[ID_AXIS_2][MAX_POS] ||
 				actPos[ID_Z_AXIS] < posWindow[ID_Z_AXIS][MIN_POS] || actPos[ID_Z_AXIS] > posWindow[ID_Z_AXIS][MAX_POS])
 			{

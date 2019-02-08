@@ -15,7 +15,7 @@
 #include "calc.h"
 
 uint32_t cycleTime;
-uint16_t cycleCount;
+uint32_t cycleCount;
 
 extern void InitDynamixel(void);
 extern void UpdateObjDir(void);
@@ -43,23 +43,23 @@ void setup()
 	int16_t angle2 = 680;
 	CalcPosistion(&angle1, &angle2);*/
 	
-	/*int16_t xPos = 3360;
-	int16_t yPos = -874;
+	int16_t xPos = 2180;
+	int16_t yPos = -264;
 	int8_t tmp = CalcAngle(&xPos, &yPos);
-	Serial.print(tmp);*/
+	Serial.println(tmp);
 }
 
 void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		UpdateObjDir();
+		/*UpdateObjDir();
 		HandleSIO();
-		HandleMove();
+		HandleMove();*/
 
 		/* measure cycletime */
 		cycleCount++;
-		if (cycleCount >= 100)
+		if (cycleCount >= 100000)
 		{
 			char msg[64];
 			uint32_t tmp = (micros() - cycleTime) / cycleCount;

@@ -351,6 +351,138 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 	}
 }
 
+uint8_t SetActualAngles(float *servo1, float *servo2)
+{
+	int16_t actAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE);
+
+	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
+	{
+		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, actAngle1, true); /* try to set the old value of axis 1 in order to avoid inconsistent data */
+			return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+uint8_t SetActualTargetAngles(float *servo1, float *servo2)
+{
+	int16_t oldTargetAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE);
+
+	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
+	{
+		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 in order to avoid inconsistent data */
+			return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+uint8_t SetNewTargetAngles(float *servo1, float *servo2)
+{
+	int16_t oldTargetAngle1 = GetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE);
+
+	if (SetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
+	{
+		if (SetObjData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 in order to avoid inconsistent data */
+			return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+uint8_t SetActualPositions(float *xPos, float *yPos)
+{
+	int16_t actPosX = GetObjData(OBJ_IDX_X_ACTUAL_POS);
+
+	if (SetObjData(OBJ_IDX_X_ACTUAL_POS, round(*xPos * 10.0), true) == 0)
+	{
+		if (SetObjData(OBJ_IDX_Y_ACTUAL_POS, round(*yPos * 10.0), true) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_X_ACTUAL_POS, actPosX, true); /* try to set the old value of x in order to avoid inconsistent data */
+			return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+uint8_t SetActualTargetPositions(float *xPos, float *yPos)
+{
+	int16_t actTargetPosX = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
+
+	if (SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, round(*xPos * 10.0), true) == 0)
+	{
+		if (SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, round(*yPos * 10.0), true) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, actTargetPosX, true); /* try to set the old value of x in order to avoid inconsistent data */
+			return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+uint8_t SetNewTargetPositions(float *xPos, float *yPos)
+{
+	int16_t newTargetPosX = GetObjData(OBJ_IDX_X_NEW_TARGET_POS);
+
+	if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, round(*xPos * 10.0), true) == 0)
+	{
+		if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, round(*yPos * 10.0), true) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_X_NEW_TARGET_POS, newTargetPosX, true); /* try to set the old value of x in order to avoid inconsistent data */
+			return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 // ##############################################
 // tool table - help functions
 // ##############################################
@@ -395,3 +527,4 @@ int16_t* GetToolData(uint8_t index)
 		return NULL;
 	}
 }
+
