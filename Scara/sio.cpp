@@ -24,7 +24,7 @@ const uint8_t	minBufferLength = 11; // minimum buffer length for a valid instruc
 void InitSio(void)
 {
 	// Setup for USB connection;
-	Serial.begin(115200);
+	Serial.begin(1000000);
 	Serial.setTimeout(500);
 
 	// Setup for Modbus connection (Serial1)

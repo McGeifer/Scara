@@ -26,8 +26,8 @@ void InitDynamixel(void)
 		}
 		else
 		{
-			char msg[32];
-			sprintf(msg, "Dynamixel found @ ID: %d", i);
+			char msg[64];
+			sprintf(msg, "Dynamixel found @ ID: %d - %i", i, tmp);
 			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_INFO);
 			response++;
 		}
@@ -47,13 +47,13 @@ void InitDynamixel(void)
 		/* initialization of the parameter list for setting up the dynamixel servos when starting the controller */
 		uint16_t dynaParamList[3][13] =
 		{
-		{	DYNA_AXIS_1_TEMP_LIMIT,
+		{	DYNA_AXIS_1_LED_ALARM,
+			DYNA_AXIS_1_TEMP_LIMIT,
 			DYNA_AXIS_1_LOW_VOLTAGE_LIMIT,
 			DYNA_AXIS_1_HIGH_VOLTAGE_LIMIT,
 			DYNA_AXIS_1_MAX_TORQUE,
 			DYNA_AXIS_1_SRL,
 			DYNA_AXIS_1_RDT,
-			DYNA_AXIS_1_LED_ALARM,
 			DYNA_AXIS_1_SHUT_DOWN_ALARM,
 			DYNA_AXIS_1_CW_C_SLOPE,
 			DYNA_AXIS_1_CCW_C_SLOPE,
@@ -61,13 +61,13 @@ void InitDynamixel(void)
 			DYNA_AXIS_1_CCW_C_MARGIN,
 			DYNA_AXIS_1_PUNCH,
 		},
-		{	DYNA_Z_AXIS_TEMP_LIMIT,
+		{	DYNA_Z_AXIS_LED_ALARM,
+			DYNA_Z_AXIS_TEMP_LIMIT,
 			DYNA_AXIS_2_LOW_VOLTAGE_LIMIT,
 			DYNA_AXIS_2_HIGH_VOLTAGE_LIMIT,
 			DYNA_Z_AXIS_MAX_TORQUE,
 			DYNA_Z_AXIS_SRL,
 			DYNA_Z_AXIS_RDT,
-			DYNA_Z_AXIS_LED_ALARM,
 			DYNA_Z_AXIS_SHUT_DOWN_ALARM,
 			DYNA_Z_AXIS_CW_C_SLOPE,
 			DYNA_Z_AXIS_CCW_C_SLOPE,
@@ -75,13 +75,13 @@ void InitDynamixel(void)
 			DYNA_Z_AXIS_CCW_C_MARGIN,
 			DYNA_Z_AXIS_PUNCH,
 		},
-		{	DYNA_Z_AXIS_TEMP_LIMIT,
+		{	DYNA_Z_AXIS_LED_ALARM,
+			DYNA_Z_AXIS_TEMP_LIMIT,
 			DYNA_Z_AXIS_LOW_VOLTAGE_LIMIT,
 			DYNA_Z_AXIS_HIGH_VOLTAGE_LIMIT,
 			DYNA_Z_AXIS_MAX_TORQUE,
 			DYNA_Z_AXIS_SRL,
 			DYNA_Z_AXIS_RDT,
-			DYNA_Z_AXIS_LED_ALARM,
 			DYNA_Z_AXIS_SHUT_DOWN_ALARM,
 			DYNA_Z_AXIS_CW_C_SLOPE,
 			DYNA_Z_AXIS_CCW_C_SLOPE,
@@ -94,32 +94,42 @@ void InitDynamixel(void)
 		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamisel servos by using the paramter list above */
 		funcPtr dynaFuncPtr[] =
 		{
-			dynamixelSetTempLimit,
+			dynamixelSetLEDAlarm,
+			dynamixelSetTempLimit/*,
 			dynamixelSetLowVoltageLimit,
 			dynamixelSetHighVoltageLimit,
 			dynamixelSetMaxTorque,
 			dynamixelSetSRL,
 			dynamixelSetRDT,
-			dynamixelSetLEDAlarm,
 			dynamixelSetShutdownAlarm,
 			dynamixelSetCWCSlope,
 			dynamixelSetCCWCSlope,
 			dynamixelSetCWCMargin,
 			dynamixelSetCCWCMargin,
-			dynamixelSetPunch
+			dynamixelSetPunch*/
 		};
 
 		/* execute setup functions */
 		for (uint8_t i = 0; i < ID_TOTAL_NUMBER; i++) /* outer loop for iterating the servo ids */
 		{ 
-			for (size_t j = 0; j < sizeof(dynaFuncPtr) / sizeof(dynaFuncPtr[0]); j++) /* inner loop for iterating the setup functions */
+			for (uint8_t j = 0; j < 13; j++) /* inner loop for iterating the setup functions */
 			{
-				const char* funcName;
-				if (int16_t error = dynaFuncPtr[j](i, dynaParamList[i][j], &funcName) < 0) /* executing the setup functions */
+				
+				int16_t error = dynaFuncPtr[j](i, dynaParamList[i][j]);
+				Serial.print("i = ");
+				Serial.println(i);
+				Serial.print("j = ");
+				Serial.println(j);
+				Serial.print("error = ");
+				Serial.println(error);
+
+				if (error < 0) /* executing the setup functions */
 				{
-					DynamixelError(error * (-1), i);
-					SendStatus("While calling: ", funcName, STATUS_TYPE_ERROR);
-					return;
+					DynamixelError(error /** (-1)*/, i);
+					char msg[64];
+					sprintf(msg, "Error while calling: %s @ ID: %i with error code: %i"/*, funcName*/, i, error);
+					SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);
+					//return;
 				}
 			}
 		}
@@ -258,11 +268,11 @@ void UpdateObjDir(void)
 		
 		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
 		{ 
-			SetObjData(OBJ_IDX_MOVING, 1, false); /* system is moving */
+			SetObjData(OBJ_IDX_MOVING, 1, true); /* system is moving */
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_MOVING, 0, false); /* system is not moving */
+			SetObjData(OBJ_IDX_MOVING, 0, true); /* system is not moving */
 		}
 	}
 }
@@ -348,7 +358,7 @@ void HandleMove(void) {
 				dynamixelMoveSpeedRW(ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
 				dynamixelAction(); /* sync start */
 
-				SetObjData(OBJ_IDX_MOVING, 1, false);
+				SetObjData(OBJ_IDX_MOVING, 1, true);
 				SetObjData(OBJ_IDX_START_MOVE, 0, false);
 			}
 			else
@@ -367,7 +377,7 @@ void HandleMove(void) {
 				actPos[ID_AXIS_2] >= posWindow[ID_AXIS_2][MIN_POS] && actPos[ID_AXIS_2] <= posWindow[ID_AXIS_2][MAX_POS] &&
 				actPos[ID_Z_AXIS] >= posWindow[ID_Z_AXIS][MIN_POS] && actPos[ID_Z_AXIS] <= posWindow[ID_Z_AXIS][MAX_POS])
 			{  
-				SetObjData(OBJ_IDX_MOVING, 0, false);
+				SetObjData(OBJ_IDX_MOVING, 0, true);
 				SetObjData(OBJ_IDX_POS_REACHED, 1, false);
 			}
 			else

@@ -32,6 +32,8 @@ void InitOperationMode(void)
 	{
 		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID, false) == 0)
 		{
+			Serial.println("");
+			Serial.println("");
 			SendStatus("InitOperationMode(): ", "Rapid protocoll selected", STATUS_TYPE_INFO);
 			/* rapid protocol selected */
 			return;

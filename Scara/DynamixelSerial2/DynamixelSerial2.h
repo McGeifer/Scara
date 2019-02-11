@@ -200,7 +200,7 @@ int16_t dynamixelMoveSpeedRW(uint8_t ID, int16_t Position, int16_t Speed);
 	
 void dynamixelAction(void);
 	
-int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature, const char **funcName);
+int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature/*, const char **funcName*/);
 int16_t dynamixelSetCWAngleLimit(uint8_t ID, int16_t CWLimit, const char **funcName);
 int16_t dynamixelSetCCWAngleLimit(uint8_t ID, int16_t CCWLimit, const char **funcName);
 int16_t dynamixelSetLowVoltageLimit(uint8_t ID, int16_t DVoltage, const char **funcName);
@@ -208,7 +208,7 @@ int16_t dynamixelSetHighVoltageLimit(uint8_t ID, int16_t UVoltage, const char **
 int16_t dynamixelSetMaxTorque(uint8_t ID, int16_t MaxTorque, const char **funcName);
 int16_t dynamixelSetSRL(uint8_t ID, int16_t SRL, const char **funcName);
 int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT, const char **funcName);
-int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm, const char **funcName);
+int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/*, const char **funcName*/);
 int16_t dynamixelSetShutdownAlarm(uint8_t ID, int16_t SALARM, const char **funcName);
 int16_t dynamixelSetCWCMargin(uint8_t ID, int16_t CWCMargin, const char **funcName);
 int16_t dynamixelSetCCWCMargin(uint8_t ID, int16_t CCWCMargin, const char **funcName);

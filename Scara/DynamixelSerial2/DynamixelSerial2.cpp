@@ -588,9 +588,9 @@ int16_t dynamixelReadVoltage(uint8_t ID)
 	return (Voltage_Byte);               // Returns the read Voltage
 }
 
-int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature, const char **funcName)
+int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature/*, const char **funcName*/)
 {
-	*funcName = __func__;
+	//*funcName = __func__;
 	Checksum = (~(ID + AX_TL_LENGTH +AX_WRITE_DATA+ AX_LIMIT_TEMPERATURE + Temperature))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -760,9 +760,9 @@ int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT, const char **funcName)
     return (readError());                // Return the read error
 }
 
-int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm, const char **funcName)
+int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/*, const char **funcName*/)
 {    
-	*funcName = __func__;
+	//*funcName = __func__;
 	Checksum = (~(ID + AX_LEDALARM_LENGTH + AX_WRITE_DATA + AX_ALARM_LED + LEDAlarm))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);

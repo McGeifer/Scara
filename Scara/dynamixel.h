@@ -54,7 +54,7 @@
 #define DYNA_Z_AXIS_PUNCH				32
 
 /* function pointer typedef for the dynamixel setup functions*/
-typedef int16_t(*funcPtr)(uint8_t id, int16_t val, const char **funcName);
+typedef int16_t(*funcPtr)(uint8_t id, int16_t val/*, const char **funcName*/);
 
 enum dataType
 {

@@ -50,30 +50,40 @@ void setup()
 	int16_t yPos = -264;
 	int8_t tmp = CalcAngle(&xPos, &yPos);
 	Serial.println(tmp);*/
+	
 }
 
 void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
+		Serial.println("loop");
 		UpdateObjDir();
 		HandleSIO();
 		HandleMove();
 
-		/* measure cycletime */
-		cycleCount++;
-		if (cycleCount >= 10000)
-		{
-			char msg[64];
-			uint32_t tmp = (micros() - cycleTime) / cycleCount;
+		const char *funcName;
+		int16_t tmp;
+		tmp = dynamixelPing(0);
+		Serial.println(tmp);
+		//tmp = dynamixelMove(1, random(400, 600));
+		Serial.println(tmp);
+		delay(2000);
 
-			sprintf(msg, "Cycle Time : %lu us", tmp);
-			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
-			/*Serial.print("StopWatch (loop): ");
-			Serial.print(tmp);
-			Serial.println(" us");*/
-			cycleCount = 0;
-			cycleTime = micros();
-		}
+		/* measure cycletime */
+		//cycleCount++;
+		//if (cycleCount >= 100000)
+		//{
+		//	char msg[64];
+		//	uint32_t tmp = (micros() - cycleTime) / cycleCount;
+
+		//	sprintf(msg, "Cycle Time : %lu us", tmp);
+		//	SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+		//	/*Serial.print("StopWatch (loop): ");
+		//	Serial.print(tmp);
+		//	Serial.println(" us");*/
+		//	cycleCount = 0;
+		//	cycleTime = micros();
+		//}
 	}
 }
