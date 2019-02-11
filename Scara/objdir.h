@@ -28,7 +28,7 @@ typedef struct {
 			int16_t		offsetX;			// x offset
 			int16_t		offsetY;			// y offset
 			int16_t		offsetZ;			// z offset
-			bool		active;				// tool is active?
+			bool		active;				// tool is active
 			int			(*pFunction)(const uint8_t* toolIndex); // pointer for handler function
 } toolTbl_t;
 
@@ -257,32 +257,32 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
 /* Write "actualAngles" (in rad) in objDir.
    return 0  - operation successful
    return -1 - operation failed */
-uint8_t SetActualAngles(float *servo1, float *servo2);
+int8_t SetActualAngles(float *servo1, float *servo2);
 
 /* Write "actualTargetAngles" (in rad) in objDir.
    return 0  - operation successful
    return -1 - operation failed */
-uint8_t SetActualTargetAngles(float *servo1, float *servo2);
+int8_t SetActualTargetAngles(float *servo1, float *servo2);
 
 /* Write "newTargetAngles" (in rad) in objDir.
    return 0  - operation successful
    return -1 - operation failed */
-uint8_t SetNewTargetAngles(float *servo1, float *servo2);
+int8_t SetNewTargetAngles(float *servo1, float *servo2);
 
 /* Write "actualPos" (in mm) in objDir.
    return 0  - operation successful
    return -1 - operation failed */
-uint8_t SetActualPositions(float *xPos, float *yPos);
+int8_t SetActualPositions(float *xPos, float *yPos);
 
 /* Write "actualTargetPos" (in mm) in objDir.
    return 0  - operation successful
    return -1 - operation failed */
-uint8_t SetActualTargetPositions(float *xPos, float *yPos);
+int8_t SetActualTargetPositions(float *xPos, float *yPos);
 
-/*Write "newTargetPos" (in mm) in objDir.
-return 0 - operation successful
-return -1 - operation failed */
-uint8_t SetNewTargetPositions(float *xPos, float *yPos);
+/* Write "newTargetPos" (in mm) in objDir.
+   return 0 - operation successful
+   return -1 - operation failed */
+int8_t SetNewTargetPositions(float *xPos, float *yPos);
 
 /* Function to return the stored offset values for a given tool */
 int16_t* GetToolData(uint8_t index);

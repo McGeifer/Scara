@@ -91,7 +91,7 @@ int8_t ParseRadpid(void)
 	strcpy(inputString, cBuffer);	// creat copy of the receiveBuffer to prevent change of data by strtok
 	part = strtok(inputString, delimiter);	// split the inputString into multiple tokens
 
-	while(part != NULL) /*create tokens*/
+	while(part != NULL) /* create tokens */
 	{ 
 		outputString[i] = part;
 		char msg[64];
@@ -292,7 +292,7 @@ int8_t ParseRadpid(void)
 
 		// set outputstring[] offset for speed, positioning mode & tool (based on "lowest" position of the speed value in the outputString[])
 		//					 -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
-		//					 -> MoveJ p1, vmax, fine, tool0;  <<<<- offset based on this type of message
+		//					 -> MoveJ p1, vmax, fine, tool0;  <------ offset based on this type of message
 		//					 -> MoveJ (1,  119,  100), vmax, fine, tool0;
 		// outputString	index:    0    1    2     3     4     5      6     7     8
 		if (pointMode && offsetMode)
@@ -555,7 +555,7 @@ void HandleScaraData(void)
 
 			if (idx >= SCARA_PACKET_LENGTH)
 			{
-				for (uint8_t i = 0; i < (bufferLength - 3); i++)
+				for (uint8_t i = 0; i < (bufferLength - 3); i++) // bufferlength ??????? eher idx oder?
 				{
 					// check crc for packet
 					uint8_t crc = CRC8.smbus(&buffer[idx - SCARA_PACKET_LENGTH], 3);

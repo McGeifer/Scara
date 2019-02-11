@@ -10,7 +10,6 @@
 #include "objdir.h"
 #include "gpio.h"
 #include "status.h"
-//#include "dynamixel.h"
 #include "sio.h"
 #include "calc.h"
 
@@ -41,33 +40,38 @@ void setup()
 
 	/*int16_t angle1 = 1735;
 	int16_t angle2 = 680;
-	CalcPosistion(&angle1, &angle2);*/
-	
-	int16_t xPos = 2180;
+	float *tmp = CalcPosistion(&angle1, &angle2);
+	Serial.print("val1 :");
+	Serial.println(tmp[0]);
+	Serial.print("val2 :");
+	Serial.println(tmp[1]);*/
+
+	/*int16_t xPos = 2180;
 	int16_t yPos = -264;
 	int8_t tmp = CalcAngle(&xPos, &yPos);
-	Serial.println(tmp);
+	Serial.println(tmp);*/
 }
 
 void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		/*UpdateObjDir();
+		UpdateObjDir();
 		HandleSIO();
-		HandleMove();*/
+		HandleMove();
 
 		/* measure cycletime */
 		cycleCount++;
-		if (cycleCount >= 100000)
+		if (cycleCount >= 10000)
 		{
 			char msg[64];
 			uint32_t tmp = (micros() - cycleTime) / cycleCount;
-			//sprintf(msg, "Cycle Time : %lu us", tmp);
-			//SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
-			Serial.print("StopWatch (loop): ");
+
+			sprintf(msg, "Cycle Time : %lu us", tmp);
+			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+			/*Serial.print("StopWatch (loop): ");
 			Serial.print(tmp);
-			Serial.println(" us");
+			Serial.println(" us");*/
 			cycleCount = 0;
 			cycleTime = micros();
 		}

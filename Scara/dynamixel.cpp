@@ -91,7 +91,7 @@ void InitDynamixel(void)
 		}
 		};
 
-		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamisel servos by using the paramter list dynaParamList[][] */
+		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamisel servos by using the paramter list above */
 		funcPtr dynaFuncPtr[] =
 		{
 			dynamixelSetTempLimit,
@@ -197,20 +197,21 @@ void UpdateObjDir(void)
 {
 	int16_t data[ID_TOTAL_NUMBER][2] = { 0 };
 	uint8_t error = 0;
+	float *result = {};
 
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
 		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
 		{
-			data[id][pos] = dynamixelReadPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
+			data[id][angle] = dynamixelReadPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
 			data[id][speed] = dynamixelReadSpeed(id);
 
-			if (data[id][pos] < 0 || data[id][speed] < 0)
+			if (data[id][angle] < 0 || data[id][speed] < 0)
 			{
 				
-				if (data[id][pos] < 0) /* error value is negative by dynamixel library */
+				if (data[id][angle] < 0) /* error value is negative by dynamixel library */
 				{ 
-					error = data[id][pos] * (-1);
+					error = data[id][angle] * (-1);
 				}
 				else
 				{
@@ -224,11 +225,11 @@ void UpdateObjDir(void)
 				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
 				{
 				case DYNA_ID_AXIS_1:
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]), true);
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
 					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				case DYNA_ID_AXIS_2:
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][pos]), true);
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
 					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				case DYNA_ID_AXIS_Z:
@@ -241,12 +242,20 @@ void UpdateObjDir(void)
 				}
 			}
 		}
-		if (CalcPosistion(&data[ID_AXIS_1][pos], &data[ID_AXIS_2][pos]) == -1) /* calcualte related x and y positions */
+		result = CalcPosistion(&data[ID_AXIS_1][angle], &data[ID_AXIS_2][angle]);
+
+		if (result == NULL) /* calcualte related x and y positions */
 		{
 #ifndef _DEBUG
 			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
 #endif
 		}
+		else
+		{
+			SetActualPositions(&result[0], &result[1]);
+		}
+		
+		
 		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
 		{ 
 			SetObjData(OBJ_IDX_MOVING, 1, false); /* system is moving */

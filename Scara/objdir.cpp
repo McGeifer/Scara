@@ -263,7 +263,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 	{
 		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W || internalCall == true) /* check if object is writable */
 		{
-			switch (pObjStruct->idx)	/* set min max vaules for comparison */
+			switch (pObjStruct->idx)	/* set min/ max vaules for comparison */
 			{
 			case OBJ_IDX_X_NEW_TARGET_POS:
 				minValue = X_POS_MIN;
@@ -351,7 +351,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 	}
 }
 
-uint8_t SetActualAngles(float *servo1, float *servo2)
+int8_t SetActualAngles(float *servo1, float *servo2)
 {
 	int16_t actAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE);
 
@@ -373,7 +373,7 @@ uint8_t SetActualAngles(float *servo1, float *servo2)
 	}
 }
 
-uint8_t SetActualTargetAngles(float *servo1, float *servo2)
+int8_t SetActualTargetAngles(float *servo1, float *servo2)
 {
 	int16_t oldTargetAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE);
 
@@ -395,7 +395,7 @@ uint8_t SetActualTargetAngles(float *servo1, float *servo2)
 	}
 }
 
-uint8_t SetNewTargetAngles(float *servo1, float *servo2)
+int8_t SetNewTargetAngles(float *servo1, float *servo2)
 {
 	int16_t oldTargetAngle1 = GetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE);
 
@@ -417,7 +417,7 @@ uint8_t SetNewTargetAngles(float *servo1, float *servo2)
 	}
 }
 
-uint8_t SetActualPositions(float *xPos, float *yPos)
+int8_t SetActualPositions(float *xPos, float *yPos)
 {
 	int16_t actPosX = GetObjData(OBJ_IDX_X_ACTUAL_POS);
 
@@ -439,7 +439,7 @@ uint8_t SetActualPositions(float *xPos, float *yPos)
 	}
 }
 
-uint8_t SetActualTargetPositions(float *xPos, float *yPos)
+int8_t SetActualTargetPositions(float *xPos, float *yPos)
 {
 	int16_t actTargetPosX = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
 
@@ -461,7 +461,7 @@ uint8_t SetActualTargetPositions(float *xPos, float *yPos)
 	}
 }
 
-uint8_t SetNewTargetPositions(float *xPos, float *yPos)
+int8_t SetNewTargetPositions(float *xPos, float *yPos)
 {
 	int16_t newTargetPosX = GetObjData(OBJ_IDX_X_NEW_TARGET_POS);
 

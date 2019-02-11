@@ -84,6 +84,7 @@ float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 float* CalcAngle(int16_t *xPos, int16_t *yPos)
 {
 	float *coordinates = NULL;	// converted coordinates
+	static float result[2];		// result of calculation
 	float xTmp = 0;				// temp value for conversion
 	float yTmp = 0;				// temp value for conversion
 	float xVal = 0;				// 
@@ -214,45 +215,55 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 
 				if (diffA < diffB)
 				{
-					return SetActualAngles(&servo1A, &servo2A);
+					result[0] = servo1A;
+					result[1] = servo2A;
+					return result;
 				}
 				else
 				{
-					return SetActualAngles(&servo1B, &servo2B);
+					result[0] = servo1B;
+					result[1] = servo2B;
+					return result;
 				}
 			}
 			else if (cmp2A) /* only solution A for servo2 is allowed */
 			{
-				return SetActualAngles(&servo1A, &servo2A); /* A oder B nutzen ??? */
+				result[0] = servo1A;
+				result[1] = servo2A;
+				return result;
 			}
 			else if (cmp2B) /* only solution B for servo2 is allowed */
 			{
-				return SetActualAngles(&servo1B, &servo2B); /* A oder B nutzen ??? */
+				result[0] = servo1B;
+				result[1] = servo2B;
+				return result;
 			}
 			else
 			{
-				return -1;
+				return NULL;
 			}
 		}
 		else if (!cmp1B) /* only solution A for servo1 is allowed */
 		{
 			if (cmp2A)
 			{
-				return SetActualAngles(&servo1A, &servo2A);
+				result[0] = servo1A;
+				result[1] = servo2A;
+				return result;
 			}
 			else if (cmp2A)
 			{
 				// error
-				return -1;
+				return NULL;
 			}
 			else
 			{
-				return -1;
+				return NULL;
 			}
 		}
 		else
 		{
-			return -1;
+			return NULL;
 		}
 	}
 	else if (!cmp1A)
@@ -261,40 +272,42 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 		{
 			if (cmp2B)
 			{
-				return SetActualAngles(&servo1B, &servo2B);
+				result[0] = servo1B;
+				result[1] = servo2B;
+				return result;
 			}
 			else if (!cmp2B)
 			{
 				// error
-				return -1;
+				return NULL;
 			}
 			else
 			{
 				// error
-				return -1;
+				return NULL;
 			}
 		}
 		else
 		{
 			/* no solution is allowed */
-			return -1;
+			return NULL;
 		}
 	}
 	else
 	{
-		return -1;
+		return NULL;
 	}
 }
 
 float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 {
-	float vecA[2] = { 0, 0 };
-	float vecB[2] = { 0, 0 };
-	float vecR[2] = { 0, 0 };
-	float *tmp = NULL;
+	float vecA[2] = { 0 };
+	float vecB[2] = { 0 };
+	float vecR[2] = { 0 };
 	float alpha1 = 0;			/* outer angle between x-axis and c */
 	float beta = 0;				/* inner angle between a & c */
 	float beta1 = 0;			/* inner angle between x-axis & a */
+	float *result = { NULL };
 
 	vecA[X] = AXIS_1_LENGTH * cos(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
 	vecA[Y] = AXIS_1_LENGTH * sin(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
@@ -310,9 +323,7 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	vecR[Y] = vecA[Y] + vecB[Y]; // bis hier hin funktioniert sie :D
 
 
-	// Was wenn die Funktion zum umrechnen der actTargetPos o. newTargetPos aufgerufen wurde? Hier fehlt noch ein Mechanismus oder Parameter
-	// evtl über __func__ ?!?!
-	tmp = ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
+	result = ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
 #ifdef _DEBUG
 	Serial.println("CalcPosition()");
 	Serial.print("alpha1: ");
@@ -336,7 +347,7 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	Serial.print("vecR[Y]: ");
 	Serial.println(vecR[Y], DEC);
 #endif 
-	return SetNewPositions(&tmp[X], &tmp[Y]);
+	return result;
 }
 
 int8_t UpdateZPos(void)

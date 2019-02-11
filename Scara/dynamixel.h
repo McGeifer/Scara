@@ -58,23 +58,23 @@ typedef int16_t(*funcPtr)(uint8_t id, int16_t val, const char **funcName);
 
 enum dataType
 {
-	pos,
+	angle,
 	speed
 };
 
 /* Setup function for the Dynamixel servos */
-extern void InitDynamixel(void);
+void InitDynamixel(void);
 
 /* Handler function for Dynamixel-specific error codes. If an error code is reported to
 the function, it will issue an error message. In addition, the execution of the main loop
 is stopped to prevent inadvertent behavior */
-extern void DynamixelError(uint8_t errorBit, uint8_t id);
+void DynamixelError(uint8_t errorBit, uint8_t id);
 
 /* Cyclic function for updating all actual position/ angle values of the object dictionary */
-extern void UpdateObjDir(void);
+void UpdateObjDir(void);
 
 /* Cyclic function for detecting the move status of the system and if necessary executing
 move commands of the Dynamixel servos */
-extern void HandleMove(void);
+void HandleMove(void);
 
 #endif
