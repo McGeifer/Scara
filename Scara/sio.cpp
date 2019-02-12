@@ -88,7 +88,7 @@ int8_t ParseRadpid(void)
 	cBuffer[idx + 1] = '\0';	// terminate string
 	// buffer overflow möglich!?
 
-	strcpy(inputString, cBuffer);	// creat copy of the receiveBuffer to prevent change of data by strtok
+	strcpy(inputString, cBuffer);	// create copy of the receiveBuffer to prevent change of data by strtok
 	part = strtok(inputString, delimiter);	// split the inputString into multiple tokens
 
 	while(part != NULL) /* create tokens */
@@ -187,7 +187,7 @@ int8_t ParseRadpid(void)
 		}
 		else
 		{
-			SendStatus("in function HandleRapidString(): ", "No proper Move{C, L, J} comamnd detected", STATUS_TYPE_ERROR);
+			SendStatus("in function HandleRapidString(): ", "No proper Move{C, L, J} command detected", STATUS_TYPE_ERROR);
 			return -1;
 		}
 
@@ -494,7 +494,7 @@ void HandleModbusData(void)
 	}
 }
 
-// Receive a Rapid comand string via UART, check the data for proper length and content.
+// Receive a Rapid command string via UART, check the data for proper length and content.
 void HandleRapidString(void)
 {
 	if (Serial.available() > 0)

@@ -91,31 +91,42 @@ void InitDynamixel(void)
 		}
 		};
 
-		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamisel servos by using the paramter list above */
-		funcPtr dynaFuncPtr[] =
+		/* Basic structure of the function pointer table */
+		typedef const struct
 		{
-			dynamixelSetLEDAlarm,
-			dynamixelSetTempLimit/*,
-			dynamixelSetLowVoltageLimit,
-			dynamixelSetHighVoltageLimit,
-			dynamixelSetMaxTorque,
-			dynamixelSetSRL,
-			dynamixelSetRDT,
-			dynamixelSetShutdownAlarm,
-			dynamixelSetCWCSlope,
-			dynamixelSetCCWCSlope,
-			dynamixelSetCWCMargin,
-			dynamixelSetCCWCMargin,
-			dynamixelSetPunch*/
+			int16_t			(*funcPtr)(uint8_t id, int16_t val);
+			const char*		funcName;
+		} funcPtrTbl_t;
+
+		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamixel servos by using the parameter list above.
+		The list also stores the function names for proper error messages. Do not change the order of the functions in the structure unless you change the
+		dynaParamList accordingly */
+		const funcPtrTbl_t funcPtrTbl[] = {
+		
+			{dynamixelSetLEDAlarm, "dynamixelSetLEDAlarm"},
+			{dynamixelSetTempLimit, "dynamixelSetTempLimit"},
+			{dynamixelSetLowVoltageLimit, "dynamixelSetLowVoltageLimit"},
+			{dynamixelSetHighVoltageLimit, "dynamixelSetHighVoltageLimit"},
+			{dynamixelSetMaxTorque, "dynamixelSetMaxTorque"},
+			{dynamixelSetSRL, "dynamixelSetSRL"},
+			{dynamixelSetRDT, "dynamixelSetRDT"},
+			{dynamixelSetShutdownAlarm, "dynamixelSetShutdownAlarm"},
+			{dynamixelSetCWCSlope, "dynamixelSetCWCSlope"},
+			{dynamixelSetCCWCSlope, "dynamixelSetCCWCSlope"},
+			{dynamixelSetCWCMargin, "dynamixelSetCWCMargin"},
+			{dynamixelSetCCWCMargin, "dynamixelSetCCWCMargin"},
+			{dynamixelSetPunch, "dynamixelSetPunch"}
 		};
 
 		/* execute setup functions */
 		for (uint8_t i = 0; i < ID_TOTAL_NUMBER; i++) /* outer loop for iterating the servo ids */
 		{ 
-			for (uint8_t j = 0; j < 13; j++) /* inner loop for iterating the setup functions */
+			funcPtrTbl_t *p = NULL;
+			p = funcPtrTbl;
+
+			for (uint8_t j = 0; j < (sizeof(funcPtrTbl) / sizeof(funcPtrTbl[0])); j++, p++)
 			{
-				
-				int16_t error = dynaFuncPtr[j](i, dynaParamList[i][j]);
+				int16_t error = p->funcPtr(i, dynaParamList[i][j]);
 				Serial.print("i = ");
 				Serial.println(i);
 				Serial.print("j = ");
@@ -127,13 +138,13 @@ void InitDynamixel(void)
 				{
 					DynamixelError(error /** (-1)*/, i);
 					char msg[64];
-					sprintf(msg, "Error while calling: %s @ ID: %i with error code: %i"/*, funcName*/, i, error);
+					sprintf(msg, "Error while calling: %s @ ID: %i with error code: %i", p->funcName, i, error);
 					SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);
 					//return;
 				}
 			}
 		}
-		/* enable continous turn for z axis */
+		/* enable continuous turn for z axis */
 		if (int16_t error = dynamixelSetEndless(ID_Z_AXIS, ON) < 0)
 		{
 			DynamixelError(error * (-1), ID_Z_AXIS);
@@ -148,52 +159,52 @@ void InitDynamixel(void)
 	}
 }
 
-void DynamixelError(uint8_t errorBit, uint8_t id)
+void DynamixelError(int16_t errorBit, uint8_t id)
 {
-	if (errorBit > 0 && errorBit <= 0x80)
+	if (errorBit > 0 && errorBit <= 0x0080)
 	{
 		char msg[64];
 
 		switch (errorBit)
 		{
-		case 0x01:
+		case 0x0001:
 			sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x02:
+		case 0x0002:
 			sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x04:
+		case 0x0004:
 			sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x08:
+		case 0x0008:
 			sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x10:
+		case 0x0010:
 			sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x20:
+		case 0x0020:
 			sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x40:
+		case 0x0040:
 			sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 
-		case 0x80:
+		case 0x0080:
 		default:
-			sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
+			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
 			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
 			break;
 		}
@@ -201,6 +212,24 @@ void DynamixelError(uint8_t errorBit, uint8_t id)
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
 	}
+//	else
+//	{
+//		char msg[64];
+//
+//		if (errorBit == -1)
+//		{
+//			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
+//			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+//		}
+//		else
+//		{
+//			sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
+//			SendStatus("DynamixelError(): ", msg, STATUS_TYPE_ERROR);
+//		}
+//#ifndef _DEBUG
+//		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
+//#endif
+//	}
 }
 
 void UpdateObjDir(void)
@@ -213,7 +242,7 @@ void UpdateObjDir(void)
 	{
 		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
 		{
-			data[id][angle] = dynamixelReadPosition(id); /********** was mit z achse? was für Rückgabewerte bei continous turn modus? ************/
+			data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
 			data[id][speed] = dynamixelReadSpeed(id);
 
 			if (data[id][angle] < 0 || data[id][speed] < 0)
@@ -254,7 +283,7 @@ void UpdateObjDir(void)
 		}
 		result = CalcPosistion(&data[ID_AXIS_1][angle], &data[ID_AXIS_2][angle]);
 
-		if (result == NULL) /* calcualte related x and y positions */
+		if (result == NULL) /* calculate related x and y positions */
 		{
 #ifndef _DEBUG
 			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
@@ -266,7 +295,7 @@ void UpdateObjDir(void)
 		}
 		
 		
-		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
+		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
 		{ 
 			SetObjData(OBJ_IDX_MOVING, 1, true); /* system is moving */
 		}
@@ -317,9 +346,9 @@ void HandleMove(void) {
 		{
 			/*  *  - schreibe neue Zielpos in aktuelle Zielpos
 				*  - übergebe neue Zielpos an Dynamixel
-				*  - starte Bewegung der Motoren (synch Start?)
+				*  - starte Bewegung der Motoren (sync Start?)
 				*  - setze moving
-				*  - startkomando zurück setzten
+				*  - start Kommando zurück setzten
 				*  - ende */
 
 				/* goal position changed? */
@@ -382,7 +411,7 @@ void HandleMove(void) {
 			}
 			else
 			{
-				/* z-achse rampe geschwindigkeit */
+				/* z-Achse Rampe Geschwindigkeit */
 			}
 		}
 	}

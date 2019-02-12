@@ -50,7 +50,7 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 	}
 }
 
-/* ConvertCoordinates converts x and y coordiantes between the different coordinate systems (machine & field).
+/* ConvertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
    return #    - pointer to array
    return NULL - error */
 float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
@@ -165,7 +165,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	/* Calculation of the new axis angles considering a minimum travel distance
 	 * between the actual and new position of the robot arm. The servo motors have a
 	 * operating angle of 300° ( 0° - 300°). Due to mechanical requirements this range
-	 * might be reduced so it is neccessary to check if servo1 & servo2 are able to
+	 * might be reduced so it is necessary to check if servo1 & servo2 are able to
 	 * reach the given coordinates. */
 
 	 /* calculation of the servo angles based on the orientation of the triangle in the coordinate system */
@@ -208,7 +208,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 
 			if (cmp2A && cmp2B) /* both solutions for servo2 are allowed */
 			{
-				/* decition is based on the shortest way for servo2 */
+				/* decision is based on the shortest way for servo2 */
 				float actAngle = radians(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE) / 10);
 				float diffA = actAngle < servo2A ? servo2A - actAngle : actAngle - servo2A;
 				float diffB = actAngle < servo2B ? servo2B - actAngle : actAngle - servo2B;

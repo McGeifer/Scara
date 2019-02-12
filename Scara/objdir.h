@@ -85,7 +85,7 @@ enum vector
 /* internal objects */
 #define OBJ_IDX_Z_POS_COUNT					0xFD	// z - light barrier counter
 #define OBJ_IDX_OP_MODE						0xFE	// system operation mode
-#define OBJ_IDX_SYS_STATUS					0xFF	// system status - bitmask ! 
+#define OBJ_IDX_SYS_STATUS					0xFF	// system status - bit-mask ! 
 
 /* position values */
 #define OBJ_IDX_X_NEW_TARGET_POS			0x10	// x - new target position
@@ -162,8 +162,8 @@ enum vector
 // operation modes
 // ##############################################
 #define OP_MODE_MODBUS				0x01	// operation mode modbus - use SimpleModbusClient
-#define OP_MODE_RAPID				0x02	// operation mode rapid - use "Rapid" protocoll
-#define OP_MODE_SCARA				0x03	// operation mode scara - use "Scara" protocoll
+#define OP_MODE_RAPID				0x02	// operation mode rapid - use "Rapid" protocol
+#define OP_MODE_SCARA				0x03	// operation mode scara - use "Scara" protocol
 
 // ##############################################
 // status message types
@@ -178,9 +178,9 @@ enum vector
 // system status
 // ##############################################
 #define SYS_STAT_RUNNING			0x01	// no error - system operational
-#define SYS_STAT_DYNAMIXEL_ERROR	0x02	// erro  - dynamixel servo motors
+#define SYS_STAT_DYNAMIXEL_ERROR	0x02	// error  - dynamixel servo motors
 #define SYS_STAT_DEBUG				0x04	// print additional debug info 
-#define SYS_STAT_UNKOWN_ERROR		0x08	// uknown error - not used jet
+#define SYS_STAT_UNKOWN_ERROR		0x08	// unknown error - not used jet
 #define SYS_STAT_SILENT				0x10	// no messages will be send
 #define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) // system in error state
 
@@ -232,7 +232,7 @@ enum vector
 // mechanical parameters
 // ##############################################
 #define Z_AXIS_GRADIENT		8.0		// gradient of the z axis spindle
-#define Z_AXIS_RESOLUTION	16.0	// number of impluses for a whole turn of the spindle
+#define Z_AXIS_RESOLUTION	16.0	// number of impulses for a whole turn of the spindle
 #define Z_AXIS_LENGHT		200.0	// length of z axis in mm
 #define AXIS_1_LENGTH		195.0
 #define AXIS_2_LENGTH		200.0
@@ -244,14 +244,14 @@ enum vector
 /* Function to return the x, y & z values for a given position index stored in the position register */
 int16_t* GetPosRegData(uint8_t *idx);
 
-/* Funtion for writing data to the position register */
+/* Function for writing data to the position register */
 uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal);
 
 /* Function to return the stored data of an object */
 int16_t GetObjData(uint8_t index);
 
-/* Funtion for writing data to the object dictionary. Objects can only be written if they have the property "writeable". 
-This mechanism can be disabled if the paramater internalCall is set to "true" (use with caution!) */
+/* Function for writing data to the object dictionary. Objects can only be written if they have the property "writable". 
+This mechanism can be disabled if the parameter internalCall is set to "true" (use with caution!) */
 int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
 
 /* Write "actualAngles" (in rad) in objDir.

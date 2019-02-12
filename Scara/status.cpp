@@ -67,7 +67,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 			break;
 
 		case OP_MODE_MODBUS:
-			/* no status message available, possible implementation via modbus exeption codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes */
+			/* no status message available, possible implementation via modbus exception codes -> https://en.wikipedia.org/wiki/Modbus#Main_Modbus_exception_codes */
 			break;
 
 		default:

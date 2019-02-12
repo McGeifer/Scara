@@ -62,7 +62,6 @@ void loop()
 		HandleSIO();
 		HandleMove();
 
-		const char *funcName;
 		int16_t tmp;
 		tmp = dynamixelPing(0);
 		Serial.println(tmp);

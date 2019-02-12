@@ -18,7 +18,7 @@ static objStruct_t objDir[] =
 	// internal objects
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* bitmask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* bit mask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
 	
 	// position values
 	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
@@ -63,7 +63,7 @@ static toolTbl_t toolTbl[] =
 	/* tool 0 - machine zero */
 	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true, NULL},
 	
-	/* variable tooltable entries */
+	/* variable tool table entries */
 	{OBJ_IDX_TOOL_1, OBJ_PROP_RW, 25, -100, 75, true, NULL},
 	{OBJ_IDX_TOOL_2, OBJ_PROP_RW, -50, 50, 25, true, NULL},
 	{OBJ_IDX_TOOL_3, OBJ_PROP_RW, 0, 0, 0, false, NULL},
@@ -164,7 +164,7 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 	{
 		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) /* check if object is writable */
 		{
-			if (*xVal >= X_POS_MIN && *xVal <= X_POS_MAX) /* check the permissable value range */
+			if (*xVal >= X_POS_MIN && *xVal <= X_POS_MAX) /* check the permissible value range */
 			{
 				if (*yVal >= Y_POS_MIN && *yVal <= Y_POS_MAX)
 				{
@@ -263,7 +263,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 	{
 		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W || internalCall == true) /* check if object is writable */
 		{
-			switch (pObjStruct->idx)	/* set min/ max vaules for comparison */
+			switch (pObjStruct->idx)	/* set min/ max values for comparison */
 			{
 			case OBJ_IDX_X_NEW_TARGET_POS:
 				minValue = X_POS_MIN;

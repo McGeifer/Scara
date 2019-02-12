@@ -1,5 +1,5 @@
 /*
- Dynamixel.cpp - Ax-12+ Half Duplex USART Comunication
+ Dynamixel.cpp - Ax-12+ Half Duplex USART Communication
  Copyright (c) 2011 Savage Electronics.
  Created by Savage on 27/01/11.
  
@@ -75,14 +75,14 @@
 #define availableData() (Serial2.available())    // Check Serial Data Available
 #define readData()      (Serial2.read())         // Read Serial Data
 #define peekData()      (Serial2.peek())         // Peek Serial Data
-#define beginCom(args)  (Serial2.begin(args))    // Begin Serial Comunication
-#define endCom()        (Serial2.end())          // End Serial Comunication
+#define beginCom(args)  (Serial2.begin(args))    // Begin Serial Communication
+#define endCom()        (Serial2.end())          // End Serial Communication
 
 // Macro for Timing
 
 #define delayus(args) (delayMicroseconds(args))  // Delay Microseconds
 
-// Macro for Comunication Flow Control
+// Macro for Communication Flow Control
 
 #define SetDPin(DirPin,Mode)   (pinMode(DirPin,Mode))       // Select the Switch to TX/RX Mode Pin
 #define switchCom(DirPin,Mode) (digitalWrite(DirPin,Mode))  // Switch to TX/RX Mode
@@ -126,10 +126,10 @@ int16_t readError(void)
 			readData();                                    // Ax-12 ID
 			readData();                                    // Length
 			Error_Byte = readData();                       // Error
-				return (Error_Byte);
+			return (!Error_Byte);						// Negation of the error byte to distinguish normal data packets 
 		}
 	}
-	return (-1);											 // No Ax Response
+	return (-128);											 // No Ax Response
 }
 
 void dynamixelBegin(int32_t baud, uint8_t directionPin)
@@ -341,7 +341,7 @@ int16_t dynamixelTurn(uint8_t ID, bool SIDE, int16_t Speed)
 		return(readError());               // Return the read error		
 	}
 	else
-	{                                            // Move Rigth////////////////////
+	{                                            // Move Right////////////////////
 		int8_t Speed_H,Speed_L;
 		Speed_H = (Speed >> 8) + 4;
 		Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
@@ -588,9 +588,8 @@ int16_t dynamixelReadVoltage(uint8_t ID)
 	return (Voltage_Byte);               // Returns the read Voltage
 }
 
-int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature/*, const char **funcName*/)
+int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature)
 {
-	//*funcName = __func__;
 	Checksum = (~(ID + AX_TL_LENGTH +AX_WRITE_DATA+ AX_LIMIT_TEMPERATURE + Temperature))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -608,9 +607,8 @@ int16_t dynamixelSetTempLimit(uint8_t ID, int16_t Temperature/*, const char **fu
     return (readError()); 
 }
 
-int16_t dynamixelSetLowVoltageLimit(uint8_t ID, int16_t DVoltage, const char **funcName)
+int16_t dynamixelSetLowVoltageLimit(uint8_t ID, int16_t DVoltage)
 {
-	*funcName = __func__;
 	Checksum = (~(ID + AX_VL_LENGTH + AX_WRITE_DATA + AX_DOWN_LIMIT_VOLTAGE + DVoltage)) & 0xFF;
 
 	switchCom(Direction_Pin, Tx_MODE);
@@ -628,9 +626,8 @@ int16_t dynamixelSetLowVoltageLimit(uint8_t ID, int16_t DVoltage, const char **f
 	return (readError());
 }
 
-int16_t dynamixelSetHighVoltageLimit(uint8_t ID, int16_t UVoltage, const char **funcName)
+int16_t dynamixelSetHighVoltageLimit(uint8_t ID, int16_t UVoltage)
 {
-	*funcName = __func__;
 	Checksum = (~(ID + AX_VL_LENGTH +AX_WRITE_DATA+ AX_DOWN_LIMIT_VOLTAGE + UVoltage))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -648,9 +645,8 @@ int16_t dynamixelSetHighVoltageLimit(uint8_t ID, int16_t UVoltage, const char **
     return (readError()); 
 }
 
-int16_t dynamixelSetCWAngleLimit(uint8_t ID, int16_t CWLimit, const char **funcName)
+int16_t dynamixelSetCWAngleLimit(uint8_t ID, int16_t CWLimit)
 {
-	*funcName = __func__;
 	int8_t CW_H,CW_L;
     CW_H = CWLimit >> 8;    
     CW_L = CWLimit;                // 16 bits - 2 x 8 bits variables
@@ -672,9 +668,8 @@ int16_t dynamixelSetCWAngleLimit(uint8_t ID, int16_t CWLimit, const char **funcN
     return (readError()); 
 }
 
-int16_t dynamixelSetCCWAngleLimit(uint8_t ID, int16_t CCWLimit, const char **funcName)
+int16_t dynamixelSetCCWAngleLimit(uint8_t ID, int16_t CCWLimit)
 {
-	*funcName = __func__;
 	int8_t CCW_H, CCW_L;
 	CCW_H = CCWLimit >> 8;
 	CCW_L = CCWLimit;			// 16 bits - 2 x 8 bits variables
@@ -696,9 +691,8 @@ int16_t dynamixelSetCCWAngleLimit(uint8_t ID, int16_t CCWLimit, const char **fun
 	return (readError());
 }
 
-int16_t dynamixelSetMaxTorque(uint8_t ID, int16_t MaxTorque, const char **funcName)
+int16_t dynamixelSetMaxTorque(uint8_t ID, int16_t MaxTorque)
 {
-	*funcName = __func__;
 	int8_t MaxTorque_H,MaxTorque_L;
     MaxTorque_H = MaxTorque >> 8;           // 16 bits - 2 x 8 bits variables
     MaxTorque_L = MaxTorque;
@@ -720,9 +714,8 @@ int16_t dynamixelSetMaxTorque(uint8_t ID, int16_t MaxTorque, const char **funcNa
     return (readError());                 // Return the read error
 }
 
-int16_t dynamixelSetSRL(uint8_t ID, int16_t SRL, const char **funcName)
+int16_t dynamixelSetSRL(uint8_t ID, int16_t SRL)
 {    
-	*funcName = __func__;
 	Checksum = (~(ID + AX_SRL_LENGTH + AX_WRITE_DATA + AX_RETURN_LEVEL + SRL))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -740,9 +733,8 @@ int16_t dynamixelSetSRL(uint8_t ID, int16_t SRL, const char **funcName)
     return (readError());                // Return the read error
 }
 
-int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT, const char **funcName)
+int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT)
 {    
-	*funcName = __func__;
 	Checksum = (~(ID + AX_RDT_LENGTH + AX_WRITE_DATA + AX_RETURN_DELAY_TIME + (RDT/2)))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -760,7 +752,7 @@ int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT, const char **funcName)
     return (readError());                // Return the read error
 }
 
-int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/*, const char **funcName*/)
+int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/**/)
 {    
 	//*funcName = __func__;
 	Checksum = (~(ID + AX_LEDALARM_LENGTH + AX_WRITE_DATA + AX_ALARM_LED + LEDAlarm))&0xFF;
@@ -780,9 +772,8 @@ int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/*, const char **funcNa
     return (readError());                // Return the read error
 }
 
-int16_t dynamixelSetShutdownAlarm(uint8_t ID, int16_t SALARM, const char **funcName)
+int16_t dynamixelSetShutdownAlarm(uint8_t ID, int16_t SALARM)
 {    
-	*funcName = __func__;
 	Checksum = (~(ID + AX_SALARM_LENGTH + AX_ALARM_SHUTDOWN + AX_ALARM_LED + SALARM))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -800,9 +791,8 @@ int16_t dynamixelSetShutdownAlarm(uint8_t ID, int16_t SALARM, const char **funcN
     return (readError());                // Return the read error
 }
 
-int16_t dynamixelSetCWCMargin(uint8_t ID, int16_t CWCMargin, const char **funcName)
+int16_t dynamixelSetCWCMargin(uint8_t ID, int16_t CWCMargin)
 {
-	*funcName = __func__;
 	Checksum = (~(ID + AX_CM_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_MARGIN + CWCMargin))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -820,9 +810,8 @@ int16_t dynamixelSetCWCMargin(uint8_t ID, int16_t CWCMargin, const char **funcNa
     return (readError()); 
 }
 
-int16_t dynamixelSetCCWCMargin(uint8_t ID, int16_t CCWCMargin, const char **funcName)
+int16_t dynamixelSetCCWCMargin(uint8_t ID, int16_t CCWCMargin)
 {
-	*funcName = __func__;
 	Checksum = (~(ID + AX_CM_LENGTH + AX_WRITE_DATA + AX_CCW_COMPLIANCE_MARGIN + CCWCMargin)) & 0xFF;
 
 	switchCom(Direction_Pin, Tx_MODE);
@@ -840,9 +829,8 @@ int16_t dynamixelSetCCWCMargin(uint8_t ID, int16_t CCWCMargin, const char **func
 	return (readError());
 }
 
-int16_t dynamixelSetCWCSlope(uint8_t ID, int16_t CWCSlope, const char **funcName)
+int16_t dynamixelSetCWCSlope(uint8_t ID, int16_t CWCSlope)
 {
-	*funcName = __func__;
 	Checksum = (~(ID + AX_CS_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_SLOPE + CWCSlope))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -860,9 +848,8 @@ int16_t dynamixelSetCWCSlope(uint8_t ID, int16_t CWCSlope, const char **funcName
     return (readError()); 
 }
 
-int16_t dynamixelSetCCWCSlope(uint8_t ID, int16_t CCWCSlope, const char **funcName)
+int16_t dynamixelSetCCWCSlope(uint8_t ID, int16_t CCWCSlope)
 {
-	*funcName = __func__;
 	Checksum = (~(ID + AX_CS_LENGTH + AX_WRITE_DATA + AX_CCW_COMPLIANCE_SLOPE + CCWCSlope)) & 0xFF;
 
 	switchCom(Direction_Pin, Tx_MODE);
@@ -880,9 +867,8 @@ int16_t dynamixelSetCCWCSlope(uint8_t ID, int16_t CCWCSlope, const char **funcNa
 	return (readError());
 }
 
-int16_t dynamixelSetPunch(uint8_t ID, int16_t Punch, const char **funcName)
+int16_t dynamixelSetPunch(uint8_t ID, int16_t Punch)
 {
-	*funcName = __func__;
 	int8_t Punch_H,Punch_L;
     Punch_H = Punch >> 8;           // 16 bits - 2 x 8 bits variables
     Punch_L = Punch;

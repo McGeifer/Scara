@@ -34,7 +34,7 @@ void InitOperationMode(void)
 		{
 			Serial.println("");
 			Serial.println("");
-			SendStatus("InitOperationMode(): ", "Rapid protocoll selected", STATUS_TYPE_INFO);
+			SendStatus("InitOperationMode(): ", "Rapid protocol selected", STATUS_TYPE_INFO);
 			/* rapid protocol selected */
 			return;
 		}
@@ -42,12 +42,12 @@ void InitOperationMode(void)
 	else {
 		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_SCARA, false) == 0)
 		{
-			SendStatus("InitOperationMode(): ", "Scara protocoll selected", STATUS_TYPE_INFO);
+			SendStatus("InitOperationMode(): ", "Scara protocol selected", STATUS_TYPE_INFO);
 			/* scara protocol selected */
 			return;
 		}
 	}
-	SendStatus("InitOperationMode(): ", "error selecting protocoll", STATUS_TYPE_ERROR);
+	SendStatus("InitOperationMode(): ", "error selecting protocol", STATUS_TYPE_ERROR);
 }
 
 void LightBarrierISR(void)
