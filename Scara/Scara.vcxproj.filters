@@ -39,7 +39,7 @@
     <ClInclude Include="calc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DynamixelSerial2\DynamixelSerial2.h">
+    <ClInclude Include="DynamixelSerial2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,7 +62,7 @@
     <ClCompile Include="calc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DynamixelSerial2\DynamixelSerial2.cpp">
+    <ClCompile Include="DynamixelSerial2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

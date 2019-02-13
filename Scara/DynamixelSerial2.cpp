@@ -68,6 +68,7 @@
 #endif
 
 #include "DynamixelSerial2.h"
+#include "gpio.h"
 
 // Macro for the selection of the Serial Port
 
@@ -107,11 +108,10 @@ int16_t Temperature_Byte;
 int16_t Voltage_Byte;
 int16_t Error_Byte;
 
-
 int16_t readError(void)
 {
 	Time_Counter = 0;
-	while((availableData() < 5) & (Time_Counter < TIME_OUT))  // Wait for Data
+	while((availableData() < 5) && (Time_Counter < TIME_OUT))  // Wait for Data
 	{
 		Time_Counter++;
 		delayus(1000);
@@ -120,16 +120,16 @@ int16_t readError(void)
 	while (availableData() > 0)
 	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		if ( (Incoming_Byte == 255) && (peekData() == 255) )
 		{
 			readData();                                    // Start Bytes
 			readData();                                    // Ax-12 ID
 			readData();                                    // Length
 			Error_Byte = readData();                       // Error
-			return (!Error_Byte);						// Negation of the error byte to distinguish normal data packets 
+			return (Error_Byte * (-1));						// Negation of the error byte to distinguish normal data packets 
 		}
 	}
-	return (-128);											 // No Ax Response
+	return (-128);										// No Ax Response
 }
 
 void dynamixelBegin(int32_t baud, uint8_t directionPin)
@@ -179,7 +179,7 @@ int16_t dynamixelPing(uint8_t ID)
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
-    
+
     return (readError());              
 }
 
@@ -461,7 +461,7 @@ int16_t dynamixelLedStatus(uint8_t ID, bool Status)
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
-    
+
     return (readError());              // Return the read error
 }
 
@@ -520,19 +520,55 @@ int16_t dynamixelReadPosition(uint8_t ID)
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
 	switchCom(Direction_Pin,Rx_MODE);
+
+	while (1)
+	{
+		if (availableData() > 0)
+		{
+			Serial.println(readData());
+		}
+	}
+
 	
     Position_Long_Byte = -1;
 	Time_Counter = 0;
+
+	//while (Time_Counter < TIME_OUT)
+	//{
+	//	if (availableData() >= 7)
+	//	{
+	//		Incoming_Byte = readData();
+	//		if ((Incoming_Byte == AX_START) & (peekData() == AX_START))
+	//		{
+	//			readData();                            // Start Bytes
+	//			readData();                            // Ax-12 ID
+	//			readData();                            // Length
+	//			if ((Error_Byte = readData()) != 0)   // Error
+	//				return (Error_Byte*(-1));
+
+	//			Position_Low_Byte = readData();            // Position Bytes
+	//			Position_High_Byte = readData();
+	//			Position_Long_Byte = Position_High_Byte << 8;
+	//			Position_Long_Byte = Position_Long_Byte + Position_Low_Byte;
+	//			return (Position_Long_Byte);     // Returns the read position
+	//		}
+	//	}
+	//	else
+	//	{
+	//		Time_Counter++;
+	//		delayus(500);
+	//	}
+	//}
+	//return -128;
     while((availableData() < 7) & (Time_Counter < TIME_OUT))
 	{
 		Time_Counter++;
 		delayus(1000);
     }
-	
-    while (availableData() > 0)
+    while (availableData() > 0 )
 	{
 		Incoming_Byte = readData();
-		if ( (Incoming_Byte == 255) & (peekData() == 255) )
+		if ( (Incoming_Byte == AX_START) & (peekData() == AX_START) )
 		{
 			readData();                            // Start Bytes
 			readData();                            // Ax-12 ID
@@ -752,9 +788,8 @@ int16_t dynamixelSetRDT(uint8_t ID, int16_t RDT)
     return (readError());                // Return the read error
 }
 
-int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/**/)
+int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm)
 {    
-	//*funcName = __func__;
 	Checksum = (~(ID + AX_LEDALARM_LENGTH + AX_WRITE_DATA + AX_ALARM_LED + LEDAlarm))&0xFF;
 	
 	switchCom(Direction_Pin,Tx_MODE);
@@ -766,9 +801,9 @@ int16_t dynamixelSetLEDAlarm(uint8_t ID, int16_t LEDAlarm/**/)
     sendData(AX_ALARM_LED);
     sendData(LEDAlarm);
     sendData(Checksum);
-	delayus(TX_DELAY_TIME);
+	delayus(100);
 	switchCom(Direction_Pin,Rx_MODE);
-    
+
     return (readError());                // Return the read error
 }
 

@@ -6,28 +6,30 @@
 #include "objdir.h"
 #include "status.h"
 #include "calc.h"
-#include "DynamixelSerial2/DynamixelSerial2.h"
+#include "gpio.h"
+#include "DynamixelSerial2.h"
 
 void InitDynamixel(void) 
 {
-	int tmp = 0;
+	int tmp = -1;
 	int response = 0;
 
 	/* search for servo motors */
 	for (int i = 0; i <= 2; i++)
 	{
-		tmp = dynamixelPing(i);
+		tmp = dynamixelPing(i) * (-1);
 
-		if (tmp == -1)
+		if (tmp != 0 )
 		{
-			char msg[32];
+			DynamixelError(tmp, i);
+			/*char msg[32];
 			sprintf(msg, "no Dynamixel found @ ID: %d", i);
-			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);
+			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);*/
 		}
 		else
 		{
 			char msg[64];
-			sprintf(msg, "Dynamixel found @ ID: %d - %i", i, tmp);
+			sprintf(msg, "Dynamixel found @ ID: %d", i);
 			SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_INFO);
 			response++;
 		}
@@ -35,7 +37,7 @@ void InitDynamixel(void)
 
 	if (response != 3)
 	{
-		SendStatus("InitDynamixel(): ", "check wiring of dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
+		SendStatus("InitDynamixel(): ", "check wiring of Dynamixel servos and restart the controller", STATUS_TYPE_ERROR);
 		/* if one of the servos could not be found then set the system error state to prevent further operations */
 #ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
@@ -59,7 +61,7 @@ void InitDynamixel(void)
 			DYNA_AXIS_1_CCW_C_SLOPE,
 			DYNA_AXIS_1_CW_C_MARGIN,
 			DYNA_AXIS_1_CCW_C_MARGIN,
-			DYNA_AXIS_1_PUNCH,
+			DYNA_AXIS_1_PUNCH
 		},
 		{	DYNA_Z_AXIS_LED_ALARM,
 			DYNA_Z_AXIS_TEMP_LIMIT,
@@ -73,7 +75,7 @@ void InitDynamixel(void)
 			DYNA_Z_AXIS_CCW_C_SLOPE,
 			DYNA_Z_AXIS_CW_C_MARGIN,
 			DYNA_Z_AXIS_CCW_C_MARGIN,
-			DYNA_Z_AXIS_PUNCH,
+			DYNA_Z_AXIS_PUNCH
 		},
 		{	DYNA_Z_AXIS_LED_ALARM,
 			DYNA_Z_AXIS_TEMP_LIMIT,
@@ -87,12 +89,12 @@ void InitDynamixel(void)
 			DYNA_Z_AXIS_CCW_C_SLOPE,
 			DYNA_Z_AXIS_CW_C_MARGIN,
 			DYNA_Z_AXIS_CCW_C_MARGIN,
-			DYNA_Z_AXIS_PUNCH,
+			DYNA_Z_AXIS_PUNCH
 		}
 		};
 
 		/* Basic structure of the function pointer table */
-		typedef const struct
+		typedef struct
 		{
 			int16_t			(*funcPtr)(uint8_t id, int16_t val);
 			const char*		funcName;
@@ -101,7 +103,7 @@ void InitDynamixel(void)
 		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamixel servos by using the parameter list above.
 		The list also stores the function names for proper error messages. Do not change the order of the functions in the structure unless you change the
 		dynaParamList accordingly */
-		const funcPtrTbl_t funcPtrTbl[] = {
+		funcPtrTbl_t funcPtrTbl[] = {
 		
 			{dynamixelSetLEDAlarm, "dynamixelSetLEDAlarm"},
 			{dynamixelSetTempLimit, "dynamixelSetTempLimit"},
@@ -136,9 +138,9 @@ void InitDynamixel(void)
 
 				if (error < 0) /* executing the setup functions */
 				{
-					DynamixelError(error /** (-1)*/, i);
+					DynamixelError(error * (-1), i);
 					char msg[64];
-					sprintf(msg, "Error while calling: %s @ ID: %i with error code: %i", p->funcName, i, error);
+					sprintf(msg, "Error while calling: %s", p->funcName);
 					SendStatus("InitDynamixel(): ", msg, STATUS_TYPE_ERROR);
 					//return;
 				}
@@ -243,7 +245,11 @@ void UpdateObjDir(void)
 		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
 		{
 			data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
-			data[id][speed] = dynamixelReadSpeed(id);
+			data[id][speed] = 0; //dynamixelReadSpeed(id);
+			/*Serial.print("angle");
+			Serial.println(data[id][angle]);
+			Serial.print("speed");
+			Serial.println(data[id][speed]);*/
 
 			if (data[id][angle] < 0 || data[id][speed] < 0)
 			{
@@ -264,6 +270,8 @@ void UpdateObjDir(void)
 				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
 				{
 				case DYNA_ID_AXIS_1:
+
+					// Durch die neuen Set Funktionen ersetzen !!!
 					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
 					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
 					break;

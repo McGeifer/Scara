@@ -8,10 +8,11 @@
 #include "objdir.h"
 #include "gpio.h"
 #include "status.h"
-#include "DynamixelSerial2/DynamixelSerial2.h"
+#include "DynamixelSerial2.h"
 
 #include <SimpleModbusSlave.h>
-#include <FastCRC.h>
+#include "FastCRC.h"
+
 
 // serial buffer
 const uint8_t	bufferLength = 128;
@@ -31,7 +32,7 @@ void InitSio(void)
 	modbus_configure(115200, 1, 0, TOTAL_REGS_SIZE_MDB, 0);
 
 	// Setup for Dynamixel connection (Serial2)
-	dynamixelBegin(1000000, 2);
+	dynamixelBegin(1000000, DIRECTION_PIN);
 }
 
 // Choose the correct handler to process the data received by the serial connection (selected by operation mode).

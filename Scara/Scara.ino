@@ -5,7 +5,7 @@
  */
 
 #include "SimpleModbusSlave.h"
-#include "DynamixelSerial2/DynamixelSerial2.h"
+#include "DynamixelSerial2.h"
 
 #include "objdir.h"
 #include "gpio.h"
@@ -57,32 +57,26 @@ void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		Serial.println("loop");
-		UpdateObjDir();
-		HandleSIO();
-		HandleMove();
+		//SendStatus(NULL, "loop", STATUS_TYPE_DEBUG);
+		//UpdateObjDir();
+		//HandleSIO();
+		//HandleMove();
 
-		int16_t tmp;
-		tmp = dynamixelPing(0);
-		Serial.println(tmp);
-		//tmp = dynamixelMove(1, random(400, 600));
-		Serial.println(tmp);
-		delay(2000);
+		//delay(2000);
 
-		/* measure cycletime */
-		//cycleCount++;
-		//if (cycleCount >= 100000)
-		//{
-		//	char msg[64];
-		//	uint32_t tmp = (micros() - cycleTime) / cycleCount;
-
-		//	sprintf(msg, "Cycle Time : %lu us", tmp);
-		//	SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
-		//	/*Serial.print("StopWatch (loop): ");
-		//	Serial.print(tmp);
-		//	Serial.println(" us");*/
-		//	cycleCount = 0;
-		//	cycleTime = micros();
-		//}
+		/* measure cycle time */
+		cycleCount++;
+		if (cycleCount >= 1000)
+		{
+			char msg[64];
+			uint32_t tmp = (micros() - cycleTime) / cycleCount;
+			sprintf(msg, "Cycle Time : %lu us", tmp);
+			SendStatus("StopWatch (loop): ", msg, STATUS_TYPE_INFO);
+			/*Serial.print("StopWatch (loop): ");
+			Serial.print(tmp);
+			Serial.println(" us");*/
+			cycleCount = 0;
+			cycleTime = micros();
+		}
 	}
 }

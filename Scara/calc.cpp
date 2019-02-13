@@ -322,32 +322,31 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	vecR[X] = vecA[X] + vecB[X];
 	vecR[Y] = vecA[Y] + vecB[Y]; // bis hier hin funktioniert sie :D
 
+//#ifdef _DEBUG
+//	Serial.println("CalcPosition()");
+//	Serial.print("alpha1: ");
+//	Serial.println(alpha1 * 180 / PI, DEC);
+//	Serial.print("beta: ");
+//	Serial.println(beta * 180 / PI, DEC);
+//	Serial.print("beta1: ");
+//	Serial.println(beta1 * 180 / PI, DEC);
+//	Serial.print("anlgeAxis1: ");
+//	Serial.println(*angleAxis1 / 10, DEC);
+//	Serial.print("vecA[X]: ");
+//	Serial.println(vecA[X], DEC);
+//	Serial.print("vecA[Y]: ");
+//	Serial.println(vecA[Y], DEC);
+//	Serial.print("vecB[X]: ");
+//	Serial.println(vecB[X], DEC);
+//	Serial.print("vecB[Y]: ");
+//	Serial.println(vecB[Y], DEC);
+//	Serial.print("vecR[X]: ");
+//	Serial.println(vecR[X], DEC);
+//	Serial.print("vecR[Y]: ");
+//	Serial.println(vecR[Y], DEC);
+//#endif
 
-	result = ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
-#ifdef _DEBUG
-	Serial.println("CalcPosition()");
-	Serial.print("alpha1: ");
-	Serial.println(alpha1 * 180 / PI, DEC);
-	Serial.print("beta: ");
-	Serial.println(beta * 180 / PI, DEC);
-	Serial.print("beta1: ");
-	Serial.println(beta1 * 180 / PI, DEC);
-	Serial.print("anlgeAxis1: ");
-	Serial.println(*angleAxis1 /10, DEC);
-	Serial.print("vecA[X]: ");
-	Serial.println(vecA[X], DEC);
-	Serial.print("vecA[Y]: ");
-	Serial.println(vecA[Y], DEC);
-	Serial.print("vecB[X]: ");
-	Serial.println(vecB[X], DEC);
-	Serial.print("vecB[Y]: ");
-	Serial.println(vecB[Y], DEC);
-	Serial.print("vecR[X]: ");
-	Serial.println(vecR[X], DEC);
-	Serial.print("vecR[Y]: ");
-	Serial.println(vecR[Y], DEC);
-#endif 
-	return result;
+	return ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
 }
 
 int8_t UpdateZPos(void)

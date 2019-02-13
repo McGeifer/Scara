@@ -9,7 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-#include "DynamixelSerial2\DynamixelSerial2.h"
+#include "DynamixelSerial2.h"
 
 #define DYNA_AXIS_1_TEMP_LIMIT			70		// max temperature 70°C
 #define DYNA_AXIS_1_LOW_VOLTAGE_LIMIT	110		// min voltage 11V

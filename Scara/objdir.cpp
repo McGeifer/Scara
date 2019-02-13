@@ -248,7 +248,7 @@ int16_t GetObjData(uint8_t index)
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 
