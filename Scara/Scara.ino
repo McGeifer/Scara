@@ -58,9 +58,9 @@ void loop()
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
 		//SendStatus(NULL, "loop", STATUS_TYPE_DEBUG);
-		//UpdateObjDir();
-		//HandleSIO();
-		//HandleMove();
+		UpdateObjDir();
+		HandleSIO();
+		HandleMove();
 
 		//delay(2000);
 

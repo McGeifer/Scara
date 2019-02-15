@@ -4,6 +4,7 @@
 
 #include "objdir.h"
 #include "status.h"
+#include "calc.h"
 #include "dynamixel.h"
 
 /* object dictionary */
@@ -528,3 +529,82 @@ int16_t* GetToolData(uint8_t index)
 	}
 }
 
+void UpdateObjDir(void)
+{
+	int16_t data[ID_TOTAL_NUMBER][2] = { 0 };
+	uint8_t error = 0;
+	float *result = {};
+
+	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
+	{
+		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
+		{
+			data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
+			data[id][speed] = dynamixelReadSpeed(id);
+			/*Serial.print("angle");
+			Serial.println(data[id][angle]);
+			Serial.print("speed");
+			Serial.println(data[id][speed]);*/
+
+			if (data[id][angle] < 0 || data[id][speed] < 0)
+			{
+
+				if (data[id][angle] < 0) /* error value is negative by dynamixel library */
+				{
+					error = data[id][angle] * (-1);
+				}
+				else
+				{
+					error = data[id][speed] * (-1);
+				}
+				DynamixelError(error, id);
+				return;
+			}
+			else
+			{
+				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
+				{
+				case DYNA_ID_AXIS_1:
+
+					// Durch die neuen Set Funktionen ersetzen !!!
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
+					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
+					break;
+				case DYNA_ID_AXIS_2:
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
+					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
+					break;
+				case DYNA_ID_AXIS_Z:
+					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true);
+					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
+					break;
+				default:
+					SendStatus("UpdateObjDir(): ", "unknown device ID", SYS_STAT_ERROR);
+					return;
+				}
+			}
+		}
+		result = CalcPosistion(&data[ID_AXIS_1][angle], &data[ID_AXIS_2][angle]);
+
+		if (result == NULL) /* calculate related x and y positions */
+		{
+#ifndef _DEBUG
+			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
+#endif
+		}
+		else
+		{
+			SetActualPositions(&result[0], &result[1]);
+		}
+
+
+		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
+		{
+			SetObjData(OBJ_IDX_MOVING, 1, true); /* system is moving */
+		}
+		else
+		{
+			SetObjData(OBJ_IDX_MOVING, 0, true); /* system is not moving */
+		}
+	}
+}

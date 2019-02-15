@@ -9,6 +9,103 @@
 #include "gpio.h"
 #include "DynamixelSerial2.h"
 
+dxl_t dxlCrtlTbl[] = {
+	{DXL_P_MODOEL_NUMBER_H,			DXL_RD,		0,	0},
+	{DXL_P_MODEL_NUMBER_L,			DXL_RD,		0,	0},
+	{DXL_P_VERSION,					DXL_RD,		0,	0},
+	{DXL_P_ID,						DXL_RD_WR,	0,	253},
+	{DXL_P_BAUD_RATE,				DXL_RD_WR,	0,	254},
+	{DXL_P_RETURN_DELAY_TIME,		DXL_RD_WR,	0,	254},
+	{DXL_P_CW_ANGLE_LIMIT_L,		DXL_RD_WR,	0,	1023},
+	{DXL_P_CW_ANGLE_LIMIT_H,		DXL_RD_WR,	0,	1023},
+	{DXL_P_CCW_ANGLE_LIMIT_L,		DXL_RD_WR,	0,	1023},
+	{DXL_P_CCW_ANGLE_LIMIT_H,		DXL_RD_WR,	0,	1023},
+	{DXL_P_LIMIT_TEMPERATURE,		DXL_RD_WR,	0,	150},
+	{DXL_P_DOWN_LIMIT_VOLTAGE,		DXL_RD_WR,	50, 250},
+	{DXL_P_UP_LIMIT_VOLTAGE,		DXL_RD_WR,	50, 250},
+	{DXL_P_MAX_TORQUE_L,			DXL_RD_WR,	0,	1023},
+	{DXL_P_MAX_TORQUE_H,			DXL_RD_WR,	0,	1023},
+	{DXL_P_RETURN_LEVEL,			DXL_RD_WR,	0,	2},
+	{DXL_P_ALARM_LED,				DXL_RD_WR,	0,	127},
+	{DXL_P_ALARM_SHUTDOWN,			DXL_RD_WR,	0,	127},
+	{DXL_P_DOWN_CALIBRATION_L,		DXL_RD,		0,	0},
+	{DXL_P_DOWN_CALIBRATION_H,		DXL_RD,		0,	0},
+	{DXL_P_UP_CALIBRATION_L,		DXL_RD,		0,	0},
+	{DXL_P_UP_CALIBRATION_H,		DXL_RD,		0,	0},
+	{DXL_P_TORQUE_ENABLE,			DXL_RD_WR,	0,	1},
+	{DXL_P_LED,						DXL_RD_WR,	0,	1},
+	{DXL_P_CW_COMPLIANCE_MARGIN,	DXL_RD_WR,	0,	254},
+	{DXL_P_CCW_COMPLIANCE_MARGIN,	DXL_RD_WR,	0,	254},
+	{DXL_P_CW_COMPLIANCE_SLOPE,		DXL_RD_WR,	1,	254},
+	{DXL_P_CCW_COMPLIANCE_SLOPE,	DXL_RD_WR,	1,	254},
+	{DXL_P_GOAL_POSITION_L,			DXL_RD_WR,	0,	1023},
+	{DXL_P_GOAL_POSITION_H,			DXL_RD_WR,	0,	1023},
+	{DXL_P_GOAL_SPEED_L,			DXL_RD_WR,	0,	1023},
+	{DXL_P_GOAL_SPEED_H,			DXL_RD_WR,	0,	1023},
+	{DXL_P_TORQUE_LIMIT_L,			DXL_RD_WR,	0,	1023},
+	{DXL_P_TORQUE_LIMIT_H,			DXL_RD_WR,	0,	1023},
+	{DXL_P_PRESENT_POSITION_L,		DXL_RD,		0,	0},
+	{DXL_P_PRESENT_POSITION_H,		DXL_RD,		0,	0},
+	{DXL_P_PRESENT_SPEED_L,			DXL_RD,		0,	0},
+	{DXL_P_PRESENT_SPEED_H,			DXL_RD,		0,	0},
+	{DXL_P_PRESENT_LOAD_L,			DXL_RD,		0,	0},
+	{DXL_P_PRESENT_LOAD_H,			DXL_RD,		0,	0},
+	{DXL_P_PRESENT_VOLTAGE,			DXL_RD,		0,	0},
+	{DXL_P_PRESENT_TEMPERATURE,		DXL_RD,		0,	0},
+	{DXL_P_REGISTERED_INSTRUCTION,	DXL_RD_WR,	0,	1},
+	{DXL_P_MOVING,					DXL_RD,		0,	0},
+	{DXL_P_LOCK,					DXL_RD_WR,	1,	1},
+	{DXL_P_PUNCH_L,					DXL_RD_WR,	0,	1023},
+	{DXL_P_PUNCH_H,					DXL_RD_WR,	0,	1023},
+};
+
+/* Initialization of the parameter list for setting up the Dynamixel servos when starting the controller */
+uint16_t dynaParamList[3][13] = 
+{
+	{	DXL_AXIS_1_LED_ALARM,
+		DXL_AXIS_1_TEMP_LIMIT,
+		DXL_AXIS_1_LOW_VOLTAGE_LIMIT,
+		DXL_AXIS_1_HIGH_VOLTAGE_LIMIT,
+		DXL_AXIS_1_MAX_TORQUE,
+		DXL_AXIS_1_SRL,
+		DXL_AXIS_1_RDT,
+		DXL_AXIS_1_SHUT_DOWN_ALARM,
+		DXL_AXIS_1_CW_C_SLOPE,
+		DXL_AXIS_1_CCW_C_SLOPE,
+		DXL_AXIS_1_CW_C_MARGIN,
+		DXL_AXIS_1_CCW_C_MARGIN,
+		DXL_AXIS_1_PUNCH
+	},
+	{	DXL_Z_AXIS_LED_ALARM,
+		DXL_Z_AXIS_TEMP_LIMIT,
+		DXL_AXIS_2_LOW_VOLTAGE_LIMIT,
+		DXL_AXIS_2_HIGH_VOLTAGE_LIMIT,
+		DXL_Z_AXIS_MAX_TORQUE,
+		DXL_Z_AXIS_SRL,
+		DXL_Z_AXIS_RDT,
+		DXL_Z_AXIS_SHUT_DOWN_ALARM,
+		DXL_Z_AXIS_CW_C_SLOPE,
+		DXL_Z_AXIS_CCW_C_SLOPE,
+		DXL_Z_AXIS_CW_C_MARGIN,
+		DXL_Z_AXIS_CCW_C_MARGIN,
+		DXL_Z_AXIS_PUNCH
+	},
+	{	DXL_Z_AXIS_LED_ALARM,
+		DXL_Z_AXIS_TEMP_LIMIT,
+		DXL_Z_AXIS_LOW_VOLTAGE_LIMIT,
+		DXL_Z_AXIS_HIGH_VOLTAGE_LIMIT,
+		DXL_Z_AXIS_MAX_TORQUE,
+		DXL_Z_AXIS_SRL,
+		DXL_Z_AXIS_RDT,
+		DXL_Z_AXIS_SHUT_DOWN_ALARM,
+		DXL_Z_AXIS_CW_C_SLOPE,
+		DXL_Z_AXIS_CCW_C_SLOPE,
+		DXL_Z_AXIS_CW_C_MARGIN,
+		DXL_Z_AXIS_CCW_C_MARGIN,
+		DXL_Z_AXIS_PUNCH
+	}
+};
+
 void InitDynamixel(void) 
 {
 	int tmp = -1;
@@ -46,60 +143,6 @@ void InitDynamixel(void)
 	}
 	else
 	{
-		/* initialization of the parameter list for setting up the dynamixel servos when starting the controller */
-		uint16_t dynaParamList[3][13] =
-		{
-		{	DYNA_AXIS_1_LED_ALARM,
-			DYNA_AXIS_1_TEMP_LIMIT,
-			DYNA_AXIS_1_LOW_VOLTAGE_LIMIT,
-			DYNA_AXIS_1_HIGH_VOLTAGE_LIMIT,
-			DYNA_AXIS_1_MAX_TORQUE,
-			DYNA_AXIS_1_SRL,
-			DYNA_AXIS_1_RDT,
-			DYNA_AXIS_1_SHUT_DOWN_ALARM,
-			DYNA_AXIS_1_CW_C_SLOPE,
-			DYNA_AXIS_1_CCW_C_SLOPE,
-			DYNA_AXIS_1_CW_C_MARGIN,
-			DYNA_AXIS_1_CCW_C_MARGIN,
-			DYNA_AXIS_1_PUNCH
-		},
-		{	DYNA_Z_AXIS_LED_ALARM,
-			DYNA_Z_AXIS_TEMP_LIMIT,
-			DYNA_AXIS_2_LOW_VOLTAGE_LIMIT,
-			DYNA_AXIS_2_HIGH_VOLTAGE_LIMIT,
-			DYNA_Z_AXIS_MAX_TORQUE,
-			DYNA_Z_AXIS_SRL,
-			DYNA_Z_AXIS_RDT,
-			DYNA_Z_AXIS_SHUT_DOWN_ALARM,
-			DYNA_Z_AXIS_CW_C_SLOPE,
-			DYNA_Z_AXIS_CCW_C_SLOPE,
-			DYNA_Z_AXIS_CW_C_MARGIN,
-			DYNA_Z_AXIS_CCW_C_MARGIN,
-			DYNA_Z_AXIS_PUNCH
-		},
-		{	DYNA_Z_AXIS_LED_ALARM,
-			DYNA_Z_AXIS_TEMP_LIMIT,
-			DYNA_Z_AXIS_LOW_VOLTAGE_LIMIT,
-			DYNA_Z_AXIS_HIGH_VOLTAGE_LIMIT,
-			DYNA_Z_AXIS_MAX_TORQUE,
-			DYNA_Z_AXIS_SRL,
-			DYNA_Z_AXIS_RDT,
-			DYNA_Z_AXIS_SHUT_DOWN_ALARM,
-			DYNA_Z_AXIS_CW_C_SLOPE,
-			DYNA_Z_AXIS_CCW_C_SLOPE,
-			DYNA_Z_AXIS_CW_C_MARGIN,
-			DYNA_Z_AXIS_CCW_C_MARGIN,
-			DYNA_Z_AXIS_PUNCH
-		}
-		};
-
-		/* Basic structure of the function pointer table */
-		typedef struct
-		{
-			int16_t			(*funcPtr)(uint8_t id, int16_t val);
-			const char*		funcName;
-		} funcPtrTbl_t;
-
 		/* List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamixel servos by using the parameter list above.
 		The list also stores the function names for proper error messages. Do not change the order of the functions in the structure unless you change the
 		dynaParamList accordingly */
@@ -234,85 +277,7 @@ void DynamixelError(int16_t errorBit, uint8_t id)
 //	}
 }
 
-void UpdateObjDir(void)
-{
-	int16_t data[ID_TOTAL_NUMBER][2] = { 0 };
-	uint8_t error = 0;
-	float *result = {};
 
-	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
-	{
-		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
-		{
-			data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
-			data[id][speed] = 0; //dynamixelReadSpeed(id);
-			/*Serial.print("angle");
-			Serial.println(data[id][angle]);
-			Serial.print("speed");
-			Serial.println(data[id][speed]);*/
-
-			if (data[id][angle] < 0 || data[id][speed] < 0)
-			{
-				
-				if (data[id][angle] < 0) /* error value is negative by dynamixel library */
-				{ 
-					error = data[id][angle] * (-1);
-				}
-				else
-				{
-					error = data[id][speed] * (-1);
-				}
-				DynamixelError(error, id);
-				return;
-			}
-			else
-			{
-				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
-				{
-				case DYNA_ID_AXIS_1:
-
-					// Durch die neuen Set Funktionen ersetzen !!!
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
-					break;
-				case DYNA_ID_AXIS_2:
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
-					break;
-				case DYNA_ID_AXIS_Z:
-					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true);
-					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
-					break;
-				default:
-					SendStatus("UpdateObjDir(): ", "unknown device ID", SYS_STAT_ERROR);
-					return;
-				}
-			}
-		}
-		result = CalcPosistion(&data[ID_AXIS_1][angle], &data[ID_AXIS_2][angle]);
-
-		if (result == NULL) /* calculate related x and y positions */
-		{
-#ifndef _DEBUG
-			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
-#endif
-		}
-		else
-		{
-			SetActualPositions(&result[0], &result[1]);
-		}
-		
-		
-		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
-		{ 
-			SetObjData(OBJ_IDX_MOVING, 1, true); /* system is moving */
-		}
-		else
-		{
-			SetObjData(OBJ_IDX_MOVING, 0, true); /* system is not moving */
-		}
-	}
-}
 
 void HandleMove(void) {
 
@@ -427,4 +392,44 @@ void HandleMove(void) {
 	{
 		/* stoppe Bewegung, deaktiviere Drehmoment? */
 	}
+}
+
+/*  */
+static dxl_t* LocateObj(uint8_t index)
+{
+	dxl_t *p = NULL;
+	p = dxlCrtlTbl;
+
+	for (uint8_t i = 0; i < (sizeof(dxlCrtlTbl) / sizeof(dxlCrtlTbl[0])); i++, p++)
+	{
+		if (p->adress == index)
+		{
+			return p;
+		}
+	}
+	return NULL;
+}
+
+//int16_t GetObjData(uint8_t index)
+//{
+//	dxl_t *p = NULL;
+//	p = LocateObj(index);
+//
+//	if (p != NULL)
+//	{
+//		/*char msg[64];
+//		uint16_t tmp = p->data;
+//		sprintf(msg, "return value 0x%x", tmp);
+//		SendStatus("GetObjData(): ", "test", STATUS_TYPE_INFO);*/
+//		return p->data;
+//	}
+//	else
+//	{
+//		return -1;
+//	}
+//}
+
+uint8_t DxlSend(uint8_t dxlID, uint8_t dxlInstruction, uint8_t *paramList)
+{
+
 }

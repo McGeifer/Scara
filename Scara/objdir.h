@@ -290,7 +290,8 @@ int16_t* GetToolData(uint8_t index);
 /* Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer */
 toolTbl_t* LocateTool(uint8_t index);
 
-
+/* Cyclic function for updating all actual position/ angle & speed values of the object dictionary */
+void UpdateObjDir(void);
 
 
 #endif
