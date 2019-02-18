@@ -1,6 +1,6 @@
-// 
-// 
-// 
+/*
+ * 
+ */ 
 
 #include "status.h"
 #include "objdir.h"
@@ -19,23 +19,23 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 
 			switch (statusType)
 			{
-			case STATUS_TYPE_NONE:
+			case STATUS_MSG_TYPE_NONE:
 				sprintf(statusString, "         ");
 				break;
 
-			case STATUS_TYPE_INFO:
+			case STATUS_MSG_TYPE_INFO:
 				sprintf(statusString, "Info:    ");
 				break;
 
-			case STATUS_TYPE_WARNING:
+			case STATUS_MSG_TYPE_WARNING:
 				sprintf(statusString, "Warning: ");
 				break;
 
-			case STATUS_TYPE_ERROR:
+			case STATUS_MSG_TYPE_ERROR:
 				sprintf(statusString, "Error:   ");
 				break;
 
-			case STATUS_TYPE_DEBUG:
+			case STATUS_MSG_TYPE_DEBUG:
 				sprintf(statusString, "Debug:   ");
 				break;
 
@@ -58,7 +58,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 			}
 			else
 			{
-				if (statusType != STATUS_TYPE_DEBUG)
+				if (statusType != STATUS_MSG_TYPE_DEBUG)
 				{
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);

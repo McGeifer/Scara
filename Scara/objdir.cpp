@@ -1,6 +1,6 @@
-// 
-// 
-// 
+/* 
+ * 
+ */
 
 #include "objdir.h"
 #include "status.h"
@@ -10,18 +10,18 @@
 /* object dictionary */
 static objStruct_t objDir[] =
 {
-	// basic options
-	//{OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL},
+	/* basic options */
+	/* {OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL}, */
 	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_MOVING,						OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_POS_REACHED,					OBJ_PROP_R_, 0, NULL},
 
-	// internal objects
+	/* internal objects */
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* bit mask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
 	
-	// position values
+	/* position values */
 	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_X_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_X_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
@@ -32,7 +32,7 @@ static objStruct_t objDir[] =
 	{OBJ_IDX_Z_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_Z_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
 	
-	// angle values
+	/* angle values */
 	{OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_AXIS_1_ACTUAL_ANGLE,			OBJ_PROP_R_, 0, NULL},
@@ -40,7 +40,7 @@ static objStruct_t objDir[] =
 	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_AXIS_2_ACTUAL_ANGLE,			OBJ_PROP_R_, 0, NULL},
 
-	// speed values
+	/* speed values */
 	{OBJ_IDX_X_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_X_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_X_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
@@ -98,9 +98,6 @@ static posReg_t *dynPosReg[PosArrayLength] = { 0 };
 /* index of the last position in the position register */
 static uint8_t pLastPos = 0;
 
-// ##############################################
-// pos register - help functions
-// ##############################################
 
 static posReg_t* LocatePos(uint8_t *idx)
 {
@@ -108,11 +105,11 @@ static posReg_t* LocatePos(uint8_t *idx)
 	{
 		if (dynPosReg[i]->pointIdx == *idx)
 		{
-			SendStatus("LocatePos() ", "pos found", STATUS_TYPE_DEBUG);
+			SendStatus("LocatePos() ", "pos found", STATUS_MSG_TYPE_DEBUG);
 			return dynPosReg[i];
 		}
 	}
-	SendStatus("LocatePos() ", "pos not found", STATUS_TYPE_DEBUG);
+	SendStatus("LocatePos() ", "pos not found", STATUS_MSG_TYPE_DEBUG);
 	return NULL;
 }
 
@@ -151,13 +148,13 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 			p = LocatePos(idx);
 			if (p == NULL)
 			{
-				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", STATUS_TYPE_ERROR);
+				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", STATUS_MSG_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else
 		{
-			SendStatus("in function SetPosRegData(): ", "failed to write - max number of points (64) reached", STATUS_TYPE_ERROR);
+			SendStatus("in function SetPosRegData(): ", "failed to write - max number of points (64) reached", STATUS_MSG_TYPE_ERROR);
 			return -1;
 		}
 	}
@@ -165,11 +162,11 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 	{
 		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) /* check if object is writable */
 		{
-			if (*xVal >= X_POS_MIN && *xVal <= X_POS_MAX) /* check the permissible value range */
+			if (*xVal >= OBJ_POS_X_MIN && *xVal <= OBJ_POS_X_MAX) /* check the permissible value range */
 			{
-				if (*yVal >= Y_POS_MIN && *yVal <= Y_POS_MAX)
+				if (*yVal >= OBJ_POS_Y_MIN && *yVal <= OBJ_POS_Y_MAX)
 				{
-					if (*zVal >= Z_POS_MIN && *zVal <= Z_POS_MAX)
+					if (*zVal >= OBJ_POS_Z_MIN && *zVal <= OBJ_POS_Z_MAX)
 					{
 						p->posRegX = *xVal;
 						p->posRegY = *yVal;
@@ -180,7 +177,7 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 					{
 						char msg[64];
 						sprintf(msg, "position P%c value out of range", *idx);
-						SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+						SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 						return -1;
 					}
 				}
@@ -188,7 +185,7 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 				{
 					char msg[64];
 					sprintf(msg, "position P%c value out of range", *idx);
-					SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+					SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 					return -1;
 				}
 			}
@@ -196,7 +193,7 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 			{
 				char msg[64];
 				sprintf(msg, "position P%c value out of range", *idx);
-				SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+				SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 				return -1;
 			}
 		}
@@ -204,20 +201,16 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 		{
 			char msg[64];
 			sprintf(msg, "position P%c is read only", *idx);
-			SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+			SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else
 	{
-		SendStatus("in function SetPosRegData(): failed to write - ", "unknown error", STATUS_TYPE_ERROR);
+		SendStatus("in function SetPosRegData(): failed to write - ", "unknown error", STATUS_MSG_TYPE_ERROR);
 		return -1;
 	}
 }
-
-// ##############################################
-// objDir - help functions
-// ##############################################
 
 static objStruct_t* LocateObj(uint8_t index)
 {
@@ -244,7 +237,7 @@ int16_t GetObjData(uint8_t index)
 		/*char msg[64];
 		uint16_t tmp = p->data;
 		sprintf(msg, "return value 0x%x", tmp);
-		SendStatus("GetObjData(): ", "test", STATUS_TYPE_INFO);*/
+		SendStatus("GetObjData(): ", "test", STATUS_MSG_TYPE_INFO);*/
 		return p->data;
 	}
 	else
@@ -267,28 +260,28 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 			switch (pObjStruct->idx)	/* set min/ max values for comparison */
 			{
 			case OBJ_IDX_X_NEW_TARGET_POS:
-				minValue = X_POS_MIN;
-				maxValue = X_POS_MAX;
+				minValue = OBJ_POS_X_MIN;
+				maxValue = OBJ_POS_X_MAX;
 				break;
 
 			case OBJ_IDX_Y_NEW_TARGET_POS:
-				minValue = Y_POS_MIN;
-				maxValue = Y_POS_MAX;
+				minValue = OBJ_POS_Y_MIN;
+				maxValue = OBJ_POS_Y_MAX;
 				break;
 
 			case OBJ_IDX_Z_NEW_TARGET_POS:
-				minValue = Z_POS_MIN;
-				maxValue = Z_POS_MAX;
+				minValue = OBJ_POS_Z_MIN;
+				maxValue = OBJ_POS_Z_MAX;
 				break;
 
 			case OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE:
-				minValue = AXIS_1_ANGLE_MIN;
-				maxValue = AXIS_1_ANGLE_MAX;
+				minValue = OBJ_ANGLE_AXIS_1_MIN;
+				maxValue = OBJ_ANGLE_AXIS_1_MAX;
 				break;
 
 			case OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE:
-				minValue = AXIS_2_ANGLE_MIN;
-				maxValue = AXIS_2_ANGLE_MAX;
+				minValue = OBJ_ANGLE_AXIS_2_MIN;
+				maxValue = OBJ_ANGLE_AXIS_2_MAX;
 				break;
 
 			case OBJ_IDX_X_NEW_TARGET_SPEED:
@@ -317,7 +310,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 				break;
 
 			default:
-				minValue = -32768; // gute Idee?
+				minValue = -32768; /* gute Idee? */
 				maxValue = 32767;
 				break;
 			}
@@ -331,7 +324,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 			{
 				char msg[64];
 				sprintf(msg, "object 0x%x value out of range", index);
-				SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+				SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 				return -1;
 			}
 		}
@@ -339,7 +332,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 		{
 			char msg[64];
 			sprintf(msg, "object 0x%x is read only", index);
-			SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+			SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 			return -1;
 		}
 	}
@@ -347,7 +340,7 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
 	{
 		char msg[64];
 		sprintf(msg, "object 0x%x does not exist", index);
-		SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_TYPE_ERROR);
+		SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
 		return -1;
 	}
 }
@@ -484,10 +477,6 @@ int8_t SetNewTargetPositions(float *xPos, float *yPos)
 	}
 }
 
-// ##############################################
-// tool table - help functions
-// ##############################################
-
 toolTbl_t* LocateTool(uint8_t index)
 {
 	toolTbl_t *p = NULL;
@@ -499,7 +488,7 @@ toolTbl_t* LocateTool(uint8_t index)
 		{
 			char msg[64];
 			sprintf(msg, "tool %i found", p->toolIdx);
-			SendStatus("LocateTool(): ", msg, STATUS_TYPE_DEBUG);
+			SendStatus("LocateTool(): ", msg, STATUS_MSG_TYPE_DEBUG);
 			return p;
 		}
 	}
@@ -520,7 +509,7 @@ int16_t* GetToolData(uint8_t index)
 		data[3] = p->active;
 		char msg[64];
 		sprintf(msg, "tool offset values: x: %i, y: %i, z: %i", p->offsetX, p->offsetY, p->offsetZ);
-		SendStatus("GetToolData(): ", msg, STATUS_TYPE_DEBUG);
+		SendStatus("GetToolData(): ", msg, STATUS_MSG_TYPE_DEBUG);
 		return data;
 	}
 	else
@@ -531,13 +520,19 @@ int16_t* GetToolData(uint8_t index)
 
 void UpdateObjDir(void)
 {
-	int16_t data[ID_TOTAL_NUMBER][2] = { 0 };
+	int16_t data[DXL_ID_SUM][2] = { 0 };
 	uint8_t error = 0;
 	float *result = {};
 
+	enum dataType
+	{
+		angle,
+		speed
+	};
+
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		for (uint8_t id = 0; id < (ID_TOTAL_NUMBER); id++)
+		for (uint8_t id = 0; id < (DXL_ID_SUM); id++)
 		{
 			data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
 			data[id][speed] = dynamixelReadSpeed(id);
@@ -564,17 +559,17 @@ void UpdateObjDir(void)
 			{
 				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
 				{
-				case DYNA_ID_AXIS_1:
+				case DXL_ID_AXIS_1:
 
-					// Durch die neuen Set Funktionen ersetzen !!!
+					/* Durch die neuen Set Funktionen ersetzen !!! */
 					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
 					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
 					break;
-				case DYNA_ID_AXIS_2:
+				case DXL_ID_AXIS_2:
 					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
 					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
 					break;
-				case DYNA_ID_AXIS_Z:
+				case DXL_ID_AXIS_Z:
 					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true);
 					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
 					break;
@@ -584,7 +579,7 @@ void UpdateObjDir(void)
 				}
 			}
 		}
-		result = CalcPosistion(&data[ID_AXIS_1][angle], &data[ID_AXIS_2][angle]);
+		result = CalcPosistion(&data[DXL_ID_AXIS_1][angle], &data[DXL_ID_AXIS_2][angle]);
 
 		if (result == NULL) /* calculate related x and y positions */
 		{
@@ -598,7 +593,7 @@ void UpdateObjDir(void)
 		}
 
 
-		if (data[ID_AXIS_1][speed] > 0 || data[ID_AXIS_2][speed] > 0 || data[ID_Z_AXIS][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
+		if (data[DXL_ID_AXIS_1][speed] > 0 || data[DXL_ID_AXIS_2][speed] > 0 || data[DXL_ID_Z_AXIS][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
 		{
 			SetObjData(OBJ_IDX_MOVING, 1, true); /* system is moving */
 		}

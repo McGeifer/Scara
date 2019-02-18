@@ -39,9 +39,6 @@
     <ClInclude Include="calc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DynamixelSerial2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="objdir.cpp">
@@ -60,9 +57,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="calc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DynamixelSerial2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

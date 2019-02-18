@@ -126,7 +126,6 @@
   <ItemGroup>
     <ClInclude Include="calc.h" />
     <ClInclude Include="dynamixel.h" />
-    <ClInclude Include="DynamixelSerial2.h" />
     <ClInclude Include="gpio.h" />
     <ClInclude Include="objdir.h" />
     <ClInclude Include="sio.h" />
@@ -136,7 +135,6 @@
   <ItemGroup>
     <ClCompile Include="calc.cpp" />
     <ClCompile Include="dynamixel.cpp" />
-    <ClCompile Include="DynamixelSerial2.cpp" />
     <ClCompile Include="gpio.cpp" />
     <ClCompile Include="objdir.cpp" />
     <ClCompile Include="sio.cpp" />

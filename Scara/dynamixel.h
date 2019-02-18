@@ -11,8 +11,8 @@
 
 #include "DynamixelSerial2.h"
 
-/* Dynamixel control table
- * EEPROM AREA */
+/* parameters of Dynamixel control table */
+/* EEPROM AREA */
 #define DXL_P_MODEL_NUMBER_L			0		/* Model Number(L) */
 #define DXL_P_MODOEL_NUMBER_H			1		/* Model Number(H) */
 #define DXL_P_VERSION					2		/* Version of Firmware */
@@ -66,7 +66,7 @@
 #define DXL_P_PUNCH_L					48		/* Punch(L) */
 #define DXL_P_PUNCH_H					49		/* Punch(H) */
 
-/* Instructions */
+/* instructions */
 #define DXL_INST_PING					0x01	/* No action. Used for obtaining a Status Packet  */
 #define DXL_INST_READ					0x02	/* Reading values in the Control Table  */
 #define DXL_INST_WRITE					0x03	/* Writing values to the Control Table  */
@@ -75,14 +75,12 @@
 #define DXL_INST_RESET					0x06	/* Changes the control table values of the Dynamixel actuator to the Factory Default Value  */
 #define DXL_INST_SYNC_WRITE				0x83	/* Used for controlling many Dynamixel actuators at the same time  */
 
-#define DXL_DEFAULT_RETURN_PACKET_SIZE	6		/* return packet for error code */
-#define DXL_BROADCASTING_ID				0xFE
+/* parameter access restrictions */
+#define DXL_P_RD						0x01	/* read only */
+#define DXL_P_WR						0x02	/* write only */
+#define DXL_P_RD_WR				(0x01 | 0x02)	/* read & write */
 
-#define DXL_RD							(0x01)	/* read only */
-#define DXL_WR							(0x02)	/* write only */
-#define DXL_RD_WR				(0x01 | 0x02)	/* read & write */
-
-/* Setup parameters for function pointer table */
+/* setup parameters for function pointer table */
 #define DXL_AXIS_1_TEMP_LIMIT			70		/* max temperature 70°C */
 #define DXL_AXIS_1_LOW_VOLTAGE_LIMIT	110		/* min voltage 11V */
 #define DXL_AXIS_1_HIGH_VOLTAGE_LIMIT	120		/* max voltage 12V */
@@ -125,11 +123,38 @@
 #define DXL_Z_AXIS_CCW_C_MARGIN			0
 #define DXL_Z_AXIS_PUNCH				32
 
+
+/* various */
+#define DXL_POS_TOLERANCE				0.5		/* max position tolerance for a Dynamixel */
+//#define DXL_DEFAULT_RETURN_PACKET_SIZE	6		/* return packet for error code */
+
+/* dynamixel axis id's */
+#define DXL_ID_AXIS_1					0x00	/* Dynamixel id for axis 1 */
+#define DXL_ID_AXIS_2					0x01	/* Dynamixel id for axis 2 */
+#define DXL_ID_AXIS_Z					0x02	/* Dynamixel is for z axis */
+#define DXL_BROADCASTING_ID				0xFE	/* Dynamixel broadcast id */
+
+/* connection settings */
+#define DXL_DIRECTION_PIN				2		/* pin for switching the tristate buffer (switching between Tx and Rx mode) */
+
+/* macros for serial port functions */
+#define beginCom(args)  (Serial2.begin(args))	/* begin serial communication */
+#define sendData(args)  (Serial2.write(args))	/* write over serial */
+#define availableData() (Serial2.available())	/* check serial data available */
+#define readData()      (Serial2.read())		/* read serial data */
+#define peekData()      (Serial2.peek())		/* peek serial data */
+
+/* macros for switching between Rx & Tx mode */
+#define RX_MDOE LOW
+#define TX_MODE HIGH
+#define setDirPin(DirPin)   (pinMode(DirPin,OUTPUT))			/* Select the Switch to TX/RX Mode Pin */
+#define comMode(Mode) (digitalWrite(DXL_DIRECTION_PIN, Mode))	/* Switch to Rx or Tx Mode */
+
 /* basic structure for Dynamixel control table */
 typedef struct {
 	const uint8_t	adress;
 	const uint8_t	access;
-	const uint8_t	min_val;
+	const uint16_t	min_val;
 	const uint16_t	max_val;
 } dxl_t;
 
@@ -140,22 +165,27 @@ typedef struct
 	const char*		funcName;
 } funcPtrTbl_t;
 
-enum dataType
-{
-	angle,
-	speed
-};
-
-/* Setup function for the Dynamixel servos */
+/* 
+ * Setup function for the Dynamixel servos
+ */
 void InitDynamixel(void);
 
-/* Handler function for Dynamixel-specific error codes. If an error code is reported to
-the function, it will issue an error message. In addition, the execution of the main loop
-is stopped to prevent inadvertent behavior */
+/* 
+ * Handler function for Dynamixel-specific error codes. If an error code is reported to
+ * the function, it will issue an error message. In addition, the execution of the main loop
+ * is stopped to prevent inadvertent behavior
+ */
 void DynamixelError(int16_t errorBit, uint8_t id);
 
-/* Cyclic function for detecting the move status of the system and if necessary executing
-move commands of the Dynamixel servos */
+/* 
+ * Cyclic function for detecting the move status of the system and if necessary executing
+ * move commands of the Dynamixel servos
+ */
 void HandleMove(void);
+
+/* 
+ * Opening serial connection for Dynamixel servos and set communication direction pin
+ */
+void DxlStartCom(uint16_t baudRate, uint8_t directionPin);
 
 #endif

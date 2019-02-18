@@ -1,4 +1,4 @@
-// sio.h
+/* sio.h */
 
 #ifndef _SIO_h
 #define _SIO_h
@@ -9,12 +9,31 @@
 	#include "WProgram.h"
 #endif
 
-#define SCARA_PACKET_LENGTH 4
 
-void InitSio(void);
-void HandleSIO(void);
-void HandleModbusData(void);
-void HandleRapidString(void);
-void HandleScaraData(void);
+
+/*
+ * 
+ */
+void initSio(void);
+
+/*
+ *
+ */
+void handleSIO(void);
+
+/*
+ *
+ */
+void handleModbusData(void);
+
+/*
+ *
+ */
+void handleRapidString(void);
+
+/*
+ *
+ */
+void handleScaraData(void);
 
 #endif

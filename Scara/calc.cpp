@@ -1,15 +1,17 @@
-// 
-// 
-// 
+/* 
+/* 
+/* 
 
 #include "calc.h"
 #include "objdir.h"
 #include "status.h"
 
-/* Check if the given angle in rad is inside the allowed range of the dynamixel servo
-   return 1  - value is in range
-   return 0  - value is not in range
-   return -1 - error */
+/* 
+ * Check if the given angle in rad is inside the allowed range of the dynamixel servo
+ * return 1  - value is in range
+ * return 0  - value is not in range
+ * return -1 - error
+ */
 uint8_t ChkServoLmt(uint8_t servo, float *val)
 {
 	if (servo == 1)
@@ -19,7 +21,7 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 		Serial.print("ChkServoLmt() -> tmp: ");
 		Serial.println(tmp, DEC);
 #endif
-		if (tmp >= AXIS_1_ANGLE_MIN && tmp <= AXIS_1_ANGLE_MAX)
+		if (tmp >= OBJ_ANGLE_AXIS_1_MIN && tmp <= OBJ_ANGLE_AXIS_1_MAX)
 		{
 			return 1;
 		}
@@ -35,7 +37,7 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 		Serial.print("ChkServoLmt() -> tmp: ");
 		Serial.println(tmp, DEC);
 #endif
-		if (tmp >= AXIS_2_ANGLE_MIN && tmp <= AXIS_2_ANGLE_MAX)
+		if (tmp >= OBJ_ANGLE_AXIS_2_MIN && tmp <= OBJ_ANGLE_AXIS_2_MAX)
 		{
 			return 1;
 		}
@@ -45,14 +47,16 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 		}
 	}
 	else {
-		//error message?
+		/* error message? */
 		return -1;
 	}
 }
 
-/* ConvertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
-   return #    - pointer to array
-   return NULL - error */
+/* 
+ * ConvertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
+ * return #    - pointer to array
+ * return NULL - error
+ */
 float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 {
 	static float val[2] = { 0 };
@@ -60,20 +64,20 @@ float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 	switch (direction)
 	{
 	case CONVERT_COORDINATE_TO_ROBOT:
-		val[ID_AXIS_1] = *xVal + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;
-		val[ID_AXIS_2] = *yVal + MACHINE_ZERO_OFFS_Y_FIELD - MACHINE_ZERO_OFFS_Y_ROBOT;
+		val[DXL_ID_AXIS_1] = *xVal + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;
+		val[DXL_ID_AXIS_2] = *yVal + MACHINE_ZERO_OFFS_Y_FIELD - MACHINE_ZERO_OFFS_Y_ROBOT;
 #ifdef _DEBUG
 		Serial.println("ConvertCoordinates()");
-		Serial.print("val[ID_AXIS_1]: ");
-		Serial.println(val[ID_AXIS_1], 8);
-		Serial.print("val[ID_AXIS_2]: ");
-		Serial.println(val[ID_AXIS_2], 8);
+		Serial.print("val[DXL_ID_AXIS_1]: ");
+		Serial.println(val[DXL_ID_AXIS_1], 8);
+		Serial.print("val[DXL_ID_AXIS_2]: ");
+		Serial.println(val[DXL_ID_AXIS_2], 8);
 #endif 
 		return val;
 
 	case CONVERT_COORDINATE_TO_FIELD:
-		val[ID_AXIS_1] = *xVal + MACHINE_ZERO_OFFS_X_ROBOT - MACHINE_ZERO_OFFS_X_FIELD;
-		val[ID_AXIS_2] = *yVal + MACHINE_ZERO_OFFS_Y_ROBOT - MACHINE_ZERO_OFFS_Y_FIELD;
+		val[DXL_ID_AXIS_1] = *xVal + MACHINE_ZERO_OFFS_X_ROBOT - MACHINE_ZERO_OFFS_X_FIELD;
+		val[DXL_ID_AXIS_2] = *yVal + MACHINE_ZERO_OFFS_Y_ROBOT - MACHINE_ZERO_OFFS_Y_FIELD;
 		return val;
 
 	default:
@@ -83,14 +87,14 @@ float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 
 float* CalcAngle(int16_t *xPos, int16_t *yPos)
 {
-	float *coordinates = NULL;	// converted coordinates
-	static float result[2];		// result of calculation
-	float xTmp = 0;				// temp value for conversion
-	float yTmp = 0;				// temp value for conversion
-	float xVal = 0;				// 
-	float yVal = 0;				// 
+	float *coordinates = NULL;	/* converted coordinates */
+	static float result[2];		/* result of calculation */
+	float xTmp = 0;				/* temp value for conversion */
+	float yTmp = 0;				/* temp value for conversion */
+	float xVal = 0;				/*  */
+	float yVal = 0;				/*  */
 
-	float b = 0;				// length between c & a
+	float b = 0;				/* length between c & a */
 
 	uint8_t cmp1A = 0;			/* temporary compare values */
 	uint8_t cmp1B = 0;
@@ -98,18 +102,16 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	uint8_t cmp2B = 0;
 
 	/* all angles in radians & non negative! */
-	float alpha = 0;			// inner angle of triangle at point A (between b & c)
-	float alpha2 = 0;			// angle between b & x-axis 
-	float beta = 0;				// inner angle of triangle at point B (between a & c)
-	float gamma = 0;			// inner angle of triangle at point C (between b & c)
-	static float servo1A = 0;	// angle for servo motor 1
-	static float servo1B = 0;	// 
-	static float servo2A = 0;	// 
-	static float servo2B = 0;	// 
+	float alpha = 0;			/* inner angle of triangle at point A (between b & c) */
+	float alpha2 = 0;			/* angle between b & x-axis  */
+	float beta = 0;				/* inner angle of triangle at point B (between a & c) */
+	float gamma = 0;			/* inner angle of triangle at point C (between b & c) */
+	static float servo1A = 0;	/* angle for servo motor 1 */
+	static float servo1B = 0;	/*  */
+	static float servo2A = 0;	/*  */
+	static float servo2B = 0;	/*  */
 
-	// convert the input position values based on the field coordinate system
-	// to the coordinate system of the robot axis
-
+	/* convert the input position values based on the field coordinate system to the coordinate system of the robot axis */
 	xTmp = *xPos / 10.0;
 	yTmp = *yPos / 10.0;
 #ifdef _DEBUG
@@ -121,8 +123,8 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 #endif 
 
 	coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
-	xVal = xTmp; //coordinates[ID_AXIS_1];
-	yVal = yTmp; //coordinates[ID_AXIS_2];
+	xVal = xTmp; /* coordinates[DXL_ID_AXIS_1]; */
+	yVal = yTmp; /* coordinates[DXL_ID_AXIS_2]; */
 #ifdef _DEBUG
 	Serial.print("xVal: ");
 	Serial.println(xVal, 8);
@@ -130,7 +132,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	Serial.println(yVal, 8);
 #endif 
 
-	// calculate missing lengths and angles
+	/* calculate missing lengths and angles */
 	b = (float)sqrt(xVal * xVal + yVal * yVal);
 	alpha2 = atan(yVal / xVal) * (-1);
 #ifdef _DEBUG
@@ -152,7 +154,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	beta =  AXIS_1_LENGTH + AXIS_2_LENGTH == b ? PI : (float)acos((AXIS_1_LENGTH * AXIS_1_LENGTH + AXIS_2_LENGTH * AXIS_2_LENGTH - b * b) / (2.0 * AXIS_1_LENGTH * AXIS_2_LENGTH));
 	gamma = AXIS_1_LENGTH + AXIS_2_LENGTH == b ?  0 : PI - alpha - beta;
 
-	// berechnete Winkel und Winkel in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung wobei die Fehlerursache möglicherweise bei GeoGebra liegt!!!!!!!!!!!!!!!!!!
+	/* berechnete Winkel und Winkel in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung wobei die Fehlerursache möglicherweise bei GeoGebra liegt!!!!!!!!!!!!!!!!!! */
 #ifdef _DEBUG
 	Serial.print("alpha: ");
 	Serial.println(alpha * 180 / PI, 8);
@@ -253,7 +255,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 			}
 			else if (cmp2A)
 			{
-				// error
+				/* error */
 				return NULL;
 			}
 			else
@@ -278,12 +280,12 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 			}
 			else if (!cmp2B)
 			{
-				// error
+				/* error */
 				return NULL;
 			}
 			else
 			{
-				// error
+				/* error */
 				return NULL;
 			}
 		}
@@ -308,6 +310,14 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	float beta = 0;				/* inner angle between a & c */
 	float beta1 = 0;			/* inner angle between x-axis & a */
 	float *result = { NULL };
+	
+	enum axis
+	{
+		X,
+		Y,
+		Z,
+		V_SIZE
+	};
 
 	vecA[X] = AXIS_1_LENGTH * cos(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
 	vecA[Y] = AXIS_1_LENGTH * sin(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
@@ -320,7 +330,7 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	vecB[Y] = AXIS_2_LENGTH * sin(beta1);
 
 	vecR[X] = vecA[X] + vecB[X];
-	vecR[Y] = vecA[Y] + vecB[Y]; // bis hier hin funktioniert sie :D
+	vecR[Y] = vecA[Y] + vecB[Y]; /* bis hier hin funktioniert sie :D */
 
 //#ifdef _DEBUG
 //	Serial.println("CalcPosition()");
