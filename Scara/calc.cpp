@@ -1,16 +1,16 @@
-/* 
-/* 
-/* 
+/*  */
+
 
 #include "calc.h"
 #include "objdir.h"
 #include "status.h"
+#include "dynamixel.h"
 
 /* 
- * Check if the given angle in rad is inside the allowed range of the dynamixel servo
- * return 1  - value is in range
- * return 0  - value is not in range
- * return -1 - error
+	Check if the given angle in rad is inside the allowed range of the dynamixel servo
+	return 1  - value is in range
+	return 0  - value is not in range
+	return -1 - error
  */
 uint8_t ChkServoLmt(uint8_t servo, float *val)
 {
@@ -53,9 +53,9 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 }
 
 /* 
- * ConvertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
- * return #    - pointer to array
- * return NULL - error
+	ConvertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
+	return #    - pointer to array
+	return NULL - error
  */
 float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 {
@@ -154,7 +154,10 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	beta =  AXIS_1_LENGTH + AXIS_2_LENGTH == b ? PI : (float)acos((AXIS_1_LENGTH * AXIS_1_LENGTH + AXIS_2_LENGTH * AXIS_2_LENGTH - b * b) / (2.0 * AXIS_1_LENGTH * AXIS_2_LENGTH));
 	gamma = AXIS_1_LENGTH + AXIS_2_LENGTH == b ?  0 : PI - alpha - beta;
 
-	/* berechnete Winkel und Winkel in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung wobei die Fehlerursache möglicherweise bei GeoGebra liegt!!!!!!!!!!!!!!!!!! */
+	/* 
+		Die berechneten Winkel und die in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung, wobei die Fehlerursache
+		möglicherweise bei GeoGebra liegt. Dies führt zu Abweichung der X- und Y-Positionen von mehreren Millimetern !!!
+	*/
 #ifdef _DEBUG
 	Serial.print("alpha: ");
 	Serial.println(alpha * 180 / PI, 8);

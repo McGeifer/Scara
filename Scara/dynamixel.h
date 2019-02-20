@@ -9,12 +9,12 @@
 	#include "WProgram.h"
 #endif
 
-#include "DynamixelSerial2.h"
+#include "Stream.h"
 
 /* parameters of Dynamixel control table */
 /* EEPROM AREA */
 #define DXL_P_MODEL_NUMBER_L			0		/* Model Number(L) */
-#define DXL_P_MODOEL_NUMBER_H			1		/* Model Number(H) */
+#define DXL_P_MODEL_NUMBER_H			1		/* Model Number(H) */
 #define DXL_P_VERSION					2		/* Version of Firmware */
 #define DXL_P_ID						3		/* ID */
 #define DXL_P_BAUD_RATE					4		/* Baud Rate */
@@ -37,8 +37,8 @@
 #define DXL_P_DOWN_CALIBRATION_H		21		/* Down Calibration(H) */
 #define DXL_P_UP_CALIBRATION_L			22		/* Up Calibration(L) */
 #define DXL_P_UP_CALIBRATION_H			23		/* Up Calibration(H) */
-												   
-/* RAM AREA */								   
+
+/* RAM AREA */
 #define DXL_P_TORQUE_ENABLE				24		/* Torque Enable */
 #define DXL_P_LED						25		/* LED */
 #define DXL_P_CW_COMPLIANCE_MARGIN		26		/* CW Compliance Margin */
@@ -123,10 +123,12 @@
 #define DXL_Z_AXIS_CCW_C_MARGIN			0
 #define DXL_Z_AXIS_PUNCH				32
 
-
 /* various */
 #define DXL_POS_TOLERANCE				0.5		/* max position tolerance for a Dynamixel */
-//#define DXL_DEFAULT_RETURN_PACKET_SIZE	6		/* return packet for error code */
+#define DXL_TORQUE_ON					1
+#define DXL_TORQUE_OFF					0
+/* #define DXL_DEFAULT_RETURN_PACKET_SIZE	6		return packet for error code */
+#define DXL_START						0xFF	/* start byte of Dynamixel protocol (two times 0xFF) */
 
 /* dynamixel axis id's */
 #define DXL_ID_AXIS_1					0x00	/* Dynamixel id for axis 1 */
@@ -135,22 +137,24 @@
 #define DXL_BROADCASTING_ID				0xFE	/* Dynamixel broadcast id */
 
 /* connection settings */
-#define DXL_DIRECTION_PIN				2		/* pin for switching the tristate buffer (switching between Tx and Rx mode) */
+#define DXL_DIRECTION_PIN				2		/* GPIO for switching the tristate buffer (switching between Tx and Rx mode) */
+#define DXL_TIMEOUT						300		/* timeout for return packet in µs */
 
 /* macros for serial port functions */
-#define beginCom(args)  (Serial2.begin(args))	/* begin serial communication */
-#define sendData(args)  (Serial2.write(args))	/* write over serial */
-#define availableData() (Serial2.available())	/* check serial data available */
-#define readData()      (Serial2.read())		/* read serial data */
-#define peekData()      (Serial2.peek())		/* peek serial data */
+#define dxlBeginCom(args)	(Serial2.begin(args))	/* begin serial communication */
+#define dxlSendData(args)	(Serial2.write(args))	/* write byte over serial */
+#define dxlAvailableData()	(Serial2.available())	/* check serial data available */
+#define dxlReadData()		(Serial2.read())		/* read byte over serial data */
+#define dxlPeekData()		(Serial2.peek())		/* peek serial data */
+#define dxlFlush()			(Serial2.flush())		/* flush serial buffer */
 
 /* macros for switching between Rx & Tx mode */
-#define RX_MDOE LOW
-#define TX_MODE HIGH
-#define setDirPin(DirPin)   (pinMode(DirPin,OUTPUT))			/* Select the Switch to TX/RX Mode Pin */
-#define comMode(Mode) (digitalWrite(DXL_DIRECTION_PIN, Mode))	/* Switch to Rx or Tx Mode */
+#define DXL_RX_MDOE LOW
+#define DXL_TX_MODE HIGH
+#define dxlSetDirPin(DirPin)	(pinMode(DirPin,OUTPUT))				/* select the GPIO for switching the tristate buffer */
+#define dxlSetComMode(Mode)		(digitalWrite(DXL_DIRECTION_PIN, Mode))	/* switch between Rx- or Tx-Mode */
 
-/* basic structure for Dynamixel control table */
+/* structure of the Dynamixel control table */
 typedef struct {
 	const uint8_t	adress;
 	const uint8_t	access;
@@ -158,34 +162,59 @@ typedef struct {
 	const uint16_t	max_val;
 } dxl_t;
 
-/* Basic structure of the function pointer table */
+/* structure of the function pointer table */
 typedef struct
 {
 	int16_t(*funcPtr)(uint8_t id, int16_t val);
 	const char*		funcName;
 } funcPtrTbl_t;
 
-/* 
- * Setup function for the Dynamixel servos
+/*  */
+enum returnVal
+{
+	RETURN_VAL_LENGTH,
+	RETURN_VAL_ERROR,
+	RETURN_VAL_DATA_START
+};
+
+/* foreach function macro
+	can be used like:
+
+	int values[] = { 1, 2, 3 };
+	foreach(int *v, values)
+	{
+		printf("value: %d\n", *v);
+	}
+*/
+#define foreach(item, array) \
+    for(int keep = 1, \
+            count = 0,\
+            size = sizeof (array) / sizeof *(array); \
+        keep && count != size; \
+        keep = !keep, count++) \
+      for(item = (array) + count; keep; keep = !keep)
+
+/*
+	Setup function for the Dynamixel servos
  */
-void InitDynamixel(void);
+void initDynamixel(void);
 
 /* 
- * Handler function for Dynamixel-specific error codes. If an error code is reported to
- * the function, it will issue an error message. In addition, the execution of the main loop
- * is stopped to prevent inadvertent behavior
+	Handler function for Dynamixel-specific error codes. If an error code is reported to
+	the function, it will issue an error message. In addition, the execution of the main loop
+	is stopped to prevent inadvertent behavior
  */
-void DynamixelError(int16_t errorBit, uint8_t id);
+void dynamixelError(int16_t errorBit, uint8_t id);
 
 /* 
- * Cyclic function for detecting the move status of the system and if necessary executing
- * move commands of the Dynamixel servos
+	Cyclic function for detecting the move status of the system and if necessary executing
+	move commands of the Dynamixel servos
  */
-void HandleMove(void);
+void handleMove(void);
 
 /* 
- * Opening serial connection for Dynamixel servos and set communication direction pin
+	Opening serial connection for Dynamixel servos and set communication direction pin
  */
-void DxlStartCom(uint16_t baudRate, uint8_t directionPin);
+void dxlStartCom(uint32_t baudRate, uint8_t directionPin);
 
 #endif

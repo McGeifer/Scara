@@ -33,7 +33,7 @@ void initSio(void)
 	modbus_configure(115200, 1, 0, TOTAL_REGS_SIZE_MDB, 0);
 
 	// Setup for Dynamixel connection (Serial2)
-	DxlStartCom(1000000, 2);
+	dxlStartCom(1000000, DXL_DIRECTION_PIN);
 }
 
 // Choose the correct handler to process the data received by the serial connection (selected by operation mode).
@@ -90,8 +90,8 @@ int8_t ParseRadpid(void)
 	c_buffer[idx + 1] = '\0';	// terminate string
 	// buffer overflow möglich!?
 
-	strcpy(input_string, c_buffer);	// create copy of the receiveBuffer to prevent change of data by strtok
-	part = strtok(input_string, delimiter);	// split the input_string into multiple tokens
+	strcpy(input_string, c_buffer);				/* create copy of the receiveBuffer to prevent change of data by strtok */
+	part = strtok(input_string, delimiter);		/* split the input_string into multiple tokens */
 
 	while(part != NULL) /* create tokens */
 	{ 

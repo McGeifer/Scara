@@ -15,17 +15,17 @@
 #define INTERRUPT_PIN	3	/* Interrupt pin for counting the position impulses of the z-axis */
 
 /* 
- * Setup and configuration of the digital in/ outputs and interrupts
+	Setup and configuration of the digital in/ outputs and interrupts
  */
 void initGPIO(void);
 
 /*
- * Detection of the transmission protocol and choice of operating mode
+	Detection of the transmission protocol and choice of operating mode
  */
 void initOperationMode(void);
 
 /*
- * Interrupt service routine of the optical measuring system
+	Interrupt service routine of the optical measuring system
  */
 void lightBarrierISR(void);
 

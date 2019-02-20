@@ -1,6 +1,6 @@
-// 
-// 
-// 
+/*  */
+
+
 
 #include "dynamixel.h"
 #include "objdir.h"
@@ -8,11 +8,11 @@
 #include "calc.h"
 #include "gpio.h"
 
-
+static uint16_t *dxl_return_data = NULL;
 
 static dxl_t dxlCrtlTbl[] = {
-	{DXL_P_MODOEL_NUMBER_H,			DXL_P_RD,		0,	0},
 	{DXL_P_MODEL_NUMBER_L,			DXL_P_RD,		0,	0},
+	{DXL_P_MODEL_NUMBER_H,			DXL_P_RD,		0,	0},
 	{DXL_P_VERSION,					DXL_P_RD,		0,	0},
 	{DXL_P_ID,						DXL_P_RD_WR,	0,	253},
 	{DXL_P_BAUD_RATE,				DXL_P_RD_WR,	0,	254},
@@ -110,7 +110,7 @@ static uint16_t dynaParamList[3][13] =
 	}
 };
 
-void InitDynamixel(void) 
+void initDynamixel(void) 
 {
 	int tmp = -1;
 	int response = 0;
@@ -122,7 +122,7 @@ void InitDynamixel(void)
 
 		if (tmp != 0 )
 		{
-			DynamixelError(tmp, i);
+			dynamixelError(tmp, i);
 			char msg[32];
 			sprintf(msg, "no Dynamixel found @ ID: %d", i);
 			SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_ERROR);
@@ -152,6 +152,7 @@ void InitDynamixel(void)
 		 * The list also stores the function names for proper error messages. Do not change the order of the functions in the structure unless you change the
 		 * dynaParamList accordingly
 		 */
+
 		funcPtrTbl_t funcPtrTbl[] = {
 		
 			{dynamixelSetLEDAlarm, "dynamixelSetLEDAlarm"},
@@ -187,30 +188,30 @@ void InitDynamixel(void)
 
 				if (error < 0) 
 				{
-					DynamixelError(error * (-1), i);	/* executing the setup functions */
+					dynamixelError(error * (-1), i);	/* executing the setup functions */
 					char msg[64];
 					sprintf(msg, "Error while calling: %s", p->funcName);
 					SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_ERROR);
-					//return;
+					return;
 				}
 			}
 		}
 		/* enable continuous turn for z axis */
 		if (int16_t error = dynamixelSetEndless(DXL_ID_Z_AXIS, ON) < 0)
 		{
-			DynamixelError(error * (-1), DXL_ID_Z_AXIS);
+			dynamixelError(error * (-1), DXL_ID_Z_AXIS);
 			return;
 		}
 		/* enable torque for all servo motors */
 		if (int16_t error = dynamixelTorqueStatus(BROADCAST_ID, ON) < 0)
 		{
-			DynamixelError(error * (-1), BROADCAST_ID);
+			dynamixelError(error * (-1), BROADCAST_ID);
 			return;
 		}
 	}
 }
 
-void DynamixelError(int16_t errorBit, uint8_t id)
+void dynamixelError(int16_t errorBit, uint8_t id)
 {
 	if (errorBit > 0 && errorBit <= 0x0080)
 	{
@@ -220,43 +221,43 @@ void DynamixelError(int16_t errorBit, uint8_t id)
 		{
 		case 0x0001:
 			sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0002:
 			sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0004:
 			sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0008:
 			sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0010:
 			sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0020:
 			sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0040:
 			sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0080:
 		default:
 			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
-			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 		}
 #ifndef _DEBUG
@@ -270,12 +271,12 @@ void DynamixelError(int16_t errorBit, uint8_t id)
 //		if (errorBit == -1)
 //		{
 //			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
-//			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+//			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 //		}
 //		else
 //		{
 //			sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
-//			SendStatus("DynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+//			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
 //		}
 //#ifndef _DEBUG
 //		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
@@ -285,7 +286,7 @@ void DynamixelError(int16_t errorBit, uint8_t id)
 
 
 
-void HandleMove(void) {
+void handleMove(void) {
 
 	enum minMaxPos {
 		MIN_POS,
@@ -319,7 +320,7 @@ void HandleMove(void) {
 		{
 			{ actTargetPos[DXL_ID_AXIS_1] - DXL_POS_TOLERANCE, actTargetPos[DXL_ID_AXIS_1] + DXL_POS_TOLERANCE },
 			{ actTargetPos[DXL_ID_AXIS_2] - DXL_POS_TOLERANCE, actTargetPos[DXL_ID_AXIS_2] + DXL_POS_TOLERANCE },
-			{ actTargetPos[DXL_ID_Z_AXIS] - DXL_POS_TOLERANCE, actTargetPos[DXL_ID_Z_AXIS] + DXL_POS_TOLERANCE },
+			{ actTargetPos[DXL_ID_AXIS_Z] - DXL_POS_TOLERANCE, actTargetPos[DXL_ID_AXIS_Z] + DXL_POS_TOLERANCE },
 		};
 
 		if (!start && !moving)
@@ -338,7 +339,7 @@ void HandleMove(void) {
 				/* goal position changed? */
 			if (actPos[DXL_ID_AXIS_1] < posWindow[DXL_ID_AXIS_1][MIN_POS] || actPos[DXL_ID_AXIS_1] > posWindow[DXL_ID_AXIS_1][MAX_POS] ||
 				actPos[DXL_ID_AXIS_2] < posWindow[DXL_ID_AXIS_2][MIN_POS] || actPos[DXL_ID_AXIS_2] > posWindow[DXL_ID_AXIS_2][MAX_POS] ||
-				actPos[DXL_ID_Z_AXIS] < posWindow[DXL_ID_Z_AXIS][MIN_POS] || actPos[DXL_ID_Z_AXIS] > posWindow[DXL_ID_Z_AXIS][MAX_POS])
+				actPos[DXL_ID_AXIS_Z] < posWindow[DXL_ID_AXIS_Z][MIN_POS] || actPos[DXL_ID_AXIS_Z] > posWindow[DXL_ID_AXIS_Z][MAX_POS])
 			{
 				SetObjData(OBJ_IDX_POS_REACHED, 0, false);
 				
@@ -350,11 +351,11 @@ void HandleMove(void) {
 				{
 					SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Y_NEW_TARGET_POS), false);
 				}
-				if (newTargetPos[DXL_ID_Z_AXIS] != actTargetPos[DXL_ID_Z_AXIS])
+				if (newTargetPos[DXL_ID_AXIS_Z] != actTargetPos[DXL_ID_AXIS_Z])
 				{
 					SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS), false);
 
-					if (newTargetPos[DXL_ID_Z_AXIS] > actTargetPos[DXL_ID_Z_AXIS])
+					if (newTargetPos[DXL_ID_AXIS_Z] > actTargetPos[DXL_ID_AXIS_Z])
 					{
 						dynamixelTurn(DXL_ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
@@ -388,7 +389,7 @@ void HandleMove(void) {
 			/* target position reached? */
 			if (actPos[DXL_ID_AXIS_1] >= posWindow[DXL_ID_AXIS_1][MIN_POS] && actPos[DXL_ID_AXIS_1] <= posWindow[DXL_ID_AXIS_1][MAX_POS] &&
 				actPos[DXL_ID_AXIS_2] >= posWindow[DXL_ID_AXIS_2][MIN_POS] && actPos[DXL_ID_AXIS_2] <= posWindow[DXL_ID_AXIS_2][MAX_POS] &&
-				actPos[DXL_ID_Z_AXIS] >= posWindow[DXL_ID_Z_AXIS][MIN_POS] && actPos[DXL_ID_Z_AXIS] <= posWindow[DXL_ID_Z_AXIS][MAX_POS])
+				actPos[DXL_ID_AXIS_Z] >= posWindow[DXL_ID_AXIS_Z][MIN_POS] && actPos[DXL_ID_AXIS_Z] <= posWindow[DXL_ID_AXIS_Z][MAX_POS])
 			{  
 				SetObjData(OBJ_IDX_MOVING, 0, true);
 				SetObjData(OBJ_IDX_POS_REACHED, 1, false);
@@ -406,7 +407,7 @@ void HandleMove(void) {
 }
 
 /*  */
-static dxl_t* GetDxlControlTablePointer(uint8_t dxlInstruction)
+static dxl_t* getDxlControlTablePointer(uint8_t dxlInstruction)
 {
 	dxl_t *p = NULL;
 	p = dxlCrtlTbl;
@@ -421,24 +422,193 @@ static dxl_t* GetDxlControlTablePointer(uint8_t dxlInstruction)
 	return NULL;
 }
 
-uint8_t DxlWrite(uint8_t dxlID, uint8_t dxlInstruction, uint8_t *paramList)
+int16_t* dxlGetReturnPacket(void)
 {
-	dxl_t *p = NULL;
-	p = GetDxlControlTablePointer(dxlInstruction);
+	uint8_t id = 0;
+	uint8_t length = 0;
+	uint8_t *param_list = NULL;
+	uint8_t error = 0;
+	uint8_t checksum = 0;
+	uint16_t tmp = 0;
+	static int16_t* return_val = NULL;
+	uint32_t time_stamp = 0;
+	uint32_t timeout = micros() + DXL_TIMEOUT; 
 
-	if (p != NULL)
+	while (micros() >= 0xFFFFFC17) /* uint32 = 4294967295 µs -> - 1000 µs = 4294966295 = 0xFFFFFC17 */
 	{
+		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close to overflow */
+	}
 
+	while (micros() < timeout && dxlAvailableData() < 6)
+	{
+		/* wait for minimum Dynamixel status packet length of 5 or timeout */
+	}
+	time_stamp = micros();
+
+	if (time_stamp > timeout && dxlAvailableData() > 0)
+	{
+		while (dxlAvailableData() > 0)
+		{
+			Serial.print(dxlReadData(), HEX);
+			dxlFlush();
+		}
+		return_val = (int16_t*)calloc(2, sizeof(int16_t));
+		return_val[RETURN_VAL_LENGTH] = 1;
+		return_val[RETURN_VAL_ERROR] = -1;
+		return return_val; /* timeout with data */
+	}
+	else if (time_stamp > timeout && dxlAvailableData() == 0)
+	{
+		return_val = (int16_t*)calloc(2, sizeof(int16_t));
+		return_val[RETURN_VAL_LENGTH] = 1;
+		return_val[RETURN_VAL_ERROR] = -2;
+		return return_val; /* timeout without data */
 	}
 	else
 	{
-		/* object does not exist */
-		return -1;
+		while (dxlAvailableData() > 0)
+		{
+			if (dxlPeekData() == DXL_START)
+			{
+				dxlReadData();				/* protocol start 0xFF */
+
+				if (dxlPeekData() == DXL_START)
+				{
+					dxlReadData();			/* protocol start 0xFF */
+					id = dxlReadData();		/* id */
+					length = dxlReadData();	/* length */
+					param_list = (uint8_t*)calloc(length, sizeof(uint8_t));
+
+					if (param_list != NULL)	/* check for proper calloc execution */
+					{
+						uint8_t i = 0;
+						while (dxlAvailableData() > 0 && i < length)
+						{
+							param_list[i] = dxlReadData();
+							i++;
+						}
+
+						if (i == (length - 1) && dxlAvailableData() == 0)
+						{
+							error = param_list[0];
+							checksum = param_list[length - 1];
+
+							foreach(uint8_t *v, param_list)
+							{
+								tmp += *v;
+							}
+							 
+							if (checksum == (uint8_t)(~(id + length + tmp)) & 0xFF)
+							{
+								// return array pointe
+
+
+
+
+
+							}
+							else
+							{
+								return -3; /* checksum error */
+							}
+						}
+					}
+
+					while (dxlAvailableData() > 0) /* make sure buffer is empty */
+					{
+#ifdef _DEBUG
+						Serial.print(dxlReadData(), HEX);
+						Serial.print(" ");
+#else
+						dxlReadData();
+#endif
+					}
+
+					if (param_list != NULL) /* free memory */
+					{
+						free(param_list);
+						param_list = NULL;
+					}
+					return 0;
+				}
+				else
+				{
+					while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
+					{
+						dxlReadData();
+					}
+				}
+			}
+			dxlReadData(); /* get next byte */
+		}
+	}
+
+	while (dxlAvailableData() > 0)
+	{
+		dxlReadData();
+	}
+	return -3; /* invalid data packet */
+}
+
+uint16_t* dxlWrite(uint8_t id, uint8_t instruction, uint8_t *paramList)
+{
+	uint8_t checksum = 0;		/* ~ (ID + Length + Instruction + Parameter1 + ... + Parameter N) */
+	uint8_t length = 0;
+
+	/* calculating checksum if no sync write */
+	if (instruction != DXL_INST_SYNC_WRITE)
+	{
+		// calculate length
+		// length = ??
+		
+		uint16_t tmp = 0;
+		foreach (uint8_t *x, paramList)
+		{
+			tmp += *x;
+		}
+		checksum = (uint8_t)(~(id + length + instruction + tmp)) & 0xFF; /* 0xFF nötig ? */
+
+		dxlSetComMode(DXL_TX_MODE);
+
+		dxlSendData(DXL_START);
+		dxlSendData(DXL_START);
+		dxlSendData(id);
+
+		dxlSendData(length);
+		dxlSendData(instruction);
+		foreach(uint8_t *x, paramList)
+		{
+			dxlSendData(*x);
+		}
+		dxlSendData(checksum);
+		dxlFlush();
+
+		dxlSetComMode(DXL_RX_MDOE);
+
+		if (id != DXL_BROADCASTING_ID)
+		{
+			return &dxlGetReturnPacket();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return -1; /* sync write not supported jet */
 	}
 }
 
-void DxlStartCom(uint16_t baudRate, uint8_t directionPin)
+
+uint16_t dxlRead(uint8_t dxlID, uint8_t dxlInstruction, uint8_t *paramList)
 {
-	/* set pin mode! */
-	beginCom(baudRate, directionPin);
+	return 0;
+}
+
+void dxlStartCom(uint32_t baudRate, uint8_t directionPin)
+{
+	dxlSetDirPin(directionPin);
+	dxlBeginCom(baudRate);
+	dxlSetComMode(DXL_TX_MODE);
 }

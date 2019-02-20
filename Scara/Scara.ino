@@ -17,14 +17,14 @@ uint32_t cycle_count;
 
 /* extern void InitDynamixel(void);
 extern void UpdateObjDir(void);
-extern void HandleMove(void); */
+extern void handleMove(void); */
 
 void setup()
 {
 	initGPIO();
 	initSio();
 	initOperationMode();
-	InitDynamixel();
+	initDynamixel();
 	
 	/*uint8_t idx1 = 0x01;
 	uint8_t idx2 = 0x02;
@@ -57,7 +57,7 @@ void loop()
 	{
 		UpdateObjDir();
 		handleSIO();
-		HandleMove();
+		handleMove();
 
 		/* measure cycle time */
 		/* cycle_count++;

@@ -32,17 +32,17 @@
 #define RAD_TO_DEG(rad) ((rad * 4068) / 71.0) */
 
 /*
- * CalcAngle computes the angles for axis 1 & 2 out of the coordinates x & y
+	CalcAngle computes the angles for axis 1 & 2 out of the coordinates x & y
  */
 float* CalcAngle(int16_t *xVal, int16_t *yVal);
 
 /*
- * Using vector operations to calculate actual x & y position of robot arm based on position values
+	Using vector operations to calculate actual x & y position of robot arm based on position values
  */
 float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2);
 
 /*
- * UpdateZPos calculates the actual position of the z-axis.
+	UpdateZPos calculates the actual position of the z-axis.
  */
 int8_t UpdateZPos(void);
 

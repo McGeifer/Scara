@@ -9,7 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-/* The basic data structure for the object dictionary */
+/* data structure for the object dictionary */
 typedef struct {
 	const	uint8_t		idx;				/* index number of object */
 			uint8_t		props;				/* object properties */
@@ -17,7 +17,7 @@ typedef struct {
 			int8_t		(*pFunction)(int16_t val1, int16_t val2);	/* pointer for handler function (*pFunction)(const uint8_t idx, const uint8_t props, const int16_t data) */
 } objStruct_t;
 
-/* The basic data structure for the tool table */
+/* data structure for the tool table */
 typedef struct {
 	const	uint8_t		toolIdx;			/* index number of tool */
 	const	uint8_t		props;				/* object properties */
@@ -28,7 +28,7 @@ typedef struct {
 			int			(*pFunction)(const uint8_t* toolIndex); /* pointer for handler function */
 } toolTbl_t;
 
-/* Register to store position values */
+/* register to store position values */
 typedef struct {
 			uint8_t		pointIdx;
 			uint8_t		props;
@@ -47,12 +47,12 @@ enum modbusHoldingReg {
 };
 
 /* Dynamixel axis ids */
-enum dxlAxisIDs {
-	DXL_ID_AXIS_1,
-	DXL_ID_AXIS_2,
-	DXL_ID_Z_AXIS,
-	DXL_ID_SUM			/* leave this one (size of enum) */
-};
+//enum dxlAxisIDs {
+//	DXL_ID_AXIS_1,
+//	DXL_ID_AXIS_2,
+//	DXL_ID_Z_AXIS,
+//	DXL_ID_SUM				/* leave this one (size of enum) */
+//};
 
 /* object index list */
 /* basic options */
@@ -191,80 +191,80 @@ enum dxlAxisIDs {
 #define AXIS_2_LENGTH			200.0
 
 /* 
- * Function to return the x, y & z values for a given position index stored in the position register
+	Function to return the x, y & z values for a given position index stored in the position register
  */
 int16_t* GetPosRegData(uint8_t *idx);
 
 /*
- * Function for writing data to the position register
+	Function for writing data to the position register
  */
 uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal);
 
 /*
- * Function to return the stored data of an object
+	Function to return the stored data of an object
  */
 int16_t GetObjData(uint8_t index);
 
 /* 
- * Function for writing data to the object dictionary. Objects can only be written if they have the property "writable". 
- * This mechanism can be disabled if the parameter internalCall is set to "true" (use with caution!)
+	Function for writing data to the object dictionary. Objects can only be written if they have the property "writable". 
+	This mechanism can be disabled if the parameter internalCall is set to "true" (use with caution!)
  */
 int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
 
 /*
- * Write "actualAngles" (in rad) in objDir.
- * return 0  - operation successful
- *  return -1 - operation failed
+	Write "actualAngles" (rad) in objDir.
+	return 0  - operation successful
+	return -1 - operation failed
  */
 int8_t SetActualAngles(float *servo1, float *servo2);
 
 /* 
- * Write "actualTargetAngles" (in rad) in objDir.
- * return 0  - operation successful
- * return -1 - operation failed
+	Write "actualTargetAngles" (rad) in objDir.
+	return 0  - operation successful
+	return -1 - operation failed
  */
 int8_t SetActualTargetAngles(float *servo1, float *servo2);
 
 /*
- * Write "newTargetAngles" (in rad) in objDir.
- * return 0  - operation successful
- * return -1 - operation failed
+	Write "newTargetAngles" (rad) in objDir.
+	return 0  - operation successful
+	return -1 - operation failed
  */
 int8_t SetNewTargetAngles(float *servo1, float *servo2);
 
 /*
- * Write "actualPos" (in mm) in objDir.
- * return 0  - operation successful
- * return -1 - operation failed
+	Write "actualPos" (mm) in objDir.
+	return 0  - operation successful
+	return -1 - operation failed
  */
 int8_t SetActualPositions(float *xPos, float *yPos);
 
 /* 
- * Write "actualTargetPos" (in mm) in objDir.
- * return 0  - operation successful
- * return -1 - operation failed
+	Write "actualTargetPos" (mm) in objDir.
+	return 0  - operation successful
+	return -1 - operation failed
  */
 int8_t SetActualTargetPositions(float *xPos, float *yPos);
 
 /* 
- * Write "newTargetPos" (in mm) in objDir.
- * return 0 - operation successful
- * return -1 - operation failed
+	Write "newTargetPos" (mm) in objDir.
+	return 0 - operation successful
+	return -1 - operation failed
  */
 int8_t SetNewTargetPositions(float *xPos, float *yPos);
 
 /*
- * Function to return the stored offset values for a given tool
+	Function to return the stored offset values for a given tool
  */
 int16_t* GetToolData(uint8_t index);
 
 /*
- * Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer
+	Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer
  */
 toolTbl_t* LocateTool(uint8_t index);
 
 /*
- * Cyclic function for updating all actual position/ angle & speed values of the object dictionary
+	Cyclic function for updating all actual position/ angle & speed values of the object dictionary
  */
 void UpdateObjDir(void);
 

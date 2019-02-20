@@ -12,27 +12,27 @@
 
 
 /*
- * 
+	
  */
 void initSio(void);
 
 /*
- *
+	
  */
 void handleSIO(void);
 
 /*
- *
+	
  */
 void handleModbusData(void);
 
 /*
- *
+	
  */
 void handleRapidString(void);
 
 /*
- *
+	
  */
 void handleScaraData(void);
 

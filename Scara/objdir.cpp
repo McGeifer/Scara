@@ -520,7 +520,7 @@ int16_t* GetToolData(uint8_t index)
 
 void UpdateObjDir(void)
 {
-	int16_t data[DXL_ID_SUM][2] = { 0 };
+	int16_t data[3][2] = { 0 };
 	uint8_t error = 0;
 	float *result = {};
 
@@ -532,10 +532,11 @@ void UpdateObjDir(void)
 
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		for (uint8_t id = 0; id < (DXL_ID_SUM); id++)
+		for (uint8_t id = 0; id < (3); id++)
 		{
-			data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
-			data[id][speed] = dynamixelReadSpeed(id);
+			//data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
+			//data[id][speed] = dynamixelReadSpeed(id);
+
 			/*Serial.print("angle");
 			Serial.println(data[id][angle]);
 			Serial.print("speed");
@@ -552,7 +553,7 @@ void UpdateObjDir(void)
 				{
 					error = data[id][speed] * (-1);
 				}
-				DynamixelError(error, id);
+				dynamixelError(error, id);
 				return;
 			}
 			else
@@ -593,7 +594,7 @@ void UpdateObjDir(void)
 		}
 
 
-		if (data[DXL_ID_AXIS_1][speed] > 0 || data[DXL_ID_AXIS_2][speed] > 0 || data[DXL_ID_Z_AXIS][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
+		if (data[DXL_ID_AXIS_1][speed] > 0 || data[DXL_ID_AXIS_2][speed] > 0 || data[DXL_ID_AXIS_Z][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/
 		{
 			SetObjData(OBJ_IDX_MOVING, 1, true); /* system is moving */
 		}
