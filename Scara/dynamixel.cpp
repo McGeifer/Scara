@@ -8,7 +8,11 @@
 #include "calc.h"
 #include "gpio.h"
 
-static uint16_t *dxl_return_data = NULL;
+/* Dynamically allocated array to store data returned by the Dynamixel servo.
+ * [0] = length of array
+ * [1] = Dynamixel error byte or internal error (negative value)
+ * [1 + n] = additional data (if needed) */
+static int16_t *dxl_return_data = NULL;
 
 static dxl_t dxlCrtlTbl[] = {
 	{DXL_P_MODEL_NUMBER_L,			DXL_P_RD,		0,	0},
@@ -109,6 +113,13 @@ static uint16_t dynaParamList[3][13] =
 		DXL_Z_AXIS_PUNCH
 	}
 };
+
+void dxlStartCom(uint32_t baudRate, uint8_t directionPin)
+{
+	dxlSetDirPin(directionPin);
+	dxlBeginCom(baudRate);
+	dxlSetComMode(DXL_TX_MODE);
+}
 
 void initDynamixel(void) 
 {
@@ -284,8 +295,6 @@ void dynamixelError(int16_t errorBit, uint8_t id)
 //	}
 }
 
-
-
 void handleMove(void) {
 
 	enum minMaxPos {
@@ -422,7 +431,16 @@ static dxl_t* getDxlControlTablePointer(uint8_t dxlInstruction)
 	return NULL;
 }
 
-int16_t* dxlGetReturnPacket(void)
+/* 
+	Function to receive and parse a Dynamixel status return packet. If a valid status return packet	has
+	been received it will store the received data for further processing in the dxl_return_data array.
+	return  0	= received data successfully stored in dxl_return_data
+	return -1	= timeout while waiting for data (no data received)
+	return -2	= timeout while receiving data
+	return -3	= checksum error
+	return -4	= invalid data packet
+*/
+uint8_t dxlGetReturnPacket(void)
 {
 	uint8_t id = 0;
 	uint8_t length = 0;
@@ -430,11 +448,13 @@ int16_t* dxlGetReturnPacket(void)
 	uint8_t error = 0;
 	uint8_t checksum = 0;
 	uint16_t tmp = 0;
-	static int16_t* return_val = NULL;
 	uint32_t time_stamp = 0;
-	uint32_t timeout = micros() + DXL_TIMEOUT; 
+	uint32_t timeout = micros() + DXL_TIMEOUT;
 
-	while (micros() >= 0xFFFFFC17) /* uint32 = 4294967295 µs -> - 1000 µs = 4294966295 = 0xFFFFFC17 */
+	free(dxl_return_data);
+	dxl_return_data = NULL;
+
+	while (micros() >= 0xFFFFFC17) /*  4294967295 µs (uint32) - 1000 µs = 4294966295 = 0xFFFFFC17 */
 	{
 		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close to overflow */
 	}
@@ -452,17 +472,11 @@ int16_t* dxlGetReturnPacket(void)
 			Serial.print(dxlReadData(), HEX);
 			dxlFlush();
 		}
-		return_val = (int16_t*)calloc(2, sizeof(int16_t));
-		return_val[RETURN_VAL_LENGTH] = 1;
-		return_val[RETURN_VAL_ERROR] = -1;
-		return return_val; /* timeout with data */
+		return -1; /* timeout with data */
 	}
 	else if (time_stamp > timeout && dxlAvailableData() == 0)
 	{
-		return_val = (int16_t*)calloc(2, sizeof(int16_t));
-		return_val[RETURN_VAL_LENGTH] = 1;
-		return_val[RETURN_VAL_ERROR] = -2;
-		return return_val; /* timeout without data */
+		return -2; /* timeout without data */
 	}
 	else
 	{
@@ -493,35 +507,36 @@ int16_t* dxlGetReturnPacket(void)
 							error = param_list[0];
 							checksum = param_list[length - 1];
 
-							foreach(uint8_t *v, param_list)
+							for (int i = 0; i < length - 1 ; i++)
 							{
-								tmp += *v;
+								tmp += param_list[i];
 							}
 							 
 							if (checksum == (uint8_t)(~(id + length + tmp)) & 0xFF)
 							{
-								// return array pointe
+								dxl_return_data = (int16_t*)calloc(length + 1, sizeof(int16_t));
+								dxl_return_data[0] = length + 1;
 
+								for (int i = 0; i < length; i++)
+								{
+									dxl_return_data[i + 1] = param_list[i];
+								}
 
-
-
-
+								free(param_list);
+								param_list = NULL;
+								return 0;
 							}
 							else
 							{
-								return -3; /* checksum error */
+								return -3;  /* checksum error */
 							}
 						}
 					}
 
 					while (dxlAvailableData() > 0) /* make sure buffer is empty */
 					{
-#ifdef _DEBUG
 						Serial.print(dxlReadData(), HEX);
 						Serial.print(" ");
-#else
-						dxlReadData();
-#endif
 					}
 
 					if (param_list != NULL) /* free memory */
@@ -531,13 +546,13 @@ int16_t* dxlGetReturnPacket(void)
 					}
 					return 0;
 				}
-				else
-				{
-					while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
-					{
-						dxlReadData();
-					}
-				}
+				//else
+				//{
+				//	while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
+				//	{
+				//		dxlReadData();
+				//	}
+				//}
 			}
 			dxlReadData(); /* get next byte */
 		}
@@ -547,51 +562,63 @@ int16_t* dxlGetReturnPacket(void)
 	{
 		dxlReadData();
 	}
-	return -3; /* invalid data packet */
+	return -4; /* invalid data packet */
 }
 
-uint16_t* dxlWrite(uint8_t id, uint8_t instruction, uint8_t *paramList)
+/*
+	function to send Dynamixel command packets over half-duplex UART
+	id				= id of the Dynamixel servo
+	length			= length defined by the Dynamixel protocol
+	instruction		= instruction defined by the Dynamixel control table
+	param_list[]	= data array containing additional data to send
+	          [0]		= total length of array
+	          [0 + n]	= additional data
+	return 0		= no error or no status return packet (when using broadcast id)
+	return -1		= error
+*/
+uint8_t dxlWriteData(uint8_t *id, uint8_t *length, uint8_t *instruction, uint8_t *param_list)
 {
-	uint8_t checksum = 0;		/* ~ (ID + Length + Instruction + Parameter1 + ... + Parameter N) */
-	uint8_t length = 0;
+	uint8_t checksum = 0;		/* checksum calculation defined by Dynamixel protocol ~ (ID + Length + Instruction + Parameter1 + ... + Parameter N) */
 
 	/* calculating checksum if no sync write */
-	if (instruction != DXL_INST_SYNC_WRITE)
+	if (*instruction != DXL_INST_SYNC_WRITE)
 	{
-		// calculate length
-		// length = ??
-		
 		uint16_t tmp = 0;
-		foreach (uint8_t *x, paramList)
+		for (uint8_t i = 0; i < param_list[0]; i++)
+		{
+			tmp += param_list[1 + i];
+		}
+
+		foreach (uint8_t *x, param_list)
 		{
 			tmp += *x;
 		}
-		checksum = (uint8_t)(~(id + length + instruction + tmp)) & 0xFF; /* 0xFF nötig ? */
+		checksum = (uint8_t)(~(*id + *length + *instruction + tmp)) & 0xFF; /* 0xFF nötig ? */
 
 		dxlSetComMode(DXL_TX_MODE);
 
 		dxlSendData(DXL_START);
 		dxlSendData(DXL_START);
-		dxlSendData(id);
+		dxlSendData(*id);
 
-		dxlSendData(length);
-		dxlSendData(instruction);
-		foreach(uint8_t *x, paramList)
+		dxlSendData(*length);
+		dxlSendData(*instruction);
+		for (int i = 0; i < param_list[0]; i++)
 		{
-			dxlSendData(*x);
+			dxlSendData(param_list[i + 1]);
 		}
 		dxlSendData(checksum);
 		dxlFlush();
 
 		dxlSetComMode(DXL_RX_MDOE);
 
-		if (id != DXL_BROADCASTING_ID)
+		if (*id != DXL_BROADCASTING_ID)
 		{
-			return &dxlGetReturnPacket();
+			return dxlGetReturnPacket();
 		}
 		else
 		{
-			return 0;
+			return 0; /* no status return packen when using broadcast id */
 		}
 	}
 	else
@@ -600,15 +627,7 @@ uint16_t* dxlWrite(uint8_t id, uint8_t instruction, uint8_t *paramList)
 	}
 }
 
-
-uint16_t dxlRead(uint8_t dxlID, uint8_t dxlInstruction, uint8_t *paramList)
+uint8_t dxlSetId(uint8_t id, uint8_t new_id)
 {
-	return 0;
-}
 
-void dxlStartCom(uint32_t baudRate, uint8_t directionPin)
-{
-	dxlSetDirPin(directionPin);
-	dxlBeginCom(baudRate);
-	dxlSetComMode(DXL_TX_MODE);
 }

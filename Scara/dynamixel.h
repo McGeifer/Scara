@@ -170,11 +170,11 @@ typedef struct
 } funcPtrTbl_t;
 
 /*  */
-enum returnVal
+enum dxReturnVal
 {
-	RETURN_VAL_LENGTH,
-	RETURN_VAL_ERROR,
-	RETURN_VAL_DATA_START
+	DXL_RETURN_LENGTH,
+	DXL_RETURN_ERROR,
+	DXL_RETURN_DATA
 };
 
 /* foreach function macro
