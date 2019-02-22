@@ -167,11 +167,13 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	Serial.println(gamma * 180 / PI, 8);
 #endif 
 
-	/* Calculation of the new axis angles considering a minimum travel distance
-	 * between the actual and new position of the robot arm. The servo motors have a
-	 * operating angle of 300° ( 0° - 300°). Due to mechanical requirements this range
-	 * might be reduced so it is necessary to check if servo1 & servo2 are able to
-	 * reach the given coordinates. */
+	/* 
+		Calculation of the new axis angles considering a minimum travel distance
+		between the actual and new position of the robot arm. The servo motors have a
+		operating angle of 300° ( 0° - 300°). Due to mechanical requirements this range
+		might be reduced so it is necessary to check if servo1 & servo2 are able to
+		reach the given coordinates.
+	*/
 
 	 /* calculation of the servo angles based on the orientation of the triangle in the coordinate system */
 	servo1A = 2 * PI - SERVO_1_OFFS - alpha - alpha2;	/* point B is "left" from b */
