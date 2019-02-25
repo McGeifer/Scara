@@ -46,14 +46,6 @@ enum modbusHoldingReg {
 	TOTAL_REGS_SIZE_MDB		/* total number of registers. Function 3 and 16 share the same register array */
 };
 
-/* Dynamixel axis ids */
-//enum dxlAxisIDs {
-//	DXL_ID_AXIS_1,
-//	DXL_ID_AXIS_2,
-//	DXL_ID_Z_AXIS,
-//	DXL_ID_SUM				/* leave this one (size of enum) */
-//};
-
 /* object index list */
 /* basic options */
 #define OBJ_IDX_ACK							0xF0	/* acknowledge */
@@ -213,43 +205,43 @@ int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
 
 /*
 	Write "actualAngles" (rad) in objDir.
-	return 0  - operation successful
-	return -1 - operation failed
+	return	0 = operation successful
+	return -1 = operation failed
  */
 int8_t SetActualAngles(float *servo1, float *servo2);
 
 /* 
 	Write "actualTargetAngles" (rad) in objDir.
-	return 0  - operation successful
-	return -1 - operation failed
+	return	0 = operation successful
+	return -1 = operation failed
  */
 int8_t SetActualTargetAngles(float *servo1, float *servo2);
 
 /*
 	Write "newTargetAngles" (rad) in objDir.
-	return 0  - operation successful
-	return -1 - operation failed
+	return	0 = operation successful
+	return -1 = operation failed
  */
 int8_t SetNewTargetAngles(float *servo1, float *servo2);
 
 /*
 	Write "actualPos" (mm) in objDir.
-	return 0  - operation successful
-	return -1 - operation failed
+	return	0 = operation successful
+	return -1 = operation failed
  */
 int8_t SetActualPositions(float *xPos, float *yPos);
 
 /* 
 	Write "actualTargetPos" (mm) in objDir.
-	return 0  - operation successful
-	return -1 - operation failed
+	return	0 = operation successful
+	return -1 = operation failed
  */
 int8_t SetActualTargetPositions(float *xPos, float *yPos);
 
 /* 
 	Write "newTargetPos" (mm) in objDir.
-	return 0 - operation successful
-	return -1 - operation failed
+	return	0 = operation successful
+	return -1 = operation failed
  */
 int8_t SetNewTargetPositions(float *xPos, float *yPos);
 
