@@ -553,7 +553,7 @@ void UpdateObjDir(void)
 				{
 					error = data[id][speed] * (-1);
 				}
-				dynamixelError(error, id);
+				dxlError(error, id);
 				return;
 			}
 			else

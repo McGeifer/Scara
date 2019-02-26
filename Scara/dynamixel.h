@@ -77,31 +77,31 @@
 
 /* setup parameters for the Dynamixel servos */
 #define DXL_AXIS_1_TEMP_LIMIT			70		/* max temperature 70캜 */
-#define DXL_AXIS_1_LOW_VOLTAGE_LIMIT	110		/* min voltage 11V */
-#define DXL_AXIS_1_HIGH_VOLTAGE_LIMIT	120		/* max voltage 12V */
+#define DXL_AXIS_1_VOLTAGE_LIMIT_LOW	110		/* min voltage 11V */
+#define DXL_AXIS_1_VOLTAGE_LIMIT_HIGH	120		/* max voltage 12V */
 #define DXL_AXIS_1_MAX_TORQUE			1023	/* max torque -> max value */
-#define DXL_AXIS_1_SRL					1		/* return level 0=none, 1=only for read command, 2= always */
-#define DXL_AXIS_1_RDT					250		/* return delay time = 2탎 * value -> 500탎 */
-#define DXL_AXIS_1_LED_ALARM			127		/* LED blink for all error types */
-#define DXL_AXIS_1_SHUT_DOWN_ALARM		37		/* turn of torque for: overload, overheating and input voltage error */
+#define DXL_AXIS_1_STATUS_RETURN_LEVEL	1		/* return level 0=none, 1=only for read command, 2= always */
+#define DXL_AXIS_1_RETURN_DELAY_TIME	250		/* return delay time = 2탎 * value -> 500탎 */
+#define DXL_AXIS_1_ALARM_LED			127		/* LED blink for all error types */
+#define DXL_AXIS_1_ALARM_SHUT_DOWN		37		/* turn of torque for: overload, overheating and input voltage error */
 
 #define DXL_AXIS_2_TEMP_LIMIT			70
-#define DXL_AXIS_2_LOW_VOLTAGE_LIMIT	110
-#define DXL_AXIS_2_HIGH_VOLTAGE_LIMIT	120
+#define DXL_AXIS_2_VOLTAGE_LIMIT_LOW	110
+#define DXL_AXIS_2_VOLTAGE_LIMIT_HIGH	120
 #define DXL_AXIS_2_MAX_TORQUE			1023
-#define DXL_AXIS_2_SRL					1
-#define DXL_AXIS_2_RDT					150
-#define DXL_AXIS_2_LED_ALARM			127
-#define DXL_AXIS_2_SHUT_DOWN_ALARM		37
+#define DXL_AXIS_2_STATUS_RETURN_LEVEL	1
+#define DXL_AXIS_2_RETURN_DELAY_TIME	150
+#define DXL_AXIS_2_ALARM_LED			127
+#define DXL_AXIS_2_ALARM_SHUT_DOWN		37
 
 #define DXL_Z_AXIS_TEMP_LIMIT			70
-#define DXL_Z_AXIS_LOW_VOLTAGE_LIMIT	110
-#define DXL_Z_AXIS_HIGH_VOLTAGE_LIMIT	120
+#define DXL_Z_AXIS_VOLTAGE_LIMIT_LOW	110
+#define DXL_Z_AXIS_VOLTAGE_LIMIT_HIGH	120
 #define DXL_Z_AXIS_MAX_TORQUE			1023
-#define DXL_Z_AXIS_SRL					1
-#define DXL_Z_AXIS_RDT					250
-#define DXL_Z_AXIS_LED_ALARM			127
-#define DXL_Z_AXIS_SHUT_DOWN_ALARM		37
+#define DXL_Z_AXIS_STATUS_RETURN_LEVEL	1
+#define DXL_Z_AXIS_RETURN_DELAY_TIME	250
+#define DXL_Z_AXIS_ALARM_LED			127
+#define DXL_Z_AXIS_ALARM_SHUT_DOWN		37
 #define DXL_Z_ASIS_CW_ANGLE_LIMIT		0
 #define DXL_Z_ASIS_CCW_ANGLE_LIMIT		0
 
@@ -109,7 +109,6 @@
 #define DXL_POS_TOLERANCE				0.5		/* max position tolerance for a Dynamixel */
 #define DXL_TORQUE_ON					1
 #define DXL_TORQUE_OFF					0
-/* #define DXL_DEFAULT_RETURN_PACKET_SIZE	6		return packet for error code */
 #define DXL_START						0xFF	/* start byte of Dynamixel protocol (two times 0xFF) */
 
 /* dynamixel axis id's */
@@ -137,12 +136,18 @@
 #define dxlSetDirPin(DirPin)	(pinMode(DirPin,OUTPUT))				/* select the GPIO for switching the tristate buffer */
 #define dxlSetComMode(Mode)		(digitalWrite(DXL_DIRECTION_PIN, Mode))	/* switch between Rx- or Tx-Mode */
 
-/* structure of the function pointer table */
-typedef struct
-{
-	int16_t(*funcPtr)(uint8_t id, int16_t val);
-	const char*		funcName;
-} funcPtrTbl_t;
+//typedef struct
+//{
+//	uint8_t temp_limit;
+//	uint8_t voltage_limit_low;
+//	uint8_t voltage_limit_high;
+//	uint16_t max_torque;
+//	uint8_t srl;
+//	uint8_t rdt;
+//	uint8_t led_alarm;
+//	uint8_t shut_down_alarm;
+//
+//} dxlSetupParams_t;
 
 /*  */
 enum dxReturnVal
@@ -155,13 +160,14 @@ enum dxReturnVal
 enum dxlSetupParams
 {
 	DXL_SETUP_TEMP_LIMIT,
-	DXL_SETUP_LOW_VOLTAGE_LIMIT,
-	DXL_SETUP_HIGH_VOLTAGE_LIMIT,
-	DXL_SETUP_MAX_TORQUE,
-	DXL_SETUP_SRL,
-	DXL_SETUP_RDT,
-	DXL_SETUP_LED_ALARM,
-	DXL_SETUP_SHUT_DOWN_ALARM
+	DXL_SETUP_VOLTAGE_LIMIT_LOW,
+	DXL_SETUP_VOLTAGE_LIMIT_HIGH,
+	DXL_SETUP_MAX_TORQUE			= 4, /* skip one - max_torque is uint16 not uint8 */
+	DXL_SETUP_STATUS_RETURN_LEVEL,
+	DXL_SETUP_RETURN_DELAY_TIME,
+	DXL_SETUP_ALARM_LED,
+	DXL_SETUP_ALARM_SHUT_DOWN,
+	DXL_SETUP_TOTAL_SIZE				/* total size of enum - must be at the last position */
 };
 
 /*
@@ -174,7 +180,7 @@ void initDynamixel(void);
 	the function, it will issue an error message. In addition, the execution of the main loop
 	is stopped to prevent inadvertent behavior.
  */
-void dynamixelError(int16_t errorBit, uint8_t id);
+void dxlError(int16_t errorBit, uint8_t id);
 
 /* 
 	Cyclic function for detecting the move status of the system and if necessary executing
@@ -305,7 +311,19 @@ uint8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetVoltageLimit(uint8_t id, uint8_t min_voltage_limit, uint8_t max_voltage_limit);
+uint8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit);
+
+/*
+	The upper and lower limits of the Dynamixel actuator뭩 operating voltage. If the present voltage
+	(Address 42) is out of the specified range, a Voltage Range Error Bit (Bit 0 of the Status
+	Packet) will return the value 1, and an alarm will be set by Address 17, 18. The values are 10
+	times the actual voltage value. For example, if the Address 12 value is 80, then the lower
+	voltage limit is set to 8V.
+
+	return	0 = OK
+	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
+*/
+uint8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit);
 
 /*
 	The maximum torque output for the Dynamixel actuator. When this value is set to 0, the Dynamixel
@@ -666,7 +684,7 @@ uint8_t dxlGetTorqueEnable(uint8_t id);
 uint8_t dxlGetLED(uint8_t id);
 
 /*
-	Read the Compilance Marging setting of the Dynamixel. The compliance of the Dynamixel actuator
+	Read the Compliance Margin setting of the Dynamixel. The compliance of the Dynamixel actuator
 	is defined by setting the compliance Margin and Slope. This feature can be utilized for
 	absorbing shocks at the output shaft. The following graph shows how each compliance value
 	(length of A, B, C & D) is defined by the Position Error and applied torque.
@@ -677,7 +695,7 @@ uint8_t dxlGetLED(uint8_t id);
 uint8_t dxlGetCWComplianceMargin(uint8_t id);
 
 /*
-	Read the Compilance Marging setting of the Dynamixel. The compliance of the Dynamixel actuator
+	Read the Compliance Margin setting of the Dynamixel. The compliance of the Dynamixel actuator
 	is defined by setting the compliance Margin and Slope. This feature can be utilized for
 	absorbing shocks at the output shaft. The following graph shows how each compliance value
 	(length of A, B, C & D) is defined by the Position Error and applied torque.
@@ -688,7 +706,7 @@ uint8_t dxlGetCWComplianceMargin(uint8_t id);
 uint8_t dxlGetCCWComplianceMargin(uint8_t id);
 
 /*
-	Read the Compilance Slope setting of the Dynamixel. The compliance of the Dynamixel actuator
+	Read the Compliance Slope setting of the Dynamixel. The compliance of the Dynamixel actuator
 	is defined by setting the compliance Margin and Slope. This feature can be utilized for
 	absorbing shocks at the output shaft. The following graph shows how each compliance value
 	(length of A, B, C & D) is defined by the Position Error and applied torque.
@@ -699,7 +717,7 @@ uint8_t dxlGetCCWComplianceMargin(uint8_t id);
 uint8_t dxlGetCWComplianceSlope(uint8_t id);
 
 /*
-	Read the Compilance Slope setting of the Dynamixel. The compliance of the Dynamixel actuator
+	Read the Compliance Slope setting of the Dynamixel. The compliance of the Dynamixel actuator
 	is defined by setting the compliance Margin and Slope. This feature can be utilized for
 	absorbing shocks at the output shaft. The following graph shows how each compliance value
 	(length of A, B, C & D) is defined by the Position Error and applied torque.

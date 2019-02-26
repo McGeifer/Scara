@@ -18,34 +18,37 @@ static int16_t *dxl_return_data = NULL;
  * Initialization of the parameter list for setting up the Dynamixel
  * servos when starting the controller
  */
-static uint16_t dxl_setup_params[3][8] = 
+static uint8_t dxl_setup_params[3][9] = 
 {
-	{	DXL_AXIS_1_LED_ALARM,
-		DXL_AXIS_1_TEMP_LIMIT,
-		DXL_AXIS_1_LOW_VOLTAGE_LIMIT,
-		DXL_AXIS_1_HIGH_VOLTAGE_LIMIT,
-		DXL_AXIS_1_MAX_TORQUE,
-		DXL_AXIS_1_SRL,
-		DXL_AXIS_1_RDT,
-		DXL_AXIS_1_SHUT_DOWN_ALARM,
+	{	DXL_AXIS_1_TEMP_LIMIT,
+		DXL_AXIS_1_VOLTAGE_LIMIT_LOW,
+		DXL_AXIS_1_VOLTAGE_LIMIT_HIGH,
+		DXL_AXIS_1_MAX_TORQUE,			/* low byte */
+		DXL_AXIS_1_MAX_TORQUE >> 8,		/* high byte */
+		DXL_AXIS_1_STATUS_RETURN_LEVEL,
+		DXL_AXIS_1_RETURN_DELAY_TIME,
+		DXL_AXIS_1_ALARM_LED,
+		DXL_AXIS_1_ALARM_SHUT_DOWN,
 	},
-	{	DXL_Z_AXIS_LED_ALARM,
-		DXL_Z_AXIS_TEMP_LIMIT,
-		DXL_AXIS_2_LOW_VOLTAGE_LIMIT,
-		DXL_AXIS_2_HIGH_VOLTAGE_LIMIT,
+	{	DXL_Z_AXIS_TEMP_LIMIT,
+		DXL_AXIS_2_VOLTAGE_LIMIT_LOW,
+		DXL_AXIS_2_VOLTAGE_LIMIT_HIGH,
 		DXL_Z_AXIS_MAX_TORQUE,
-		DXL_Z_AXIS_SRL,
-		DXL_Z_AXIS_RDT,
-		DXL_Z_AXIS_SHUT_DOWN_ALARM,
+		DXL_Z_AXIS_MAX_TORQUE >> 8,
+		DXL_Z_AXIS_STATUS_RETURN_LEVEL,
+		DXL_Z_AXIS_RETURN_DELAY_TIME,
+		DXL_Z_AXIS_ALARM_LED,
+		DXL_Z_AXIS_ALARM_SHUT_DOWN,
 	},
-	{	DXL_Z_AXIS_LED_ALARM,
-		DXL_Z_AXIS_TEMP_LIMIT,
-		DXL_Z_AXIS_LOW_VOLTAGE_LIMIT,
-		DXL_Z_AXIS_HIGH_VOLTAGE_LIMIT,
+	{	DXL_Z_AXIS_TEMP_LIMIT,
+		DXL_Z_AXIS_VOLTAGE_LIMIT_LOW,
+		DXL_Z_AXIS_VOLTAGE_LIMIT_HIGH,
 		DXL_Z_AXIS_MAX_TORQUE,
-		DXL_Z_AXIS_SRL,
-		DXL_Z_AXIS_RDT,
-		DXL_Z_AXIS_SHUT_DOWN_ALARM,
+		DXL_Z_AXIS_MAX_TORQUE >> 8,
+		DXL_Z_AXIS_STATUS_RETURN_LEVEL,
+		DXL_Z_AXIS_RETURN_DELAY_TIME,
+		DXL_Z_AXIS_ALARM_LED,
+		DXL_Z_AXIS_ALARM_SHUT_DOWN,
 	}
 };
 
@@ -312,9 +315,15 @@ uint8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit)
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetVoltageLimit(uint8_t id, uint8_t min_voltage_limit, uint8_t max_voltage_limit)
+uint8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit)
 {
-	uint8_t param[] = { DXL_P_DOWN_LIMIT_VOLTAGE, min_voltage_limit, max_voltage_limit };
+	uint8_t param[] = { DXL_P_DOWN_LIMIT_VOLTAGE, min_voltage_limit };
+	return dxlWriteData(id, DXL_INST_WRITE, param);
+}
+
+uint8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit)
+{
+	uint8_t param[] = { DXL_P_DOWN_LIMIT_VOLTAGE, max_voltage_limit };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
@@ -607,7 +616,7 @@ void initDynamixel(void)
 
 		if (tmp != 0)
 		{
-			dynamixelError(tmp, i);
+			dxlError(tmp, i);
 			char msg[32];
 			sprintf(msg, "no Dynamixel found @ ID: %d", i);
 			SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_ERROR);
@@ -632,25 +641,78 @@ void initDynamixel(void)
 	}
 	else
 	{
+		uint8_t dxl_error = 0;
+		
 		/* read configuration of the Dynamixel servos */
 		for (int id = 0; id < 3; id++)
 		{
-			uint8_t dxl_error = 0;
 			uint8_t crtl_tbl_data[8];
-			
 			dxl_error = dxlGetCustomData(id, DXL_P_LIMIT_TEMPERATURE, 8);
 
 			if (dxl_error == 0) /* no dxl error */
 			{
-				if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) <= 8) /* make sure array is long enough */
+				if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) <= 8) /* make sure dxl_return_data is not to long */
 				{
 					memmove(crtl_tbl_data, dxl_return_data, (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]))); /* copy data to new array */
 
-					if (crtl_tbl_data[DXL_SETUP_TEMP_LIMIT] != dxl_setup_params[id][DXL_SETUP_TEMP_LIMIT]) /* check temp limit */
+					for (int j = 0; j < DXL_SETUP_TOTAL_SIZE; j++)
 					{
-						uint8_t tmp = dxlSetTempLimit(id, dxl_setup_params[id][DXL_SETUP_TEMP_LIMIT]);
-					}
+						if (crtl_tbl_data[j] != dxl_setup_params[id][j])
+						{
+							uint8_t tmp = 0;
 
+							switch (j)
+							{
+							case DXL_SETUP_TEMP_LIMIT:
+								tmp = dxlSetTempLimit(id, dxl_setup_params[id][j]);
+								break;
+		
+							case DXL_SETUP_VOLTAGE_LIMIT_LOW:
+								tmp = dxlSetVoltageLimitLow(id, dxl_setup_params[id][j]);
+								break;
+
+							case DXL_SETUP_VOLTAGE_LIMIT_HIGH:
+								tmp = dxlSetVoltageLimitHigh(id, dxl_setup_params[id][j]);
+								break;
+								
+							case DXL_SETUP_MAX_TORQUE:
+								tmp = dxlSetMaxTorque(id, dxl_setup_params[id][j - 1] | dxl_setup_params[id][j] << 8);
+								break;
+
+							case DXL_SETUP_STATUS_RETURN_LEVEL:
+								tmp = dxlSetStatusReturnLevel(id, dxl_setup_params[id][j]);
+								break;
+
+							case DXL_SETUP_RETURN_DELAY_TIME:
+								tmp = dxlSetReturnDelay(id, dxl_setup_params[id][j]);
+								break;
+
+							case DXL_SETUP_ALARM_LED:
+								tmp = dxlSetAlarmLED(id, dxl_setup_params[id][j]);
+								break;
+
+							case DXL_SETUP_ALARM_SHUT_DOWN:
+								tmp = dxlSetAlarmShutdown(id, dxl_setup_params[id][j]);
+								break;
+
+							default:
+								break;
+							}
+						}
+
+						if (tmp != 0)
+						{
+							dxl_error = 1;
+							if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) >= 2)
+							{
+								dxlError(dxl_return_data[1], id);
+							}
+							else
+							{
+								SendStatus("initDynamixel()", "error while reading dxl_return_data - no error code found", SYS_STAT_ERROR);
+							}
+						}
+					}
 				}
 				else
 				{
@@ -663,72 +725,14 @@ void initDynamixel(void)
 			}
 		}
 		
-
-
-
-
-		
-		/*
-		 * List of setup functions for the dynamixel servos. The functions will be executed for all 3 Dynamixel servos by using the parameter list above.
-		 * The list also stores the function names for proper error messages. Do not change the order of the functions in the structure unless you change the
-		 * dxl_setup_params accordingly
-		 */
-
-		 //funcPtrTbl_t funcPtrTbl[] = {
-		 //
-		 //	{dynamixelSetLEDAlarm, "dynamixelSetLEDAlarm"},
-		 //	{dynamixelSetTempLimit, "dynamixelSetTempLimit"},
-		 //	{dynamixelSetLowVoltageLimit, "dynamixelSetLowVoltageLimit"},
-		 //	{dynamixelSetHighVoltageLimit, "dynamixelSetHighVoltageLimit"},
-		 //	{dynamixelSetMaxTorque, "dynamixelSetMaxTorque"},
-		 //	{dynamixelSetSRL, "dynamixelSetSRL"},
-		 //	{dynamixelSetRDT, "dynamixelSetRDT"},
-		 //	{dynamixelSetShutdownAlarm, "dynamixelSetShutdownAlarm"},
-		 //	{dynamixelSetCWCSlope, "dynamixelSetCWCSlope"},
-		 //	{dynamixelSetCCWCSlope, "dynamixelSetCCWCSlope"},
-		 //	{dynamixelSetCWCMargin, "dynamixelSetCWCMargin"},
-		 //	{dynamixelSetCCWCMargin, "dynamixelSetCCWCMargin"},
-		 //	{dynamixelSetPunch, "dynamixelSetPunch"}
-		 //};
-		 //
-		 ///* execute setup functions */
-		 //for (uint8_t i = 0; i < DXL_ID_SUM; i++) /* outer loop for iterating the servo ids */
-		 //{ 
-		 //	funcPtrTbl_t *p = NULL;
-		 //	p = funcPtrTbl;
-
-		 //	for (uint8_t j = 0; j < (sizeof(funcPtrTbl) / sizeof(funcPtrTbl[0])); j++, p++) /* inner loop for iterating the parameter list */
-		 //	{
-		 //		int16_t error = p->funcPtr(i, dxl_setup_params[i][j]);
-		 //		Serial.print("i = ");
-		 //		Serial.println(i);
-		 //		Serial.print("j = ");
-		 //		Serial.println(j);
-		 //		Serial.print("error = ");
-		 //		Serial.println(error);
-
-		 //		if (error < 0) 
-		 //		{
-		 //			dynamixelError(error * (-1), i);	/* executing the setup functions */
-		 //			char msg[64];
-		 //			sprintf(msg, "Error while calling: %s", p->funcName);
-		 //			SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_ERROR);
-		 //			return;
-		 //		}
-		 //	}
-		 //}
-
-		
-		/* enable torque for all servo motors */
-		if (int16_t error = dxlSetTorqueEnable(DXL_BROADCASTING_ID, 1) != 0)
+		if (dxl_error == 0)
 		{
-			dynamixelError(error * (-1), DXL_BROADCASTING_ID);
-			return;
+			/* continuouse turn & torqe enable! */
 		}
 	}
 }
 
-void dynamixelError(int16_t errorBit, uint8_t id)
+void dxlError(int16_t errorBit, uint8_t id)
 {
 	if (errorBit > 0 && errorBit <= 0x0080)
 	{
@@ -738,43 +742,43 @@ void dynamixelError(int16_t errorBit, uint8_t id)
 		{
 		case 0x0001:
 			sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0002:
 			sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0004:
 			sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0008:
 			sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0010:
 			sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0020:
 			sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0040:
 			sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0080:
 		default:
 			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
-			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 		}
 #ifndef _DEBUG
@@ -788,12 +792,12 @@ void dynamixelError(int16_t errorBit, uint8_t id)
 	//		if (errorBit == -1)
 	//		{
 	//			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
-	//			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+	//			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 	//		}
 	//		else
 	//		{
 	//			sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
-	//			SendStatus("dynamixelError(): ", msg, STATUS_MSG_TYPE_ERROR);
+	//			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
 	//		}
 	//#ifndef _DEBUG
 	//		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
