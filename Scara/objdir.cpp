@@ -11,69 +11,69 @@
 static objStruct_t objDir[] =
 {
 	/* basic options */
-	/* {OBJ_IDX_ACK,							OBJ_PROP__W, 0, NULL}, */
-	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_MOVING,						OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_POS_REACHED,					OBJ_PROP_R_, 0, NULL},
+	/* {OBJ_IDX_ACK,							OBJ_PROP__W, 0}, */
+	{OBJ_IDX_START_MOVE,					OBJ_PROP__W, 0},
+	{OBJ_IDX_MOVING,						OBJ_PROP_R_, 0},
+	{OBJ_IDX_POS_REACHED,					OBJ_PROP_R_, 0},
 
 	/* internal objects */
-	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* bit mask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
+	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0},
+	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0},
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4}, /* bit mask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
 	
 	/* position values */
-	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_X_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_X_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Y_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_Y_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Y_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Z_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_Z_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Z_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0},
+	{OBJ_IDX_X_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_X_ACTUAL_POS,					OBJ_PROP_R_, 0},
+	{OBJ_IDX_Y_NEW_TARGET_POS,				OBJ_PROP__W, 0},
+	{OBJ_IDX_Y_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_Y_ACTUAL_POS,					OBJ_PROP_R_, 0},
+	{OBJ_IDX_Z_NEW_TARGET_POS,				OBJ_PROP__W, 0},
+	{OBJ_IDX_Z_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_Z_ACTUAL_POS,					OBJ_PROP_R_, 0},
 	
 	/* angle values */
-	{OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_1_ACTUAL_ANGLE,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_2_ACTUAL_ANGLE,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0},
+	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_1_ACTUAL_ANGLE,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE,		OBJ_PROP__W, 0},
+	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE,	OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_2_ACTUAL_ANGLE,			OBJ_PROP_R_, 0},
 
 	/* speed values */
-	{OBJ_IDX_X_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_X_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_X_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Y_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_Y_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Y_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Z_NEW_TARGET_SPEED,			OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_Z_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_Z_ACTUAL_SPEED,				OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_1_NEW_TARGET_SPEED,		OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED,	OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_1_ACTUAL_SPEED,			OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_2_NEW_TARGET_SPEED,		OBJ_PROP__W, 0, NULL},
-	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED,	OBJ_PROP_R_, 0, NULL},
-	{OBJ_IDX_AXIS_2_ACTUAL_SPEED,			OBJ_PROP_R_, 0, NULL},
+	{OBJ_IDX_X_NEW_TARGET_SPEED,			OBJ_PROP__W, 0},
+	{OBJ_IDX_X_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_X_ACTUAL_SPEED,				OBJ_PROP_R_, 0},
+	{OBJ_IDX_Y_NEW_TARGET_SPEED,			OBJ_PROP__W, 0},
+	{OBJ_IDX_Y_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_Y_ACTUAL_SPEED,				OBJ_PROP_R_, 0},
+	{OBJ_IDX_Z_NEW_TARGET_SPEED,			OBJ_PROP__W, 0},
+	{OBJ_IDX_Z_ACTUAL_TARGET_SPEED,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_Z_ACTUAL_SPEED,				OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_1_NEW_TARGET_SPEED,		OBJ_PROP__W, 0},
+	{OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED,	OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_1_ACTUAL_SPEED,			OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_2_NEW_TARGET_SPEED,		OBJ_PROP__W, 0},
+	{OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED,	OBJ_PROP_R_, 0},
+	{OBJ_IDX_AXIS_2_ACTUAL_SPEED,			OBJ_PROP_R_, 0}
 };
 
 /* tool table */
 static toolTbl_t toolTbl[] =
 {
 	/* tool 0 - machine zero */
-	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true, NULL},
+	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true},
 	
 	/* variable tool table entries */
-	{OBJ_IDX_TOOL_1, OBJ_PROP_RW, 25, -100, 75, true, NULL},
-	{OBJ_IDX_TOOL_2, OBJ_PROP_RW, -50, 50, 25, true, NULL},
-	{OBJ_IDX_TOOL_3, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{OBJ_IDX_TOOL_4, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{OBJ_IDX_TOOL_5, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{OBJ_IDX_TOOL_6, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{OBJ_IDX_TOOL_7, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{OBJ_IDX_TOOL_8, OBJ_PROP_RW, 0, 0, 0, false, NULL},
-	{OBJ_IDX_TOOL_9, OBJ_PROP_RW, 0, 0, 0, false, NULL},
+	{OBJ_IDX_TOOL_1, OBJ_PROP_RW, 25, -100, 75, true},
+	{OBJ_IDX_TOOL_2, OBJ_PROP_RW, -50, 50, 25, true},
+	{OBJ_IDX_TOOL_3, OBJ_PROP_RW, 0, 0, 0, false},
+	{OBJ_IDX_TOOL_4, OBJ_PROP_RW, 0, 0, 0, false},
+	{OBJ_IDX_TOOL_5, OBJ_PROP_RW, 0, 0, 0, false},
+	{OBJ_IDX_TOOL_6, OBJ_PROP_RW, 0, 0, 0, false},
+	{OBJ_IDX_TOOL_7, OBJ_PROP_RW, 0, 0, 0, false},
+	{OBJ_IDX_TOOL_8, OBJ_PROP_RW, 0, 0, 0, false},
+	{OBJ_IDX_TOOL_9, OBJ_PROP_RW, 0, 0, 0, false}
 };
 
 /* static position register */
@@ -89,7 +89,7 @@ static posReg_t statPosReg[] =
 	{OBJ_IDX_STAT_POS_GN_COIN_2,	OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_GN_COIN_3,	OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_GN_COIN_4,	OBJ_PROP_R_, 0, 0, 0},
-	{OBJ_IDX_STAT_POS_GN_COIN_5,	OBJ_PROP_R_, 0, 0, 0},
+	{OBJ_IDX_STAT_POS_GN_COIN_5,	OBJ_PROP_R_, 0, 0, 0}
 };
 
 /* dynamic position register */
@@ -357,7 +357,7 @@ int8_t SetActualAngles(float *servo1, float *servo2)
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, actAngle1, true); /* try to set the old value of axis 1 in order to avoid inconsistent data */
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, actAngle1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -379,7 +379,7 @@ int8_t SetActualTargetAngles(float *servo1, float *servo2)
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 in order to avoid inconsistent data */
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -401,7 +401,7 @@ int8_t SetNewTargetAngles(float *servo1, float *servo2)
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 in order to avoid inconsistent data */
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -423,7 +423,7 @@ int8_t SetActualPositions(float *xPos, float *yPos)
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_X_ACTUAL_POS, actPosX, true); /* try to set the old value of x in order to avoid inconsistent data */
+			SetObjData(OBJ_IDX_X_ACTUAL_POS, actPosX, true); /* try to set the old value of x to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -445,7 +445,7 @@ int8_t SetActualTargetPositions(float *xPos, float *yPos)
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, actTargetPosX, true); /* try to set the old value of x in order to avoid inconsistent data */
+			SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, actTargetPosX, true); /* try to set the old value of x to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -467,7 +467,7 @@ int8_t SetNewTargetPositions(float *xPos, float *yPos)
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_X_NEW_TARGET_POS, newTargetPosX, true); /* try to set the old value of x in order to avoid inconsistent data */
+			SetObjData(OBJ_IDX_X_NEW_TARGET_POS, newTargetPosX, true); /* try to set the old value of x to avoid inconsistent data */
 			return -1;
 		}
 	}

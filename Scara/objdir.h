@@ -14,7 +14,6 @@ typedef struct {
 	const	uint8_t		idx;				/* index number of object */
 			uint8_t		props;				/* object properties */
 			int16_t		data;				/* object data */
-			int8_t		(*pFunction)(int16_t val1, int16_t val2);	/* pointer for handler function (*pFunction)(const uint8_t idx, const uint8_t props, const int16_t data) */
 } objStruct_t;
 
 /* data structure for the tool table */
@@ -25,7 +24,6 @@ typedef struct {
 			int16_t		offsetY;			/* y offset */
 			int16_t		offsetZ;			/* z offset */
 			bool		active;				/* tool is active */
-			int			(*pFunction)(const uint8_t* toolIndex); /* pointer for handler function */
 } toolTbl_t;
 
 /* register to store position values */
@@ -256,7 +254,7 @@ int16_t* GetToolData(uint8_t index);
 toolTbl_t* LocateTool(uint8_t index);
 
 /*
-	Cyclic function for updating all actual position/ angle & speed values of the object dictionary
+	Cyclic function for updating all actual position, angle & speed values of the objDir
  */
 void UpdateObjDir(void);
 

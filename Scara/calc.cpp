@@ -364,7 +364,7 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	return ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
 }
 
-int8_t UpdateZPos(void)
+int16_t UpdateZPos(void)
 {
 	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10);
 

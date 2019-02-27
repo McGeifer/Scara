@@ -44,7 +44,7 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2);
 /*
 	UpdateZPos calculates the actual position of the z-axis.
  */
-int8_t UpdateZPos(void);
+int16_t UpdateZPos(void);
 
 
 

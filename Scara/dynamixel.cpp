@@ -1,7 +1,5 @@
 /*  */
 
-
-
 #include "dynamixel.h"
 #include "objdir.h"
 #include "status.h"
@@ -15,16 +13,16 @@
 static int16_t *dxl_return_data = NULL;
 
 /* 
- * Initialization of the parameter list for setting up the Dynamixel
- * servos when starting the controller
+	Initialization of the parameter list for setting up the Dynamixel
+	servos when starting the controller
  */
 static uint8_t dxl_setup_params[3][9] = 
 {
 	{	DXL_AXIS_1_TEMP_LIMIT,
 		DXL_AXIS_1_VOLTAGE_LIMIT_LOW,
 		DXL_AXIS_1_VOLTAGE_LIMIT_HIGH,
-		DXL_AXIS_1_MAX_TORQUE,			/* low byte */
-		DXL_AXIS_1_MAX_TORQUE >> 8,		/* high byte */
+		(uint8_t)DXL_AXIS_1_MAX_TORQUE,			/* low byte */
+		(uint8_t)DXL_AXIS_1_MAX_TORQUE >> 8,	/* high byte */
 		DXL_AXIS_1_STATUS_RETURN_LEVEL,
 		DXL_AXIS_1_RETURN_DELAY_TIME,
 		DXL_AXIS_1_ALARM_LED,
@@ -33,8 +31,8 @@ static uint8_t dxl_setup_params[3][9] =
 	{	DXL_Z_AXIS_TEMP_LIMIT,
 		DXL_AXIS_2_VOLTAGE_LIMIT_LOW,
 		DXL_AXIS_2_VOLTAGE_LIMIT_HIGH,
-		DXL_Z_AXIS_MAX_TORQUE,
-		DXL_Z_AXIS_MAX_TORQUE >> 8,
+		(uint8_t)DXL_Z_AXIS_MAX_TORQUE,			/* low byte */
+		(uint8_t)DXL_Z_AXIS_MAX_TORQUE >> 8,	/* high byte */
 		DXL_Z_AXIS_STATUS_RETURN_LEVEL,
 		DXL_Z_AXIS_RETURN_DELAY_TIME,
 		DXL_Z_AXIS_ALARM_LED,
@@ -43,8 +41,8 @@ static uint8_t dxl_setup_params[3][9] =
 	{	DXL_Z_AXIS_TEMP_LIMIT,
 		DXL_Z_AXIS_VOLTAGE_LIMIT_LOW,
 		DXL_Z_AXIS_VOLTAGE_LIMIT_HIGH,
-		DXL_Z_AXIS_MAX_TORQUE,
-		DXL_Z_AXIS_MAX_TORQUE >> 8,
+		(uint8_t)DXL_Z_AXIS_MAX_TORQUE,			/* low byte */
+		(uint8_t)DXL_Z_AXIS_MAX_TORQUE >> 8,	/* high byte */
 		DXL_Z_AXIS_STATUS_RETURN_LEVEL,
 		DXL_Z_AXIS_RETURN_DELAY_TIME,
 		DXL_Z_AXIS_ALARM_LED,
@@ -63,14 +61,13 @@ static uint8_t dxl_setup_params[3][9] =
 */
 uint8_t dxlGetReturnPacket(void)
 {
-	uint8_t id = 0;
-	uint8_t length = 0;
+	uint8_t id			= 0;
+	uint8_t length		= 0;
 	uint8_t *param_list = NULL;
-	uint8_t error = 0;
-	uint8_t checksum = 0;
-	uint16_t tmp = 0;
+	uint8_t error		= 0;
+	uint8_t checksum	= 0;
+	uint16_t tmp		= 0;
 	uint32_t time_stamp = 0;
-	uint32_t timeout = micros() + DXL_TIMEOUT;
 
 	free(dxl_return_data);
 	dxl_return_data = NULL;
@@ -79,6 +76,8 @@ uint8_t dxlGetReturnPacket(void)
 	{
 		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close to overflow */
 	}
+
+	uint32_t timeout = micros() + DXL_TIMEOUT;
 
 	while (micros() < timeout && dxlAvailableData() < 6)
 	{
@@ -133,7 +132,7 @@ uint8_t dxlGetReturnPacket(void)
 								tmp += param_list[i];
 							}
 
-							if (checksum == (uint8_t)(~(id + length + tmp)) & 0xFF)
+							if (checksum == (uint8_t)((~(id + length + tmp)) & 0xFF))
 							{
 								dxl_return_data = (int16_t*)calloc(length + 1, sizeof(int16_t));
 								dxl_return_data[0] = length + 1;
@@ -227,7 +226,7 @@ uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 		dxlSendData(instruction);
 		if (param_list != NULL)
 		{
-			for (int i = 0; i < sizeof(param_list) / sizeof(param_list[0]); i++)
+			for (uint8_t i = 0; i < sizeof(param_list) / sizeof(param_list[0]); i++)
 			{
 				dxlSendData(param_list[i]);
 			}
@@ -419,6 +418,11 @@ uint8_t dxlSetPunch(uint8_t id, uint16_t punch)
 {
 	uint8_t param[] = { DXL_P_PUNCH_L, (uint8_t)punch, (uint8_t)punch >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
+}
+
+uint8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t* param_list)
+{
+	return dxlWriteData(id, DXL_INST_, param_list);
 }
 
 /* 
@@ -646,53 +650,52 @@ void initDynamixel(void)
 		/* read configuration of the Dynamixel servos */
 		for (int id = 0; id < 3; id++)
 		{
-			uint8_t crtl_tbl_data[8];
+			uint8_t crtl_tbl_data[10];
 			dxl_error = dxlGetCustomData(id, DXL_P_LIMIT_TEMPERATURE, 8);
 
 			if (dxl_error == 0) /* no dxl error */
 			{
-				if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) <= 8) /* make sure dxl_return_data is not to long */
+				if (dxl_return_data[0] <= 10) /* make sure dxl_return_data is not to long */
 				{
-					memmove(crtl_tbl_data, dxl_return_data, (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]))); /* copy data to new array */
+					memmove(crtl_tbl_data, dxl_return_data, dxl_return_data[0]); /* copy data to new array */
+					uint8_t tmp = 0;
 
-					for (int j = 0; j < DXL_SETUP_TOTAL_SIZE; j++)
+					for (int i = 0; i < DXL_SETUP_TOTAL_SIZE; i++)																	/* BAUSTELLE !!!! Hier haut was noch nicht hin  */
 					{
-						if (crtl_tbl_data[j] != dxl_setup_params[id][j])
+						if (crtl_tbl_data[i + 2] != dxl_setup_params[id][i])
 						{
-							uint8_t tmp = 0;
-
-							switch (j)
+							switch (i)
 							{
 							case DXL_SETUP_TEMP_LIMIT:
-								tmp = dxlSetTempLimit(id, dxl_setup_params[id][j]);
+								tmp = dxlSetTempLimit(id, dxl_setup_params[id][i]);
 								break;
 		
 							case DXL_SETUP_VOLTAGE_LIMIT_LOW:
-								tmp = dxlSetVoltageLimitLow(id, dxl_setup_params[id][j]);
+								tmp = dxlSetVoltageLimitLow(id, dxl_setup_params[id][i]);
 								break;
 
 							case DXL_SETUP_VOLTAGE_LIMIT_HIGH:
-								tmp = dxlSetVoltageLimitHigh(id, dxl_setup_params[id][j]);
+								tmp = dxlSetVoltageLimitHigh(id, dxl_setup_params[id][i]);
 								break;
 								
 							case DXL_SETUP_MAX_TORQUE:
-								tmp = dxlSetMaxTorque(id, dxl_setup_params[id][j - 1] | dxl_setup_params[id][j] << 8);
+								tmp = dxlSetMaxTorque(id, dxl_setup_params[id][i - 1] | (dxl_setup_params[id][i] << 8));
 								break;
 
 							case DXL_SETUP_STATUS_RETURN_LEVEL:
-								tmp = dxlSetStatusReturnLevel(id, dxl_setup_params[id][j]);
+								tmp = dxlSetStatusReturnLevel(id, dxl_setup_params[id][i]);
 								break;
 
 							case DXL_SETUP_RETURN_DELAY_TIME:
-								tmp = dxlSetReturnDelay(id, dxl_setup_params[id][j]);
+								tmp = dxlSetReturnDelay(id, dxl_setup_params[id][i]);
 								break;
 
 							case DXL_SETUP_ALARM_LED:
-								tmp = dxlSetAlarmLED(id, dxl_setup_params[id][j]);
+								tmp = dxlSetAlarmLED(id, dxl_setup_params[id][i]);
 								break;
 
 							case DXL_SETUP_ALARM_SHUT_DOWN:
-								tmp = dxlSetAlarmShutdown(id, dxl_setup_params[id][j]);
+								tmp = dxlSetAlarmShutdown(id, dxl_setup_params[id][i]);
 								break;
 
 							default:
@@ -727,7 +730,7 @@ void initDynamixel(void)
 		
 		if (dxl_error == 0)
 		{
-			/* continuouse turn & torqe enable! */
+			/* continuous turn & torque enable! */
 		}
 	}
 }
@@ -785,24 +788,6 @@ void dxlError(int16_t errorBit, uint8_t id)
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
 	}
-	//	else
-	//	{
-	//		char msg[64];
-	//
-	//		if (errorBit == -1)
-	//		{
-	//			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
-	//			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
-	//		}
-	//		else
-	//		{
-	//			sprintf(msg, "Dynamixel - unknown Error bit @ ID: %d", id);
-	//			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
-	//		}
-	//#ifndef _DEBUG
-	//		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
-	//#endif
-	//	}
 }
 
 void handleMove(void) {
@@ -876,20 +861,47 @@ void handleMove(void) {
 
 					if (newTargetPos[DXL_ID_AXIS_Z] > actTargetPos[DXL_ID_AXIS_Z])
 					{
-						dynamixelTurn(DXL_ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+						//dynamixelTurn(DXL_ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 					else
 					{
-						dynamixelTurn(DXL_ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+						//dynamixelTurn(DXL_ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
 					}
 				}
 				int16_t val1 = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
 				int16_t val2 = GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS);
+
 				/* calculate new target position*/
 				CalcAngle(&val1, &val2);
-				dynamixelMoveSpeedRW(DXL_ID_AXIS_1, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED));
-				dynamixelMoveSpeedRW(DXL_ID_AXIS_2, DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)), GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED));
-				dynamixelAction(); /* sync start */
+
+				uint8_t param_list[4][3] = {
+					{
+						DXL_P_GOAL_SPEED_L,
+						(uint8_t)GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED),		/* low byte */
+						(uint8_t)(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED) >> 8)	/* high byte */
+					},
+					{
+						DXL_P_GOAL_SPEED_L,
+						(uint8_t)GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED),
+						(uint8_t)(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED) >> 8)
+					},
+					{
+						DXL_P_GOAL_POSITION_L,
+						(uint8_t)DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)),
+						(uint8_t)(DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)) >> 8)
+					},
+					{
+						DXL_P_GOAL_POSITION_L,
+						(uint8_t)DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)),
+						(uint8_t)(DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)) >> 8)
+					}
+				};
+
+				dxlSetRegisteredInstruction(DXL_ID_AXIS_1, param_list[0]);
+				dxlSetRegisteredInstruction(DXL_ID_AXIS_2, param_list[1]);
+				dxlSetRegisteredInstruction(DXL_ID_AXIS_1, param_list[2]);
+				dxlSetRegisteredInstruction(DXL_ID_AXIS_2, param_list[3]);
+				dxlAction(DXL_BROADCASTING_ID); /* sync start */
 
 				SetObjData(OBJ_IDX_MOVING, 1, true);
 				SetObjData(OBJ_IDX_START_MOVE, 0, false);

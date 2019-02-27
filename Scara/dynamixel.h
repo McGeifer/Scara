@@ -136,19 +136,6 @@
 #define dxlSetDirPin(DirPin)	(pinMode(DirPin,OUTPUT))				/* select the GPIO for switching the tristate buffer */
 #define dxlSetComMode(Mode)		(digitalWrite(DXL_DIRECTION_PIN, Mode))	/* switch between Rx- or Tx-Mode */
 
-//typedef struct
-//{
-//	uint8_t temp_limit;
-//	uint8_t voltage_limit_low;
-//	uint8_t voltage_limit_high;
-//	uint16_t max_torque;
-//	uint8_t srl;
-//	uint8_t rdt;
-//	uint8_t led_alarm;
-//	uint8_t shut_down_alarm;
-//
-//} dxlSetupParams_t;
-
 /*  */
 enum dxReturnVal
 {
@@ -499,7 +486,7 @@ uint8_t dxlSetTorqueLimit(uint8_t id, uint16_t torque_limit);
 	is given. This function can only be used for dxlSet_ instructions NOT FOR: Ping, Read Data
 	(dxlGet), Action, Reset or Sync Write.
 
-	param_list[0]		= DXL_P_ (Dynamixel parameter)
+	param_list[0]		= DXL_P_ (Dynamixel parameter)															Mehr Infos!!!!!!!
 	param_list[0 + n]	= additional data
 
 	return	0 = OK
@@ -524,6 +511,14 @@ uint8_t dxlSetLock(uint8_t id, uint8_t lock);
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
 uint8_t dxlSetPunch(uint8_t id, uint16_t punch);
+
+/*
+	Function for writing user defined data into the Dynamixel control table. The data must follow
+	the rules of the transmission protocol of the Dynamixel servo. The DXL_INST_ represents the
+	Dynamixel instruction set followed by the parameter list. The total length of the packet is
+	calculated by the dxlWriteData() function.
+*/
+uint8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t* param_list);
 
 /*
 	################################################
