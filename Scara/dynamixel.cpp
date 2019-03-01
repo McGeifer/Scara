@@ -5,12 +5,13 @@
 #include "status.h"
 #include "calc.h"
 #include "gpio.h"
+#include "Stream.h"
 
 /* Dynamically allocated array to store data returned by the Dynamixel servo.
  * [0] = length of array
  * [1] = Dynamixel error byte or internal error (negative value)
  * [1 + n] = additional data (if needed) */
-static int16_t *dxl_return_data = NULL;
+uint8_t *dxl_return_data = NULL;
 
 /* 
 	Initialization of the parameter list for setting up the Dynamixel
@@ -61,12 +62,7 @@ static uint8_t dxl_setup_params[3][9] =
 */
 uint8_t dxlGetReturnPacket(void)
 {
-	uint8_t id			= 0;
-	uint8_t length		= 0;
 	uint8_t *param_list = NULL;
-	uint8_t error		= 0;
-	uint8_t checksum	= 0;
-	uint16_t tmp		= 0;
 	uint32_t time_stamp = 0;
 
 	free(dxl_return_data);
@@ -109,23 +105,40 @@ uint8_t dxlGetReturnPacket(void)
 				if (dxlPeekData() == DXL_START)
 				{
 					dxlReadData();			/* protocol start 0xFF */
-					id = dxlReadData();		/* id */
-					length = dxlReadData();	/* length */
+					uint8_t id = dxlReadData();		/* id */
+					uint8_t length = dxlReadData();	/* length */
 					param_list = (uint8_t*)calloc(length, sizeof(uint8_t));
+
+#ifdef _DEBUG
+					char msg[64];
+					sprintf(msg, "dxlGetReturnPacket: 0x%02X 0x%02X", id, length);
+					Serial.print(msg);
+#endif
 
 					if (param_list != NULL)	/* check for proper calloc execution */
 					{
 						uint8_t i = 0;
+
 						while (dxlAvailableData() > 0 && i < length)
 						{
 							param_list[i] = dxlReadData();
+							
+#ifdef _DEBUG
+							char msg_1[16];
+							sprintf(msg_1, " 0x%02X", param_list[i]);
+							Serial.print(msg_1);
+#endif
 							i++;
 						}
-
-						if (i == (length - 1) && dxlAvailableData() == 0)
+#ifdef _DEBUG
+						Serial.println();
+#endif
+						
+						if (i == (length) && dxlAvailableData() == 0)
 						{
-							error = param_list[0];
-							checksum = param_list[length - 1];
+							uint8_t dxl_error = param_list[0];
+							uint8_t checksum = param_list[length - 1];
+							uint16_t tmp = 0;
 
 							for (int i = 0; i < length - 1; i++)
 							{
@@ -134,10 +147,10 @@ uint8_t dxlGetReturnPacket(void)
 
 							if (checksum == (uint8_t)((~(id + length + tmp)) & 0xFF))
 							{
-								dxl_return_data = (int16_t*)calloc(length + 1, sizeof(int16_t));
-								dxl_return_data[0] = length + 1;
+								dxl_return_data = (uint8_t*)calloc(length, sizeof(uint8_t));
+								dxl_return_data[0] = length;
 
-								for (int i = 0; i < length; i++)
+								for (int i = 0; i < length - 1; i++)
 								{
 									dxl_return_data[i + 1] = param_list[i];
 								}
@@ -200,6 +213,13 @@ uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 {
 	uint8_t checksum = 0;		/* checksum calculation defined by Dynamixel protocol ~ (ID + Length + Instruction + Parameter1 + ... + Parameter N) */
 	uint8_t length = 0;
+	uint8_t param_size = 0;
+	
+	/* get array length if not NULL pointer */
+	if (param_list != NULL)
+	{
+		param_size = sizeof(param_list) / sizeof(param_list[0]);
+	}
 
 	/* calculating checksum if no sync write */
 	if (instruction != DXL_INST_SYNC_WRITE)
@@ -207,14 +227,14 @@ uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 		uint16_t tmp = 0;
 		if (param_list != NULL)
 		{
-			for (uint8_t i = 0; i < sizeof(param_list) / sizeof(param_list[0]); i++)
+			for (uint8_t i = 0; i < param_size; i++)
 			{
 				tmp += param_list[i];
 			}
 		}
 
-		length = 2 + sizeof(param_list) / sizeof(param_list[0]);
-		checksum = (uint8_t)(~(id + length + instruction + tmp)) & 0xFF; /* 0xFF nötig ? */
+		length = 2 + param_size;
+		checksum = (uint8_t)(~(id + length + instruction + tmp));
 
 		dxlSetComMode(DXL_TX_MODE);
 
@@ -224,13 +244,31 @@ uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 
 		dxlSendData(length);
 		dxlSendData(instruction);
+
+#ifdef _DEBUG
+		char msg[128];
+		sprintf(msg, "dxlWrite(): data sent: 0x%02x 0x%02x 0x%02x", id, length, instruction);
+		Serial.print(msg);
+#endif
 		if (param_list != NULL)
 		{
-			for (uint8_t i = 0; i < sizeof(param_list) / sizeof(param_list[0]); i++)
+			for (uint8_t i = 0; i < param_size; i++)
 			{
 				dxlSendData(param_list[i]);
+
+#ifdef _DEBUG
+				char msg_2[16];
+				sprintf(msg_2, " 0x%02X", param_list[i]);
+				Serial.print(msg_2);
+#endif
 			}
 		}
+
+#ifdef _DEBUG
+		char msg_3[16];
+		sprintf(msg_3, " 0x%02X", checksum);
+		Serial.println(msg_3);
+#endif
 		dxlSendData(checksum);
 		dxlFlush();
 
@@ -660,7 +698,8 @@ void initDynamixel(void)
 					memmove(crtl_tbl_data, dxl_return_data, dxl_return_data[0]); /* copy data to new array */
 					uint8_t tmp = 0;
 
-					for (int i = 0; i < DXL_SETUP_TOTAL_SIZE; i++)																	/* BAUSTELLE !!!! Hier haut was noch nicht hin  */
+					/* BAUSTELLE !!!! Hier haut was noch nicht hin  */
+					for (int i = 0; i < DXL_SETUP_TOTAL_SIZE; i++)						
 					{
 						if (crtl_tbl_data[i + 2] != dxl_setup_params[id][i])
 						{
@@ -706,7 +745,7 @@ void initDynamixel(void)
 						if (tmp != 0)
 						{
 							dxl_error = 1;
-							if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) >= 2)
+							if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) >= 2) // sizeof geht nicht !!!!!!!!!!!
 							{
 								dxlError(dxl_return_data[1], id);
 							}

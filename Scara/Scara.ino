@@ -15,6 +15,7 @@
 uint32_t cycle_time;
 uint32_t cycle_count;
 
+
 /* extern void InitDynamixel(void);
 extern void UpdateObjDir(void);
 extern void handleMove(void); */
@@ -24,7 +25,7 @@ void setup()
 	initGPIO();
 	initSio();
 	initOperationMode();
-	initDynamixel();
+	//initDynamixel();
 	
 	/*uint8_t idx1 = 0x01;
 	uint8_t idx2 = 0x02;
@@ -55,23 +56,45 @@ void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		UpdateObjDir();
+		uint8_t tmp = dxlGetPresentTemperature(0);
+
+		if (tmp != 0)
+		{
+			Serial.println(tmp);
+		}
+		else
+		{
+			/*Serial.print("dxl_retun_data[length]    = ");
+			Serial.println(dxl_return_data[0], HEX);
+			Serial.print("dxl_retun_data[dxl_error] = ");
+			Serial.println(dxl_return_data[1], HEX);
+			Serial.print("return value: ");
+
+			for (uint8_t i = 0; i < dxl_return_data[0] - 2; i++)
+			{
+				char msg_1[32];
+				sprintf(msg_1, " %i", dxl_return_data[i + 2]);
+				Serial.print(msg_1);
+			}
+			Serial.println();*/
+		}
+
+		/*UpdateObjDir();
 		handleSIO();
-		handleMove();
+		handleMove();*/
 
 		/* measure cycle time */
-		/* cycle_count++;
+		 cycle_count++;
 		if (cycle_count >= 1000)
 		{
 			char msg[64];
 			uint32_t tmp = (micros() - cycle_time) / cycle_count;
 			sprintf(msg, "Cycle Time : %lu us", tmp);
 			SendStatus("StopWatch (loop): ", msg, STATUS_MSG_TYPE_INFO);
-			Serial.print("StopWatch (loop): ");
-			Serial.print(tmp);
-			Serial.println(" us");
 			cycle_count = 0;
 			cycle_time = micros();
-		} */
+		} 
+
+		delay(1);
 	}
 }

@@ -11,6 +11,8 @@
 
 #include "Stream.h"
 
+extern uint8_t *dxl_return_data;
+
 /* parameters of Dynamixel control table */
 /* EEPROM AREA */
 #define DXL_P_MODEL_NUMBER_L			0		/* Model Number(L) */
