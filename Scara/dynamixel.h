@@ -11,6 +11,7 @@
 
 #include "Stream.h"
 
+
 extern uint8_t *dxl_return_data;
 
 /* parameters of Dynamixel control table */
@@ -80,28 +81,28 @@ extern uint8_t *dxl_return_data;
 /* setup parameters for the Dynamixel servos */
 #define DXL_AXIS_1_TEMP_LIMIT			70		/* max temperature 70캜 */
 #define DXL_AXIS_1_VOLTAGE_LIMIT_LOW	110		/* min voltage 11V */
-#define DXL_AXIS_1_VOLTAGE_LIMIT_HIGH	120		/* max voltage 12V */
+#define DXL_AXIS_1_VOLTAGE_LIMIT_HIGH	130		/* max voltage 13V */
 #define DXL_AXIS_1_MAX_TORQUE			1023	/* max torque -> max value */
-#define DXL_AXIS_1_STATUS_RETURN_LEVEL	1		/* return level 0=none, 1=only for read command, 2= always */
-#define DXL_AXIS_1_RETURN_DELAY_TIME	250		/* return delay time = 2탎 * value -> 500탎 */
+#define DXL_AXIS_1_STATUS_RETURN_LEVEL	2		/* return level 0=none, 1=only for read command, 2= always */
+#define DXL_AXIS_1_RETURN_DELAY_TIME	5		/* return delay time = 2탎 * value -> 10탎 */
 #define DXL_AXIS_1_ALARM_LED			127		/* LED blink for all error types */
 #define DXL_AXIS_1_ALARM_SHUT_DOWN		37		/* turn of torque for: overload, overheating and input voltage error */
 
 #define DXL_AXIS_2_TEMP_LIMIT			70
 #define DXL_AXIS_2_VOLTAGE_LIMIT_LOW	110
-#define DXL_AXIS_2_VOLTAGE_LIMIT_HIGH	120
+#define DXL_AXIS_2_VOLTAGE_LIMIT_HIGH	130
 #define DXL_AXIS_2_MAX_TORQUE			1023
-#define DXL_AXIS_2_STATUS_RETURN_LEVEL	1
-#define DXL_AXIS_2_RETURN_DELAY_TIME	150
+#define DXL_AXIS_2_STATUS_RETURN_LEVEL	2
+#define DXL_AXIS_2_RETURN_DELAY_TIME	5
 #define DXL_AXIS_2_ALARM_LED			127
 #define DXL_AXIS_2_ALARM_SHUT_DOWN		37
 
 #define DXL_Z_AXIS_TEMP_LIMIT			70
 #define DXL_Z_AXIS_VOLTAGE_LIMIT_LOW	110
-#define DXL_Z_AXIS_VOLTAGE_LIMIT_HIGH	120
+#define DXL_Z_AXIS_VOLTAGE_LIMIT_HIGH	130
 #define DXL_Z_AXIS_MAX_TORQUE			1023
-#define DXL_Z_AXIS_STATUS_RETURN_LEVEL	1
-#define DXL_Z_AXIS_RETURN_DELAY_TIME	250
+#define DXL_Z_AXIS_STATUS_RETURN_LEVEL	2
+#define DXL_Z_AXIS_RETURN_DELAY_TIME	5
 #define DXL_Z_AXIS_ALARM_LED			127
 #define DXL_Z_AXIS_ALARM_SHUT_DOWN		37
 #define DXL_Z_ASIS_CW_ANGLE_LIMIT		0
@@ -194,7 +195,7 @@ void dxlStartCom(uint32_t baudRate, uint8_t directionPin);
 	return	0 = OK - Dynamixel found
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlPing(uint8_t id);
+int8_t dxlPing(uint8_t id);
 
 /*
 	Changes the control table values of the Dynamixel actuator to the Factory Default Value settings.
@@ -202,7 +203,7 @@ uint8_t dxlPing(uint8_t id);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlReset(uint8_t id);
+int8_t dxlReset(uint8_t id);
 
 /*
 	Triggers the action registered by the "dxlSetRegisteredInstruction" function.
@@ -210,7 +211,7 @@ uint8_t dxlReset(uint8_t id);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlAction(uint8_t);
+int8_t dxlAction(uint8_t);
 
 /*
 	Used for controlling many Dynamixel actuators at the same time.
@@ -218,7 +219,7 @@ uint8_t dxlAction(uint8_t);
 	! NOT SUPPORTED JET !
 	always return -1
 */
-uint8_t dxlSyncWrite(void);
+int8_t dxlSyncWrite(void);
 
 /*
 	#################################################
@@ -232,7 +233,7 @@ uint8_t dxlSyncWrite(void);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetId(uint8_t id, uint8_t new_id);
+int8_t dxlSetId(uint8_t id, uint8_t new_id);
 
 /*
 	Set new Baudrate -> Speed (BPS) = 2000000 / (Address4 + 1) see manual for further information
@@ -240,7 +241,7 @@ uint8_t dxlSetId(uint8_t id, uint8_t new_id);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetBaudRate(uint8_t id, uint8_t baud_rate);
+int8_t dxlSetBaudRate(uint8_t id, uint8_t baud_rate);
 
 /*
 	The time it takes for the Status Packet to return after the Instruction 
@@ -249,7 +250,7 @@ uint8_t dxlSetBaudRate(uint8_t id, uint8_t baud_rate);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetReturnDelay(uint8_t id, uint8_t return_delay);
+int8_t dxlSetReturnDelay(uint8_t id, uint8_t return_delay);
 
 /*
 	Sets the Dynamixel actuator뭩 operating angle range. The Goal Position needs to be within the
@@ -263,7 +264,7 @@ uint8_t dxlSetReturnDelay(uint8_t id, uint8_t return_delay);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetCWAngleLimit(uint8_t id, uint16_t cw_angle_limit);
+int8_t dxlSetCWAngleLimit(uint8_t id, uint16_t cw_angle_limit);
 
 /*
 	Sets the Dynamixel actuator뭩 operating angle range. The Goal Position needs to be within the
@@ -277,7 +278,7 @@ uint8_t dxlSetCWAngleLimit(uint8_t id, uint16_t cw_angle_limit);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetCCWAngleLimit(uint8_t id, uint16_t ccw_angle_limit);
+int8_t dxlSetCCWAngleLimit(uint8_t id, uint16_t ccw_angle_limit);
 
 /*
 	The upper limit of the Dynamixel actuator뭩 operating temperature. If the internal temperature
@@ -288,7 +289,7 @@ uint8_t dxlSetCCWAngleLimit(uint8_t id, uint16_t ccw_angle_limit);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit);
+int8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit);
 
 /*
 	The upper and lower limits of the Dynamixel actuator뭩 operating voltage. If the present voltage
@@ -300,7 +301,7 @@ uint8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit);
+int8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit);
 
 /*
 	The upper and lower limits of the Dynamixel actuator뭩 operating voltage. If the present voltage
@@ -312,7 +313,7 @@ uint8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit);
+int8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit);
 
 /*
 	The maximum torque output for the Dynamixel actuator. When this value is set to 0, the Dynamixel
@@ -325,7 +326,7 @@ uint8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetMaxTorque(uint8_t id, uint16_t max_torque);
+int8_t dxlSetMaxTorque(uint8_t id, uint16_t max_torque);
 
 /*
 	Determines whether the Dynamixel actuator will return a Status Packet after receiving an
@@ -341,7 +342,7 @@ uint8_t dxlSetMaxTorque(uint8_t id, uint16_t max_torque);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetStatusReturnLevel(uint8_t id, uint8_t return_level);
+int8_t dxlSetStatusReturnLevel(uint8_t id, uint8_t return_level);
 
 /*
 	If the corresponding Bit is set to 1, the LED blinks when an Error occurs. This function
@@ -364,7 +365,7 @@ uint8_t dxlSetStatusReturnLevel(uint8_t id, uint8_t return_level);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetAlarmLED(uint8_t id, uint8_t alarm_led);
+int8_t dxlSetAlarmLED(uint8_t id, uint8_t alarm_led);
 
 /*
 	If the corresponding Bit is set to a 1, the Dynamixel actuator뭩 torque will be turned off when an
@@ -386,7 +387,7 @@ uint8_t dxlSetAlarmLED(uint8_t id, uint8_t alarm_led);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetAlarmShutdown(uint8_t id, uint8_t alarm_shutdown);
+int8_t dxlSetAlarmShutdown(uint8_t id, uint8_t alarm_shutdown);
 
 /*
 	When the power is first turned on, the Dynamixel actuator enters the Torque Free Run condition
@@ -395,7 +396,7 @@ uint8_t dxlSetAlarmShutdown(uint8_t id, uint8_t alarm_shutdown);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetTorqueEnable(uint8_t id, uint8_t torque_enable);
+int8_t dxlSetTorqueEnable(uint8_t id, uint8_t torque_enable);
 
 /*
 	The LED turns on when set to 1 and turns off if set to 0.
@@ -403,7 +404,7 @@ uint8_t dxlSetTorqueEnable(uint8_t id, uint8_t torque_enable);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetLED(uint8_t id, uint8_t led);
+int8_t dxlSetLED(uint8_t id, uint8_t led);
 
 /*
 	The compliance of the Dynamixel actuator is defined by setting the compliance Margin and Slope.
@@ -414,7 +415,7 @@ uint8_t dxlSetLED(uint8_t id, uint8_t led);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetCWComplianceMargin(uint8_t id, uint8_t cw_compliance_margin);
+int8_t dxlSetCWComplianceMargin(uint8_t id, uint8_t cw_compliance_margin);
 
 /*
 	The compliance of the Dynamixel actuator is defined by setting the compliance Margin and Slope.
@@ -425,7 +426,7 @@ uint8_t dxlSetCWComplianceMargin(uint8_t id, uint8_t cw_compliance_margin);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetCCWComplianceMargin(uint8_t id, uint8_t ccw_compliance_margin);
+int8_t dxlSetCCWComplianceMargin(uint8_t id, uint8_t ccw_compliance_margin);
 
 /*
 	The compliance of the Dynamixel actuator is defined by setting the compliance Margin and Slope.
@@ -436,7 +437,7 @@ uint8_t dxlSetCCWComplianceMargin(uint8_t id, uint8_t ccw_compliance_margin);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetCWComplianceSlope(uint8_t id, uint8_t cw_compliance_slope);
+int8_t dxlSetCWComplianceSlope(uint8_t id, uint8_t cw_compliance_slope);
 
 /*
 	The compliance of the Dynamixel actuator is defined by setting the compliance Margin and Slope.
@@ -447,7 +448,7 @@ uint8_t dxlSetCWComplianceSlope(uint8_t id, uint8_t cw_compliance_slope);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetCCWComplianceSlope(uint8_t id, uint8_t ccw_compliance_slope);
+int8_t dxlSetCCWComplianceSlope(uint8_t id, uint8_t ccw_compliance_slope);
 
 /*
 	Requested angular position for the Dynamixel actuator output to move to. Setting this value to
@@ -456,7 +457,7 @@ uint8_t dxlSetCCWComplianceSlope(uint8_t id, uint8_t ccw_compliance_slope);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetGoalPosition(uint8_t id, uint16_t goal_position);
+int8_t dxlSetGoalPosition(uint8_t id, uint16_t goal_position);
 
 /*
 	Sets the angular velocity of the output moving to the Goal Position. Setting this value to
@@ -468,7 +469,7 @@ uint8_t dxlSetGoalPosition(uint8_t id, uint16_t goal_position);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetGoalSpeed(uint8_t id, uint16_t goal_speed);
+int8_t dxlSetGoalSpeed(uint8_t id, uint16_t goal_speed);
 
 /*
 	The maximum torque output for the Dynamixel actuator. When this value is set to 0, the
@@ -481,20 +482,21 @@ uint8_t dxlSetGoalSpeed(uint8_t id, uint16_t goal_speed);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetTorqueLimit(uint8_t id, uint16_t torque_limit);
+int8_t dxlSetTorqueLimit(uint8_t id, uint16_t torque_limit);
 
 /*
 	Similar to normal "WriteData" (dxlSet), but stays in standby mode until the ACION instruction
 	is given. This function can only be used for dxlSet_ instructions NOT FOR: Ping, Read Data
 	(dxlGet), Action, Reset or Sync Write.
 
-	param_list[0]		= DXL_P_ (Dynamixel parameter)															Mehr Infos!!!!!!!
+	param_list[0]		= length of array
+	param_list[1]		= DXL_P_ (Dynamixel parameter)															Mehr Infos!!!!!!!
 	param_list[0 + n]	= additional data
 
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetRegisteredInstruction(uint8_t id, uint8_t *param_list);
+int8_t dxlSetRegisteredInstruction(uint8_t id, uint8_t *param_list);
 
 /*
 	If set to 1, only Address 0x18 to 0x23 can be written to and other areas cannot. Once locked,
@@ -503,7 +505,7 @@ uint8_t dxlSetRegisteredInstruction(uint8_t id, uint8_t *param_list);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetLock(uint8_t id, uint8_t lock);
+int8_t dxlSetLock(uint8_t id, uint8_t lock);
 
 /*
 	The minimum current supplied to the motor during operation. The initial value is set to 0x20
@@ -512,7 +514,7 @@ uint8_t dxlSetLock(uint8_t id, uint8_t lock);
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlSetPunch(uint8_t id, uint16_t punch);
+int8_t dxlSetPunch(uint8_t id, uint16_t punch);
 
 /*
 	Function for writing user defined data into the Dynamixel control table. The data must follow
@@ -520,7 +522,7 @@ uint8_t dxlSetPunch(uint8_t id, uint16_t punch);
 	Dynamixel instruction set followed by the parameter list. The total length of the packet is
 	calculated by the dxlWriteData() function.
 */
-uint8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t* param_list);
+int8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t *param_list);
 
 /*
 	################################################
@@ -534,7 +536,7 @@ uint8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t* param_lis
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetNodelNumber(uint8_t id);
+int8_t dxlGetModelNumber(uint8_t id);
 
 /*
 	Read Firmware version.
@@ -542,7 +544,7 @@ uint8_t dxlGetNodelNumber(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetFirmwareVersion(uint8_t id);
+int8_t dxlGetFirmwareVersion(uint8_t id);
 
 /*
 	Read the Dynamixel actuator뭩 operating angle range. The Goal Position needs to be within the
@@ -552,7 +554,7 @@ uint8_t dxlGetFirmwareVersion(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCWAngleLimit(uint8_t id);
+int8_t dxlGetCWAngleLimit(uint8_t id);
 
 /*
 	Read the Dynamixel actuator뭩 operating angle range. The Goal Position needs to be within the
@@ -562,7 +564,7 @@ uint8_t dxlGetCWAngleLimit(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCCWAngleLimit(uint8_t id);
+int8_t dxlGetCCWAngleLimit(uint8_t id);
 
 /*
 	Read the upper limit of the Dynamixel actuator뭩 operating temperature. If the internal
@@ -573,7 +575,7 @@ uint8_t dxlGetCCWAngleLimit(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetTempLimit(uint8_t id);
+int8_t dxlGetTempLimit(uint8_t id);
 
 /*
 	Read the upper and lower limits of the Dynamixel actuator뭩 operating voltage. If the
@@ -585,7 +587,7 @@ uint8_t dxlGetTempLimit(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetVoltageLimit(uint8_t id);
+int8_t dxlGetVoltageLimit(uint8_t id);
 
 /*
 	Read the maximum torque output for the Dynamixel actuator. When this value is set to 0, the
@@ -598,7 +600,7 @@ uint8_t dxlGetVoltageLimit(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetMaxTorque(uint8_t id);
+int8_t dxlGetMaxTorque(uint8_t id);
 
 /*
 	Read the Status Return Level. Determines whether the Dynamixel actuator will return a Status
@@ -614,7 +616,7 @@ uint8_t dxlGetMaxTorque(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetStatusReturnLevel(uint8_t id);
+int8_t dxlGetStatusReturnLevel(uint8_t id);
 
 /*
 	Read the configuration of the Alarm LED settings. If the corresponding Bit is set to 1, the LED
@@ -637,7 +639,7 @@ uint8_t dxlGetStatusReturnLevel(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetAlarmLED(uint8_t id);
+int8_t dxlGetAlarmLED(uint8_t id);
 
 /*
 	Read the configuration of the Alarm Shutdown settings. If the corresponding Bit is set to a 1, the
@@ -660,7 +662,7 @@ uint8_t dxlGetAlarmLED(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetAlarmShutdown(uint8_t id);
+int8_t dxlGetAlarmShutdown(uint8_t id);
 
 /*
 	Read the Torque Enable setting. When the power is first turned on, the Dynamixel actuator
@@ -670,7 +672,7 @@ uint8_t dxlGetAlarmShutdown(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetTorqueEnable(uint8_t id);
+int8_t dxlGetTorqueEnable(uint8_t id);
 
 /*
 	Read the status of the Dynamixel LED.
@@ -678,7 +680,7 @@ uint8_t dxlGetTorqueEnable(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetLED(uint8_t id);
+int8_t dxlGetLED(uint8_t id);
 
 /*
 	Read the Compliance Margin setting of the Dynamixel. The compliance of the Dynamixel actuator
@@ -689,7 +691,7 @@ uint8_t dxlGetLED(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCWComplianceMargin(uint8_t id);
+int8_t dxlGetCWComplianceMargin(uint8_t id);
 
 /*
 	Read the Compliance Margin setting of the Dynamixel. The compliance of the Dynamixel actuator
@@ -700,7 +702,7 @@ uint8_t dxlGetCWComplianceMargin(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCCWComplianceMargin(uint8_t id);
+int8_t dxlGetCCWComplianceMargin(uint8_t id);
 
 /*
 	Read the Compliance Slope setting of the Dynamixel. The compliance of the Dynamixel actuator
@@ -711,7 +713,7 @@ uint8_t dxlGetCCWComplianceMargin(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCWComplianceSlope(uint8_t id);
+int8_t dxlGetCWComplianceSlope(uint8_t id);
 
 /*
 	Read the Compliance Slope setting of the Dynamixel. The compliance of the Dynamixel actuator
@@ -722,7 +724,7 @@ uint8_t dxlGetCWComplianceSlope(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCCWComplianceSlope(uint8_t id);
+int8_t dxlGetCCWComplianceSlope(uint8_t id);
 
 /*
 	Get the 
@@ -730,7 +732,7 @@ uint8_t dxlGetCCWComplianceSlope(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetGoalPosition(uint8_t id);
+int8_t dxlGetGoalPosition(uint8_t id);
 
 /*
 	Read requested angular position for the Dynamixel actuator output to move to. Setting this value
@@ -739,7 +741,7 @@ uint8_t dxlGetGoalPosition(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetMovingSpeed(uint8_t id);
+int8_t dxlGetMovingSpeed(uint8_t id);
 
 /*
 	Reads the angular velocity of the output moving to the Goal Position.
@@ -747,7 +749,7 @@ uint8_t dxlGetMovingSpeed(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetTorqueLimit(uint8_t id);
+int8_t dxlGetTorqueLimit(uint8_t id);
 
 /*
 	Read current angular position of the Dynamixel actuator output.
@@ -755,7 +757,7 @@ uint8_t dxlGetTorqueLimit(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetPresentPosition(uint8_t id);
+int8_t dxlGetPresentPosition(uint8_t id);
 
 /*
 	Read current angular velocity of the Dynamixel actuator output. 
@@ -763,7 +765,7 @@ uint8_t dxlGetPresentPosition(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetPresentSpeed(uint8_t id);
+int8_t dxlGetPresentSpeed(uint8_t id);
 
 /*
 	Read the magnitude of the load on the operating Dynamixel actuator. Bit 10 is the direction of
@@ -776,7 +778,7 @@ uint8_t dxlGetPresentSpeed(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetPresentLoad(uint8_t id);
+int8_t dxlGetPresentLoad(uint8_t id);
 
 /*
 	Read the voltage currently applied to the Dynamixel actuator. The value is 10 times the actual
@@ -785,7 +787,7 @@ uint8_t dxlGetPresentLoad(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetPresentVoltage(uint8_t id);
+int8_t dxlGetPresentVoltage(uint8_t id);
 
 /*
 	Read the internal temperature of the Dynamixel actuator in Degrees Celsius.
@@ -793,7 +795,7 @@ uint8_t dxlGetPresentVoltage(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetPresentTemperature(uint8_t id);
+int8_t dxlGetPresentTemperature(uint8_t id);
 
 /*
 	Set to 1 when an instruction is assigned by the REG_WRITE command. Set to 0 after it completes
@@ -802,7 +804,7 @@ uint8_t dxlGetPresentTemperature(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetRegisteredInstruction(uint8_t id);
+int8_t dxlGetRegisteredInstruction(uint8_t id);
 
 /*
 	Set to 1 when the Dynamixel actuator is moving by its own power.
@@ -810,7 +812,7 @@ uint8_t dxlGetRegisteredInstruction(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetMoving(uint8_t id);
+int8_t dxlGetMoving(uint8_t id);
 
 /*
 	If set to 1, only Address 0x18 to 0x23 can be written to and other areas cannot. Once locked,
@@ -819,7 +821,7 @@ uint8_t dxlGetMoving(uint8_t id);
 	return	0 = OK -> additional return values stored in *dxl_return_data
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetLock(uint8_t id);
+int8_t dxlGetLock(uint8_t id);
 
 /*
 	The minimum current supplied to the motor during operation. The initial value is set to 0x20 and
@@ -828,7 +830,7 @@ uint8_t dxlGetLock(uint8_t id);
 	return	0 = OK		-> additional return values stored in *dxl_return_data[1 + n]
 	return -1 = error	-> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetPunch(uint8_t id);
+int8_t dxlGetPunch(uint8_t id);
 
 /*
 	Read a custom data area of the Dynamixel control table. The "start_register" defines the start
@@ -838,6 +840,6 @@ uint8_t dxlGetPunch(uint8_t id);
 	return	0 = OK		-> additional return values stored in *dxl_return_data[1 + n]
 	return -1 = error	-> Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlGetCustomData(uint8_t id, uint8_t start_register, uint8_t length);
+int8_t dxlGetCustomData(uint8_t id, uint8_t start_register, uint8_t length);
 
 #endif

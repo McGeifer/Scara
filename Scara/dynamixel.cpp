@@ -60,7 +60,7 @@ static uint8_t dxl_setup_params[3][9] =
 	return -3	= checksum error
 	return -4	= invalid data packet
 */
-uint8_t dxlGetReturnPacket(void)
+int8_t dxlGetReturnPacket(void)
 {
 	uint8_t *param_list = NULL;
 	uint32_t time_stamp = 0;
@@ -203,37 +203,37 @@ uint8_t dxlGetReturnPacket(void)
 	id					= id of the Dynamixel servo
 	length				= length defined by the Dynamixel protocol
 	instruction			= instruction defined by the Dynamixel control table
-	param_list[]		= data array containing additional data to send
-			  [0]		= total length of array
-			  [0 + n]	= additional data
+	param_list[]		= data array containing additional data to send (NULL if no additional data needed)
+			  [0]		= length of array!
+			  [1]		= Dynamixel register address to be read/ write
+			  [1 + n]	= data
+							- read instruction: number of bytes to read
+							- write instruction: data to write
 	return 0			= no error or no status return packet (when using broadcast id)
 	return -1			= error, Dynamixel error bit stored in *dxl_return_data
 */
-uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
+int8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 {
 	uint8_t checksum = 0;		/* checksum calculation defined by Dynamixel protocol ~ (ID + Length + Instruction + Parameter1 + ... + Parameter N) */
 	uint8_t length = 0;
-	uint8_t param_size = 0;
 	
-	/* get array length if not NULL pointer */
-	if (param_list != NULL)
-	{
-		param_size = sizeof(param_list) / sizeof(param_list[0]);
-	}
-
 	/* calculating checksum if no sync write */
 	if (instruction != DXL_INST_SYNC_WRITE)
 	{
 		uint16_t tmp = 0;
 		if (param_list != NULL)
 		{
-			for (uint8_t i = 0; i < param_size; i++)
+			length = 2 + (param_list[0] - 1);
+			for (uint8_t i = 0; i < param_list[0] - 1; i++)
 			{
-				tmp += param_list[i];
+				tmp += param_list[i + 1];
 			}
 		}
+		else
+		{
+			length = 2;
+		}
 
-		length = 2 + param_size;
 		checksum = (uint8_t)(~(id + length + instruction + tmp));
 
 		dxlSetComMode(DXL_TX_MODE);
@@ -241,24 +241,23 @@ uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 		dxlSendData(DXL_START);
 		dxlSendData(DXL_START);
 		dxlSendData(id);
-
 		dxlSendData(length);
 		dxlSendData(instruction);
 
 #ifdef _DEBUG
 		char msg[128];
-		sprintf(msg, "dxlWrite(): data sent: 0x%02x 0x%02x 0x%02x", id, length, instruction);
+		sprintf(msg, "dxlWrite(): data sent: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", DXL_START, DXL_START, id, length, instruction);
 		Serial.print(msg);
 #endif
 		if (param_list != NULL)
 		{
-			for (uint8_t i = 0; i < param_size; i++)
+			for (uint8_t i = 0; i < length - 2; i++)
 			{
-				dxlSendData(param_list[i]);
+				dxlSendData(param_list[i + 1]);
 
 #ifdef _DEBUG
 				char msg_2[16];
-				sprintf(msg_2, " 0x%02X", param_list[i]);
+				sprintf(msg_2, " 0x%02X", param_list[i + 1]);
 				Serial.print(msg_2);
 #endif
 			}
@@ -285,29 +284,29 @@ uint8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 	}
 	else
 	{
-		return -1; /* sync write not supported jet */
+		return -10; /* sync write not supported jet */
 	}
 }
 
-uint8_t dxlPing(uint8_t id)
+int8_t dxlPing(uint8_t id)
 {
 	uint8_t *param = NULL;
 	return dxlWriteData(id, DXL_INST_PING, param);
 }
 
-uint8_t dxlReset(uint8_t id)
+int8_t dxlReset(uint8_t id)
 {
 	uint8_t *param = NULL;
 	return dxlWriteData(id, DXL_INST_RESET, param);
 }
 
-uint8_t dxlAction(uint8_t id)
+int8_t dxlAction(uint8_t id)
 {
 	uint8_t *param = NULL;
 	return dxlWriteData(id, DXL_INST_ACTION, param);
 }
 
-uint8_t dxlSyncWrite(void)
+int8_t dxlSyncWrite(void)
 {
 	SendStatus("dxlSyncWrite(): ", "sync write not supported", STATUS_MSG_TYPE_ERROR);
 	return -1;
@@ -316,149 +315,151 @@ uint8_t dxlSyncWrite(void)
 /* 
 	Dynamixel write functions
 */
-uint8_t dxlSetId(uint8_t id, uint8_t new_id)
+int8_t dxlSetId(uint8_t id, uint8_t new_id)
 {
-	uint8_t param[] = { DXL_P_ID, new_id };
+	uint8_t param[] = { 3, DXL_P_ID, new_id };
+
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetBaudRate(uint8_t id, uint8_t baud_rate)
+int8_t dxlSetBaudRate(uint8_t id, uint8_t baud_rate)
 {
-	uint8_t param[] = { DXL_P_BAUD_RATE, baud_rate };
+	uint8_t param[] = { 3, DXL_P_BAUD_RATE, baud_rate };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetReturnDelay(uint8_t id, uint8_t return_delay)
+int8_t dxlSetReturnDelay(uint8_t id, uint8_t return_delay)
 {
-	uint8_t param[] = { DXL_P_RETURN_DELAY_TIME, return_delay };
+	uint8_t param[] = { 3, DXL_P_RETURN_DELAY_TIME, return_delay };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetCWAngleLimit(uint8_t id, uint16_t cw_angle_limit)
+int8_t dxlSetCWAngleLimit(uint8_t id, uint16_t cw_angle_limit)
 {
-	uint8_t param[] = { DXL_P_CW_ANGLE_LIMIT_L, (uint8_t)cw_angle_limit, (uint8_t)cw_angle_limit >> 8 };
+	uint8_t param[] = { 4, DXL_P_CW_ANGLE_LIMIT_L, (uint8_t)cw_angle_limit, (uint8_t)cw_angle_limit >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetCCWAngleLimit(uint8_t id, uint16_t ccw_angle_limit)
+int8_t dxlSetCCWAngleLimit(uint8_t id, uint16_t ccw_angle_limit)
 {
-	uint8_t param[] = { DXL_P_CW_ANGLE_LIMIT_L, (uint8_t)ccw_angle_limit, (uint8_t)ccw_angle_limit >> 8 };
+	uint8_t param[] = { 4, DXL_P_CW_ANGLE_LIMIT_L, (uint8_t)ccw_angle_limit, (uint8_t)ccw_angle_limit >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit)
+int8_t dxlSetTempLimit(uint8_t id, uint8_t max_temp_limit)
 {
-	uint8_t param[] = { DXL_P_LIMIT_TEMPERATURE, max_temp_limit };
+	uint8_t param[] = { 3, DXL_P_LIMIT_TEMPERATURE, max_temp_limit };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit)
+int8_t dxlSetVoltageLimitLow(uint8_t id, uint8_t min_voltage_limit)
 {
-	uint8_t param[] = { DXL_P_DOWN_LIMIT_VOLTAGE, min_voltage_limit };
+	uint8_t param[] = { 3,DXL_P_DOWN_LIMIT_VOLTAGE, min_voltage_limit };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit)
+int8_t dxlSetVoltageLimitHigh(uint8_t id, uint8_t max_voltage_limit)
 {
-	uint8_t param[] = { DXL_P_DOWN_LIMIT_VOLTAGE, max_voltage_limit };
+	uint8_t param[] = { 3,DXL_P_DOWN_LIMIT_VOLTAGE, max_voltage_limit };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetMaxTorque(uint8_t id, uint16_t max_torque)
+int8_t dxlSetMaxTorque(uint8_t id, uint16_t max_torque)
 {
-	uint8_t param[] = { DXL_P_MAX_TORQUE_L, (uint8_t)max_torque, (uint8_t)max_torque >> 8 };
+	uint8_t param[] = { 4, DXL_P_MAX_TORQUE_L, (uint8_t)max_torque, (uint8_t)max_torque >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetStatusReturnLevel(uint8_t id, uint8_t return_level)
+int8_t dxlSetStatusReturnLevel(uint8_t id, uint8_t return_level)
 {
-	uint8_t param[] = { DXL_P_RETURN_LEVEL, return_level };
+	uint8_t param[] = { 3, DXL_P_RETURN_LEVEL, return_level };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetAlarmLED(uint8_t id, uint8_t alarm_led)
+int8_t dxlSetAlarmLED(uint8_t id, uint8_t alarm_led)
 {
-	uint8_t param[] = { DXL_P_ALARM_LED, alarm_led };
+	uint8_t param[] = { 3, DXL_P_ALARM_LED, alarm_led };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetAlarmShutdown(uint8_t id, uint8_t alarm_shutdown)
+int8_t dxlSetAlarmShutdown(uint8_t id, uint8_t alarm_shutdown)
 {
-	uint8_t param[] = { DXL_P_ALARM_SHUTDOWN, alarm_shutdown };
+	uint8_t param[] = { 3, DXL_P_ALARM_SHUTDOWN, alarm_shutdown };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetTorqueEnable(uint8_t id, uint8_t torque_enable)
+int8_t dxlSetTorqueEnable(uint8_t id, uint8_t torque_enable)
 {
-	uint8_t param[] = { DXL_P_TORQUE_ENABLE, torque_enable };
+	uint8_t param[] = { 3, DXL_P_TORQUE_ENABLE, torque_enable };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetLED(uint8_t id, uint8_t led)
+int8_t dxlSetLED(uint8_t id, uint8_t led)
 {
-	uint8_t param[] = { DXL_P_LED, led };
+	uint8_t param[] = { 3, DXL_P_LED, led };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetCWComplianceMargin(uint8_t id, uint8_t cw_compliance_margin)
+int8_t dxlSetCWComplianceMargin(uint8_t id, uint8_t cw_compliance_margin)
 {
-	uint8_t param[] = { DXL_P_CW_COMPLIANCE_MARGIN, cw_compliance_margin };
+	uint8_t param[] = { 3, DXL_P_CW_COMPLIANCE_MARGIN, cw_compliance_margin };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetCCWComplianceMargin(uint8_t id, uint8_t ccw_compliance_margin)
+int8_t dxlSetCCWComplianceMargin(uint8_t id, uint8_t ccw_compliance_margin)
 {
-	uint8_t param[] = { DXL_P_CCW_COMPLIANCE_MARGIN, ccw_compliance_margin };
-	return dxlWriteData(id, DXL_INST_WRITE, param);
-}
-uint8_t dxlSetCWComplianceSlope(uint8_t id, uint8_t cw_compliance_slope)
-{
-	uint8_t param[] = { DXL_P_CW_COMPLIANCE_SLOPE, cw_compliance_slope };
+	uint8_t param[] = { 3, DXL_P_CCW_COMPLIANCE_MARGIN, ccw_compliance_margin };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetCCWComplianceSlope(uint8_t id, uint8_t ccw_compliance_slope)
+int8_t dxlSetCWComplianceSlope(uint8_t id, uint8_t cw_compliance_slope)
 {
-	uint8_t param[] = { DXL_P_CCW_COMPLIANCE_SLOPE, ccw_compliance_slope };
+	uint8_t param[] = { 3, DXL_P_CW_COMPLIANCE_SLOPE, cw_compliance_slope };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetGoalPosition(uint8_t id, uint16_t goal_position)
+int8_t dxlSetCCWComplianceSlope(uint8_t id, uint8_t ccw_compliance_slope)
 {
-	uint8_t param[] = { DXL_P_GOAL_POSITION_L, (uint8_t)goal_position, (uint8_t)goal_position >> 8 };
+	uint8_t param[] = { 3, DXL_P_CCW_COMPLIANCE_SLOPE, ccw_compliance_slope };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetGoalSpeed(uint8_t id, uint16_t goal_speed)
+int8_t dxlSetGoalPosition(uint8_t id, uint16_t goal_position)
 {
-	uint8_t param[] = { DXL_P_GOAL_SPEED_L, (uint8_t)goal_speed, (uint8_t)goal_speed >> 8 };
+	uint8_t param[] = { 4, DXL_P_GOAL_POSITION_L, (uint8_t)goal_position, (uint8_t)goal_position >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetTorqueLimit(uint8_t id, uint16_t torque_limit)
+int8_t dxlSetGoalSpeed(uint8_t id, uint16_t goal_speed)
 {
-	uint8_t param[] = { DXL_P_TORQUE_LIMIT_L, (uint8_t)torque_limit, (uint8_t)torque_limit >> 8 };
+	uint8_t param[] = { 4, DXL_P_GOAL_SPEED_L, (uint8_t)goal_speed, (uint8_t)goal_speed >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetRegisteredInstruction(uint8_t id, uint8_t *param_list)
+int8_t dxlSetTorqueLimit(uint8_t id, uint16_t torque_limit)
+{
+	uint8_t param[] = { 4, DXL_P_TORQUE_LIMIT_L, (uint8_t)torque_limit, (uint8_t)torque_limit >> 8 };
+	return dxlWriteData(id, DXL_INST_WRITE, param);
+}
+
+int8_t dxlSetRegisteredInstruction(uint8_t id, uint8_t *param_list)
 {
 	return dxlWriteData(id, DXL_INST_REG_WRITE, param_list);
 }
 
-uint8_t dxlSetLock(uint8_t id, uint8_t lock)
+int8_t dxlSetLock(uint8_t id, uint8_t lock)
 {
-	uint8_t param[] = { DXL_P_LOCK, lock };
+	uint8_t param[] = { 3, DXL_P_LOCK, lock };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetPunch(uint8_t id, uint16_t punch)
+int8_t dxlSetPunch(uint8_t id, uint16_t punch)
 {
-	uint8_t param[] = { DXL_P_PUNCH_L, (uint8_t)punch, (uint8_t)punch >> 8 };
+	uint8_t param[] = { 4, DXL_P_PUNCH_L, (uint8_t)punch, (uint8_t)punch >> 8 };
 	return dxlWriteData(id, DXL_INST_WRITE, param);
 }
 
-uint8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t* param_list)
+int8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t *param_list)
 {
 	return dxlWriteData(id, DXL_INST_, param_list);
 }
@@ -466,176 +467,177 @@ uint8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t* param_lis
 /* 
 	Dynamixel read functions
 */
-uint8_t dxlGetNodelNumber(uint8_t id)
+int8_t dxlGetModelNumber(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_MODEL_NUMBER_L, 2 };
+	uint8_t param[] = { 3, DXL_P_MODEL_NUMBER_L, 2 };
 	return dxlWriteData(id,  DXL_INST_READ, param);
 }
-uint8_t dxlGetFirmwareVersion(uint8_t id)
+
+int8_t dxlGetFirmwareVersion(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_VERSION, 1 };
+	uint8_t param[] = { 3, DXL_P_VERSION, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCWAngleLimit(uint8_t id)
+int8_t dxlGetCWAngleLimit(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_CW_ANGLE_LIMIT_L, 2 };
+	uint8_t param[] = { 3, DXL_P_CW_ANGLE_LIMIT_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCCWAngleLimit(uint8_t id)
+int8_t dxlGetCCWAngleLimit(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_CCW_ANGLE_LIMIT_L, 2 };
+	uint8_t param[] = { 3, DXL_P_CCW_ANGLE_LIMIT_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetTempLimit(uint8_t id)
+int8_t dxlGetTempLimit(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_LIMIT_TEMPERATURE, 1 };
+	uint8_t param[] = { 3, DXL_P_LIMIT_TEMPERATURE, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetVoltageLimit(uint8_t id)
+int8_t dxlGetVoltageLimit(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_UP_LIMIT_VOLTAGE, 2 };
+	uint8_t param[] = { 3, DXL_P_UP_LIMIT_VOLTAGE, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetMaxTorque(uint8_t id)
+int8_t dxlGetMaxTorque(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_MAX_TORQUE_L, 2};
+	uint8_t param[] = { 3, DXL_P_MAX_TORQUE_L, 2};
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetStatusReturnLevel(uint8_t id)
+int8_t dxlGetStatusReturnLevel(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_RETURN_LEVEL, 1 };
+	uint8_t param[] = { 3, DXL_P_RETURN_LEVEL, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetAlarmLED(uint8_t id)
+int8_t dxlGetAlarmLED(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_ALARM_LED, 1 };
+	uint8_t param[] = { 3, DXL_P_ALARM_LED, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetAlarmShutdown(uint8_t id)
+int8_t dxlGetAlarmShutdown(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_ALARM_LED, 1 };
+	uint8_t param[] = { 3, DXL_P_ALARM_LED, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetTorqueEnable(uint8_t id)
+int8_t dxlGetTorqueEnable(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_TORQUE_ENABLE, 1 };
+	uint8_t param[] = { 3, DXL_P_TORQUE_ENABLE, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetLED(uint8_t id)
+int8_t dxlGetLED(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_LED, 1 };
+	uint8_t param[] = { 3, DXL_P_LED, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCWComplianceMargin(uint8_t id)
+int8_t dxlGetCWComplianceMargin(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_CW_COMPLIANCE_MARGIN, 1 };
+	uint8_t param[] = { 3, DXL_P_CW_COMPLIANCE_MARGIN, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCCWComplianceMargin(uint8_t id)
+int8_t dxlGetCCWComplianceMargin(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_CCW_COMPLIANCE_MARGIN, 1 };
+	uint8_t param[] = { 3, DXL_P_CCW_COMPLIANCE_MARGIN, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCWComplianceSlope(uint8_t id)
+int8_t dxlGetCWComplianceSlope(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_CW_COMPLIANCE_SLOPE, 1 };
+	uint8_t param[] = { 3, DXL_P_CW_COMPLIANCE_SLOPE, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCCWComplianceSlope(uint8_t id)
+int8_t dxlGetCCWComplianceSlope(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_CCW_COMPLIANCE_SLOPE, 1 };
+	uint8_t param[] = { 3, DXL_P_CCW_COMPLIANCE_SLOPE, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetGoalPosition(uint8_t id)
+int8_t dxlGetGoalPosition(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_GOAL_POSITION_L, 2};
+	uint8_t param[] = { 3, DXL_P_GOAL_POSITION_L, 2};
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetMovingSpeed(uint8_t id)
+int8_t dxlGetMovingSpeed(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_GOAL_SPEED_L, 2 };
+	uint8_t param[] = { 3, DXL_P_GOAL_SPEED_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetTorqueLimit(uint8_t id)
+int8_t dxlGetTorqueLimit(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_TORQUE_LIMIT_L, 2 };
+	uint8_t param[] = { 3, DXL_P_TORQUE_LIMIT_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetPresentPosition(uint8_t id)
+int8_t dxlGetPresentPosition(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_PRESENT_POSITION_L, 2};
+	uint8_t param[] = { 3, DXL_P_PRESENT_POSITION_L, 2};
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetPresentSpeed(uint8_t id)
+int8_t dxlGetPresentSpeed(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_PRESENT_SPEED_L, 2 };
+	uint8_t param[] = { 3, DXL_P_PRESENT_SPEED_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetPresentLoad(uint8_t id)
+int8_t dxlGetPresentLoad(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_PRESENT_LOAD_L, 2 };
+	uint8_t param[] = { 3, DXL_P_PRESENT_LOAD_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetPresentVoltage(uint8_t id)
+int8_t dxlGetPresentVoltage(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_PRESENT_VOLTAGE, 1 };
+	uint8_t param[] = { 3, DXL_P_PRESENT_VOLTAGE, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetPresentTemperature(uint8_t id)
+int8_t dxlGetPresentTemperature(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_PRESENT_TEMPERATURE, 1 };
+	uint8_t param[] = { 3, DXL_P_PRESENT_TEMPERATURE, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetRegisteredInstruction(uint8_t id)
+int8_t dxlGetRegisteredInstruction(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_REGISTERED_INSTRUCTION, 1 };
+	uint8_t param[] = { 3, DXL_P_REGISTERED_INSTRUCTION, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetMoving(uint8_t id)
+int8_t dxlGetMoving(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_MOVING, 1 };
+	uint8_t param[] = { 3, DXL_P_MOVING, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetLock(uint8_t id)
+int8_t dxlGetLock(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_LOCK, 1 };
+	uint8_t param[] = { 3, DXL_P_LOCK, 1 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetPunch(uint8_t id)
+int8_t dxlGetPunch(uint8_t id)
 {
-	uint8_t param[] = { DXL_P_PUNCH_L, 2 };
+	uint8_t param[] = { 3, DXL_P_PUNCH_L, 2 };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 
-uint8_t dxlGetCustomData(uint8_t id, uint8_t start_register, uint8_t length)
+int8_t dxlGetCustomData(uint8_t id, uint8_t start_register, uint8_t length)
 {
-	uint8_t param[] = { start_register, length };
+	uint8_t param[] = { 3, start_register, length };
 	return dxlWriteData(id, DXL_INST_READ, param);
 }
 

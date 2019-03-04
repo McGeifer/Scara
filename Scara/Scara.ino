@@ -15,7 +15,6 @@
 uint32_t cycle_time;
 uint32_t cycle_count;
 
-
 /* extern void InitDynamixel(void);
 extern void UpdateObjDir(void);
 extern void handleMove(void); */
@@ -56,7 +55,7 @@ void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		uint8_t tmp = dxlGetPresentTemperature(0);
+		int8_t tmp = dxlSetLED(DXL_BROADCASTING_ID, 0);
 
 		if (tmp != 0)
 		{
@@ -64,19 +63,26 @@ void loop()
 		}
 		else
 		{
-			/*Serial.print("dxl_retun_data[length]    = ");
-			Serial.println(dxl_return_data[0], HEX);
-			Serial.print("dxl_retun_data[dxl_error] = ");
-			Serial.println(dxl_return_data[1], HEX);
-			Serial.print("return value: ");
-
-			for (uint8_t i = 0; i < dxl_return_data[0] - 2; i++)
+			if (dxl_return_data != NULL)
 			{
-				char msg_1[32];
-				sprintf(msg_1, " %i", dxl_return_data[i + 2]);
-				Serial.print(msg_1);
+				Serial.print("dxl_retun_data[length]    = ");
+				Serial.println(dxl_return_data[0], HEX);
+				Serial.print("dxl_retun_data[dxl_error] = ");
+				Serial.println(dxl_return_data[1], HEX);
+
+				if (dxl_return_data[0] > 2)
+				{
+					Serial.print("return value: ");
+					for (uint8_t i = 0; i < dxl_return_data[0] - 2; i++)
+					{
+						char msg_1[32];
+						sprintf(msg_1, " %i", dxl_return_data[i + 2]);
+						Serial.print(msg_1);
+					}
+				}
+				Serial.println();
+				Serial.println();
 			}
-			Serial.println();*/
 		}
 
 		/*UpdateObjDir();
@@ -95,6 +101,6 @@ void loop()
 			cycle_time = micros();
 		} 
 
-		delay(1);
+		delay(1000);
 	}
 }
