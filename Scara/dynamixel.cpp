@@ -17,8 +17,7 @@ uint8_t *dxl_return_data = NULL;
 	Initialization of the parameter list for setting up the Dynamixel
 	servos when starting the controller
  */
-static uint8_t dxl_setup_params[3][9] = 
-{
+static uint8_t dxl_setup_params[3][9] = {
 	{	DXL_AXIS_1_TEMP_LIMIT,
 		DXL_AXIS_1_VOLTAGE_LIMIT_LOW,
 		DXL_AXIS_1_VOLTAGE_LIMIT_HIGH,
@@ -27,7 +26,7 @@ static uint8_t dxl_setup_params[3][9] =
 		DXL_AXIS_1_STATUS_RETURN_LEVEL,
 		DXL_AXIS_1_RETURN_DELAY_TIME,
 		DXL_AXIS_1_ALARM_LED,
-		DXL_AXIS_1_ALARM_SHUT_DOWN,
+		DXL_AXIS_1_ALARM_SHUT_DOWN
 	},
 	{	DXL_Z_AXIS_TEMP_LIMIT,
 		DXL_AXIS_2_VOLTAGE_LIMIT_LOW,
@@ -37,7 +36,7 @@ static uint8_t dxl_setup_params[3][9] =
 		DXL_Z_AXIS_STATUS_RETURN_LEVEL,
 		DXL_Z_AXIS_RETURN_DELAY_TIME,
 		DXL_Z_AXIS_ALARM_LED,
-		DXL_Z_AXIS_ALARM_SHUT_DOWN,
+		DXL_Z_AXIS_ALARM_SHUT_DOWN
 	},
 	{	DXL_Z_AXIS_TEMP_LIMIT,
 		DXL_Z_AXIS_VOLTAGE_LIMIT_LOW,
@@ -47,7 +46,7 @@ static uint8_t dxl_setup_params[3][9] =
 		DXL_Z_AXIS_STATUS_RETURN_LEVEL,
 		DXL_Z_AXIS_RETURN_DELAY_TIME,
 		DXL_Z_AXIS_ALARM_LED,
-		DXL_Z_AXIS_ALARM_SHUT_DOWN,
+		DXL_Z_AXIS_ALARM_SHUT_DOWN
 	}
 };
 
@@ -70,7 +69,7 @@ int8_t dxlGetReturnPacket(void)
 
 	while (micros() >= 0xFFFFFC17) /*  4294967295 µs (uint32) - 1000 µs = 4294966295 = 0xFFFFFC17 */
 	{
-		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close to overflow */
+		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close to overflow (1000µs) */
 	}
 
 	uint32_t timeout = micros() + DXL_TIMEOUT;
@@ -88,11 +87,11 @@ int8_t dxlGetReturnPacket(void)
 			Serial.print(dxlReadData(), HEX);
 			dxlFlush();
 		}
-		return -1; /* timeout with data */
+		return -1; /* timeout with data - incomplete response */
 	}
 	else if (time_stamp > timeout && dxlAvailableData() == 0)
 	{
-		return -2; /* timeout without data */
+		return -2; /* timeout without data - no response */
 	}
 	else
 	{
@@ -100,11 +99,11 @@ int8_t dxlGetReturnPacket(void)
 		{
 			if (dxlPeekData() == DXL_START)
 			{
-				dxlReadData();				/* protocol start 0xFF */
+				dxlReadData();						/* protocol start 0xFF */
 
 				if (dxlPeekData() == DXL_START)
 				{
-					dxlReadData();			/* protocol start 0xFF */
+					dxlReadData();					/* protocol start 0xFF */
 					uint8_t id = dxlReadData();		/* id */
 					uint8_t length = dxlReadData();	/* length */
 					param_list = (uint8_t*)calloc(length, sizeof(uint8_t));
@@ -114,15 +113,13 @@ int8_t dxlGetReturnPacket(void)
 					sprintf(msg, "dxlGetReturnPacket: 0x%02X 0x%02X", id, length);
 					Serial.print(msg);
 #endif
-
 					if (param_list != NULL)	/* check for proper calloc execution */
 					{
 						uint8_t i = 0;
-
 						while (dxlAvailableData() > 0 && i < length)
 						{
 							param_list[i] = dxlReadData();
-							
+
 #ifdef _DEBUG
 							char msg_1[16];
 							sprintf(msg_1, " 0x%02X", param_list[i]);
@@ -133,8 +130,8 @@ int8_t dxlGetReturnPacket(void)
 #ifdef _DEBUG
 						Serial.println();
 #endif
-						
-						if (i == (length) && dxlAvailableData() == 0)
+
+						if (i == length && dxlAvailableData() == 0) /* ??? */
 						{
 							uint8_t dxl_error = param_list[0];
 							uint8_t checksum = param_list[length - 1];
@@ -164,8 +161,11 @@ int8_t dxlGetReturnPacket(void)
 								return -3;  /* checksum error */
 							}
 						}
+						else
+						{
+							/* error handling? */
+						}
 					}
-
 					while (dxlAvailableData() > 0) /* make sure buffer is empty */
 					{
 						Serial.print(dxlReadData(), HEX);
@@ -179,13 +179,13 @@ int8_t dxlGetReturnPacket(void)
 					}
 					return 0;
 				}
-				//else
-				//{
-				//	while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
-				//	{
-				//		dxlReadData();
-				//	}
-				//}
+				else
+				{
+					while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
+					{
+						dxlReadData();
+					}
+				}
 			}
 			dxlReadData(); /* get next byte */
 		}
@@ -214,10 +214,10 @@ int8_t dxlGetReturnPacket(void)
 */
 int8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 {
-	uint8_t checksum = 0;		/* checksum calculation defined by Dynamixel protocol ~ (ID + Length + Instruction + Parameter1 + ... + Parameter N) */
+	uint8_t checksum = 0;		/* checksum calculation defined by Dynamixel protocol -> ~(ID + Length + Instruction + Parameter1 + ... + Parameter N) */
 	uint8_t length = 0;
 	
-	/* calculating checksum if no sync write */
+	/* calculating checksum if no sync write instruction */
 	if (instruction != DXL_INST_SYNC_WRITE)
 	{
 		uint16_t tmp = 0;
@@ -677,7 +677,7 @@ void initDynamixel(void)
 	if (response != 3)
 	{
 		SendStatus("InitDynamixel(): ", "check wiring and ID's of Dynamixel servos and restart the controller", STATUS_MSG_TYPE_ERROR);
-		/* if one of the servos could not be found then set the system error state to prevent further operations */
+		/* if one of the servos could not be found, set the system error state to prevent further operations */
 #ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif

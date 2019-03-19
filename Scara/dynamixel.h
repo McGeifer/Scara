@@ -11,7 +11,6 @@
 
 #include "Stream.h"
 
-
 extern uint8_t *dxl_return_data;
 
 /* parameters of Dynamixel control table */
@@ -162,6 +161,7 @@ enum dxlSetupParams
 
 /*
 	Setup function for the Dynamixel servos
+	more information !!!!!!!!!!!!!!!!!!!!!!!
  */
 void initDynamixel(void);
 

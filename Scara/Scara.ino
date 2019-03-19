@@ -100,7 +100,6 @@ void loop()
 			cycle_count = 0;
 			cycle_time = micros();
 		} 
-
 		delay(1000);
 	}
 }
