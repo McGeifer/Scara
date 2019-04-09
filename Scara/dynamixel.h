@@ -13,7 +13,7 @@
 
 extern uint8_t *dxl_return_data;
 
-/* parameters of Dynamixel control table */
+/* Dynamixel control table parameters */
 /* EEPROM AREA */
 #define DXL_P_MODEL_NUMBER_L			0		/* Model Number(L) */
 #define DXL_P_MODEL_NUMBER_H			1		/* Model Number(H) */
@@ -167,7 +167,7 @@ void initDynamixel(void);
 
 /* 
 	Handler function for Dynamixel-specific error codes. If an error code is reported to
-	the function, it will issue an error message. In addition, the execution of the main loop
+	the function it will issue an error message. In addition the execution of the main loop
 	is stopped to prevent inadvertent behavior.
  */
 void dxlError(int16_t errorBit, uint8_t id);
@@ -217,7 +217,7 @@ int8_t dxlAction(uint8_t);
 	Used for controlling many Dynamixel actuators at the same time.
 
 	! NOT SUPPORTED JET !
-	always return -1
+	always returns -1
 */
 int8_t dxlSyncWrite(void);
 
@@ -245,7 +245,7 @@ int8_t dxlSetBaudRate(uint8_t id, uint8_t baud_rate);
 
 /*
 	The time it takes for the Status Packet to return after the Instruction 
-	Packet is sent. The delay time is given by 2uSec * Address5 value.
+	Packet is sent. The delay time is given by 2 µs * return_delay value.
 
 	return	0 = OK
 	return -1 = error -> Dynamixel error bit stored in *dxl_return_data

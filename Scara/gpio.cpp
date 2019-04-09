@@ -9,10 +9,10 @@
 void initGPIO(void)
 {
 	/* set pin modes */
-	pinMode(MODBUS_PIN, INPUT);		/* pin to enable Modbus communication */
-	pinMode(RAPID_PIN, INPUT);		/* pin to enable "Rapid" mode */
-	pinMode(MAGNET_PIN, OUTPUT);	/* pin to switch the lifting magnet on/off */
-	pinMode(INTERRUPT_PIN, INPUT);	/* interrupt pin for the light barrier */
+	pinMode(GPIO_PIN_MODBUS, INPUT);		/* pin to enable Modbus communication */
+	pinMode(GPIO_PIN_RAPID, INPUT);		/* pin to enable "Rapid" mode */
+	pinMode(GPIO_PIN_MAGNET, OUTPUT);	/* pin to switch the lifting magnet on/off */
+	pinMode(GPIO_PIN_INTERRUPT, INPUT);	/* interrupt pin for the light barrier */
 
 	/* interrupts */
 	attachInterrupt(digitalPinToInterrupt(3), lightBarrierISR, CHANGE);	/* attach interrupt for light barrier impulse counter */
@@ -20,7 +20,7 @@ void initGPIO(void)
 
 void initOperationMode(void)
 {
-	if (!digitalRead(RAPID_PIN) && digitalRead(MODBUS_PIN))
+	if (!digitalRead(GPIO_PIN_RAPID) && digitalRead(GPIO_PIN_MODBUS))
 	{
 		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_MODBUS, false) == 0)
 		{
@@ -28,7 +28,7 @@ void initOperationMode(void)
 			return;
 		}
 	}
-	else if (digitalRead(RAPID_PIN) && !digitalRead(MODBUS_PIN))
+	else if (digitalRead(GPIO_PIN_RAPID) && !digitalRead(GPIO_PIN_MODBUS))
 	{
 		if (SetObjData(OBJ_IDX_OP_MODE, OP_MODE_RAPID, false) == 0)
 		{

@@ -37,7 +37,7 @@
 float* CalcAngle(int16_t *xVal, int16_t *yVal);
 
 /*
-	Using vector operations to calculate actual x & y position of robot arm based on position values
+	Function to calculate actual x & y positions of the robot arm based on the axis angles.
  */
 float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2);
 

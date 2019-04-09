@@ -101,7 +101,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	uint8_t cmp2A = 0;
 	uint8_t cmp2B = 0;
 
-	/* all angles in radians & non negative! */
+	/* all angles in non negative radians! */
 	float alpha = 0;			/* inner angle of triangle at point A (between b & c) */
 	float alpha2 = 0;			/* angle between b & x-axis  */
 	float beta = 0;				/* inner angle of triangle at point B (between a & c) */
@@ -121,7 +121,6 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	Serial.print("yTmp: ");
 	Serial.println(yTmp, 8);
 #endif 
-
 	coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
 	xVal = xTmp; /* coordinates[DXL_ID_AXIS_1]; */
 	yVal = yTmp; /* coordinates[DXL_ID_AXIS_2]; */
@@ -155,7 +154,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	gamma = AXIS_1_LENGTH + AXIS_2_LENGTH == b ?  0 : PI - alpha - beta;
 
 	/* 
-		Die berechneten Winkel und die in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung, wobei die Fehlerursache
+		Die berechneten Winkel und die in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung, wobei die Fehlerursache sehr wahrscheinlich
 		möglicherweise bei GeoGebra liegt. Dies führt zu Abweichung der X- und Y-Positionen von mehreren Millimetern !!!
 	*/
 #ifdef _DEBUG

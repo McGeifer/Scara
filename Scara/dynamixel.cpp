@@ -69,7 +69,7 @@ int8_t dxlGetReturnPacket(void)
 
 	while (micros() >= 0xFFFFFC17) /*  4294967295 µs (uint32) - 1000 µs = 4294966295 = 0xFFFFFC17 */
 	{
-		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close to overflow (1000µs) */
+		/* micros() will overflow after approximately 71,58 minutes, this might cause problems (not tested jet) so wait if micros() is close (1 ms) to overflow */
 	}
 
 	uint32_t timeout = micros() + DXL_TIMEOUT;

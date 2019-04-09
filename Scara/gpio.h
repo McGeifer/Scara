@@ -9,13 +9,13 @@
 	#include "WProgram.h"
 #endif
 
-#define MODBUS_PIN		21	/* Pin to select the Modbus operation mode */
-#define RAPID_PIN		20	/* Pin to select the Rapid operation mode */
-#define MAGNET_PIN		13	/* Pin for switching the magnet gripper */
-#define INTERRUPT_PIN	3	/* Interrupt pin for counting the position impulses of the z-axis */
+#define GPIO_PIN_MODBUS		21	/* Pin to select the Modbus operation mode */
+#define GPIO_PIN_RAPID		20	/* Pin to select the Rapid operation mode */
+#define GPIO_PIN_MAGNET		13	/* Pin for switching the magnet gripper */
+#define GPIO_PIN_INTERRUPT	3	/* Interrupt pin for counting the position impulses of the z-axis */
 
 /* 
-	Setup and configuration of the digital in/ outputs and interrupts
+	Setup and configuration of the digital inputs, outputs and interrupts
  */
 void initGPIO(void);
 
@@ -25,7 +25,7 @@ void initGPIO(void);
 void initOperationMode(void);
 
 /*
-	Interrupt service routine of the optical measuring system
+	Interrupt service routine for the optical measuring system
  */
 void lightBarrierISR(void);
 

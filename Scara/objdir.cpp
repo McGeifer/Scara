@@ -532,7 +532,7 @@ void UpdateObjDir(void)
 
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		for (uint8_t id = 0; id < (3); id++)
+		for (uint8_t id = 0; id < 3; id++)
 		{
 			//data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
 			//data[id][speed] = dynamixelReadSpeed(id);

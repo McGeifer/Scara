@@ -12,6 +12,54 @@
 #include "calc.h"
 #include "dynamixel.h"
 
+
+/* To Do's
+
+	###### hohe Priorität !!! ######
+
+		* Kommunikation mit Dynamixel wieder herstellen!
+			- Seit Ausführung eines Dynamixel reset lässt sich keine Verbindung mehr aufbauen.
+			- Led Umschaltung über broadcast ID geht -> Tristate scheint also zu funktionieren.
+			- Kein Empfang von Statuspaketen
+			- Setzten von ID ohne Wirkung -> nach setzten der ID auf x über broadcast ID (nur ein Dynamixel angeschlossen) keine Kommunikation über diese ID möglich
+
+	###### normale Priorität ######
+
+		* objdir.cpp/ .h
+
+			1.1	Objekt für das Dynamixel-Statuspaket (weg von der globalen Variable, das ist Murks)
+			1.2	Objekt für den Status der Zielpos, Zielgeschwindigkeit etc.
+					- leichte Erkennung ob sich diese geändert haben/ ob sie erreicht wurden
+			1.3	Handler Funktionen wieder einführen
+					- automatisches Berechnen des Positionsfenster für z.B. Zielpos wenn diese in ObDir geschrieben wird
+			1.4 UpdateObjDir() - neue setX Funktionen einbauen
+			
+		* dynamixel.cpp / .h
+
+			2.1 dxl_return_data - raus schmeißen - siehe 1.1
+			2.2 HandleMove() 
+					- überarbeiten siehe 1.2/ 1.3
+					- registered write für setzten der neuen Zielpositionen einbauen
+					- Geschwindigkeitsrampe für z-Achse einbauen
+			2.3 initDynamixel() - Fehler bei auslesen der Konfiguration bzw. wenn diese mit der Parameterliste verglichen wird 
+					- for Schleife und switch case
+					- sizeof ersetzten da dynamisches Array!
+			2.4 enum dxReturnVal - Verwendung prüfen
+
+		* sio.cpp/ .h
+
+			3.1 "save speed and position values" - sicheres schreiben der Daten! Was wenn kurz vor Ende Daten nicht geschrieben werden können? 
+			3.2 handleModbusData() testen - 100% ungetestet
+			3.3 handleScaraData() komplett überarbeiten - aus altem Projekt übernommen und NICHT FUNKTIONSFÄHIG!
+			3.4 sio.h Funktionsbeschreibungen erstellen
+
+		* clap.cpp/ .h
+
+			4.1 CalcAngle() testen
+				- Testen ob die Entscheidung für kürzeste Bewegung richtig funktioniert (vor allem Grenzfälle Testen)
+			4.2 DEG_TO_RAD & RAD_TO_DEG testen
+*/
+
 uint32_t cycle_time;
 uint32_t cycle_count;
 
@@ -89,7 +137,7 @@ void loop()
 		handleSIO();
 		handleMove();*/
 
-		/* measure cycle time */
+		/* measure cycle time for main loop */
 		 cycle_count++;
 		if (cycle_count >= 1000)
 		{

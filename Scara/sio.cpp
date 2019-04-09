@@ -149,13 +149,13 @@ int8_t ParseRadpid(void)
 	{
 		if (strcmp(output_string[1], "on") == 0)
 		{
-			digitalWrite(MAGNET_PIN, HIGH);
+			digitalWrite(GPIO_PIN_MAGNET, HIGH);
 			SendStatus("in function handleRapidString(): ", "Magnet: on", STATUS_MSG_TYPE_INFO);
 			return 0;
 		}
 		else if (strcmp(output_string[1], "off") == 0)
 		{
-			digitalWrite(MAGNET_PIN, LOW);
+			digitalWrite(GPIO_PIN_MAGNET, LOW);
 			SendStatus("in function handleRapidString(): ", "Magnet: off", STATUS_MSG_TYPE_INFO);
 			return 0;
 		}
