@@ -7,12 +7,6 @@
 #include "gpio.h"
 #include "Stream.h"
 
-/* Dynamically allocated array to store data returned by the Dynamixel servo.
- * [0] = length of array
- * [1] = Dynamixel error byte or internal error (negative value)
- * [1 + n] = additional data (if needed) */
-uint8_t *dxl_return_data = NULL;
-
 /* 
 	Initialization of the parameter list for setting up the Dynamixel
 	servos when starting the controller
@@ -50,6 +44,12 @@ static uint8_t dxl_setup_params[3][9] = {
 	}
 };
 
+static dxlStatusPacket_t dxl_status_packet = { 0 };			/* the current Dynamixel status packet */
+static dxlStatusPacket_t dxl_status_packet_empty = { 0 };	/* empty instance of dxlStatusPacket_t to reset all fields to zero 
+															 * !!! Attention !!! Make sure memory for dxl_status_packet.param is 
+															 * deallocated and pointer is set to NULL before using empty instance
+															 * to prevent memory fragmentation */
+
 /*
 	Function to receive and parse a Dynamixel status return packet. If a valid status return packet	has
 	been received it will store the received data for further processing in the dxl_return_data array.
@@ -58,14 +58,15 @@ static uint8_t dxl_setup_params[3][9] = {
 	return -2	= timeout while receiving data
 	return -3	= checksum error
 	return -4	= invalid data packet
+	return -5   = error while allocating memory
 */
-int8_t dxlGetReturnPacket(void)
+int8_t dxlGetStatusPacket(void)
 {
-	uint8_t *param_list = NULL;
 	uint32_t time_stamp = 0;
 
-	free(dxl_return_data);
-	dxl_return_data = NULL;
+	free(dxl_status_packet.param);					/* free previously allocated memory */
+	dxl_status_packet.param = NULL;					/* clear pointer */
+	dxl_status_packet = dxl_status_packet_empty;	/* reset instance to zero */
 
 	while (micros() >= 0xFFFFFC17) /*  4294967295 µs (uint32) - 1000 µs = 4294966295 = 0xFFFFFC17 */
 	{
@@ -78,6 +79,7 @@ int8_t dxlGetReturnPacket(void)
 	{
 		/* wait for minimum Dynamixel status packet length of 5 or timeout */
 	}
+
 	time_stamp = micros();
 
 	if (time_stamp > timeout && dxlAvailableData() > 0)
@@ -99,30 +101,30 @@ int8_t dxlGetReturnPacket(void)
 		{
 			if (dxlPeekData() == DXL_START)
 			{
-				dxlReadData();						/* protocol start 0xFF */
+				dxlReadData();									/* protocol start 0xFF */
 
 				if (dxlPeekData() == DXL_START)
 				{
-					dxlReadData();					/* protocol start 0xFF */
-					uint8_t id = dxlReadData();		/* id */
-					uint8_t length = dxlReadData();	/* length */
-					param_list = (uint8_t*)calloc(length, sizeof(uint8_t));
+					dxlReadData();								/* protocol start 0xFF */
+					dxl_status_packet.id = dxlReadData();		/* id */
+					dxl_status_packet.length = dxlReadData();	/* length */
+					dxl_status_packet.param = (uint8_t*)calloc(dxl_status_packet.length, sizeof(uint8_t)); /* allocate memory for return data */
 
 #ifdef _DEBUG
 					char msg[64];
-					sprintf(msg, "dxlGetReturnPacket: 0x%02X 0x%02X", id, length);
+					sprintf(msg, "dxlGetStatusPacket: 0x%02X 0x%02X", dxl_status_packet.id, dxl_status_packet.length);
 					Serial.print(msg);
 #endif
-					if (param_list != NULL)	/* check for proper calloc execution */
+					if (dxl_status_packet.param != NULL)	/* check for proper calloc execution */
 					{
 						uint8_t i = 0;
-						while (dxlAvailableData() > 0 && i < length)
+						while (dxlAvailableData() > 0 && i < dxl_status_packet.length)
 						{
-							param_list[i] = dxlReadData();
+							dxl_status_packet.param[i] = dxlReadData();
 
 #ifdef _DEBUG
 							char msg_1[16];
-							sprintf(msg_1, " 0x%02X", param_list[i]);
+							sprintf(msg_1, " 0x%02X", dxl_status_packet.param[i]);
 							Serial.print(msg_1);
 #endif
 							i++;
@@ -131,33 +133,26 @@ int8_t dxlGetReturnPacket(void)
 						Serial.println();
 #endif
 
-						if (i == length && dxlAvailableData() == 0) /* ??? */
+						if (i == (dxl_status_packet.length - 1) && dxlAvailableData() == 0) /* make sure the whole status return packet has been read and the buffer is empty */
 						{
-							uint8_t dxl_error = param_list[0];
-							uint8_t checksum = param_list[length - 1];
+							dxl_status_packet.error = dxl_status_packet.param[0];
+							dxl_status_packet.checksum = dxl_status_packet.param[dxl_status_packet.length - 1];
+							
 							uint16_t tmp = 0;
-
-							for (int i = 0; i < length - 1; i++)
+							for (int j = 0; j < dxl_status_packet.length - 1; j++)
 							{
-								tmp += param_list[i];
+								tmp += dxl_status_packet.param[j];
 							}
 
-							if (checksum == (uint8_t)((~(id + length + tmp)) & 0xFF))
+							if (dxl_status_packet.checksum == (uint8_t)((~(dxl_status_packet.id + dxl_status_packet.length + tmp)) & 0xFF))
 							{
-								dxl_return_data = (uint8_t*)calloc(length, sizeof(uint8_t));
-								dxl_return_data[0] = length;
-
-								for (int i = 0; i < length - 1; i++)
-								{
-									dxl_return_data[i + 1] = param_list[i];
-								}
-
-								free(param_list);
-								param_list = NULL;
 								return 0;
 							}
 							else
 							{
+								free(dxl_status_packet.param);
+								dxl_status_packet.param = NULL;
+								dxl_status_packet = { 0 };
 								return -3;  /* checksum error */
 							}
 						}
@@ -166,34 +161,32 @@ int8_t dxlGetReturnPacket(void)
 							/* error handling? */
 						}
 					}
+
 					while (dxlAvailableData() > 0) /* make sure buffer is empty */
 					{
+#ifdef _DEBUG
 						Serial.print(dxlReadData(), HEX);
 						Serial.print(" ");
+#else
+						dxlReadData();
+#endif
 					}
 
-					if (param_list != NULL) /* free memory */
-					{
-						free(param_list);
-						param_list = NULL;
-					}
-					return 0;
-				}
-				else
-				{
-					while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
-					{
-						dxlReadData();
-					}
+					free(dxl_status_packet.param);
+					dxl_status_packet.param = NULL;
+					dxl_status_packet = { 0 };
+
+					return -5 /* error while allocating memory */;
 				}
 			}
-			dxlReadData(); /* get next byte */
+			else
+			{
+				while (dxlAvailableData() > 0) /* no proper Dynamixel packet start (0xFF 0xFF) - clear buffer to prevent unprocessed data in buffer*/
+				{
+					dxlReadData();
+				}
+			}
 		}
-	}
-
-	while (dxlAvailableData() > 0)
-	{
-		dxlReadData();
 	}
 	return -4; /* invalid data packet */
 }
@@ -275,7 +268,7 @@ int8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 
 		if (id != DXL_BROADCASTING_ID)
 		{
-			return dxlGetReturnPacket();
+			return dxlGetStatusPacket();
 		}
 		else
 		{
@@ -660,7 +653,7 @@ void initDynamixel(void)
 
 		if (tmp != 0)
 		{
-			dxlError(tmp, i);
+			dxlPrintErrorMessage(tmp, i);
 			char msg[32];
 			sprintf(msg, "no Dynamixel found @ ID: %d", i);
 			SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_ERROR);
@@ -685,99 +678,117 @@ void initDynamixel(void)
 	}
 	else
 	{
+		uint8_t error_state = 0; /* bit 0 = dxl_error */
 		uint8_t dxl_error = 0;
+		int8_t internal_error = 0;
 		
 		/* read configuration of the Dynamixel servos */
 		for (int id = 0; id < 3; id++)
 		{
-			uint8_t crtl_tbl_data[10];
-			dxl_error = dxlGetCustomData(id, DXL_P_LIMIT_TEMPERATURE, 8);
-
-			if (dxl_error == 0) /* no dxl error */
+			internal_error = dxlGetCustomData(id, DXL_P_LIMIT_TEMPERATURE, 8);
+			
+			if (internal_error == 0) /* dxl error? */
 			{
-				if (dxl_return_data[0] <= 10) /* make sure dxl_return_data is not to long */
-				{
-					memmove(crtl_tbl_data, dxl_return_data, dxl_return_data[0]); /* copy data to new array */
-					uint8_t tmp = 0;
-
-					/* BAUSTELLE !!!! Hier haut was noch nicht hin  */
-					for (int i = 0; i < DXL_SETUP_TOTAL_SIZE; i++)						
+				if ((dxl_status_packet.length - 2) >= DXL_SETUP_TOTAL_SIZE) /* check for proper length */
+				{ 
+					if (dxl_status_packet.param != NULL) /* check for NULL pointer */
 					{
-						if (crtl_tbl_data[i + 2] != dxl_setup_params[id][i])
+						for (int i = 0; i < DXL_SETUP_TOTAL_SIZE; i++)
 						{
-							switch (i)
+							if (internal_error == 0 && dxl_error == 0)
 							{
-							case DXL_SETUP_TEMP_LIMIT:
-								tmp = dxlSetTempLimit(id, dxl_setup_params[id][i]);
-								break;
-		
-							case DXL_SETUP_VOLTAGE_LIMIT_LOW:
-								tmp = dxlSetVoltageLimitLow(id, dxl_setup_params[id][i]);
-								break;
+								if (dxl_status_packet.param[i] != dxl_setup_params[id][i])
+								{
+									switch (i)
+									{
+									case DXL_SETUP_TEMP_LIMIT:
+										internal_error = dxlSetTempLimit(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
 
-							case DXL_SETUP_VOLTAGE_LIMIT_HIGH:
-								tmp = dxlSetVoltageLimitHigh(id, dxl_setup_params[id][i]);
-								break;
-								
-							case DXL_SETUP_MAX_TORQUE:
-								tmp = dxlSetMaxTorque(id, dxl_setup_params[id][i - 1] | (dxl_setup_params[id][i] << 8));
-								break;
+									case DXL_SETUP_VOLTAGE_LIMIT_LOW:
+										internal_error = dxlSetVoltageLimitLow(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
 
-							case DXL_SETUP_STATUS_RETURN_LEVEL:
-								tmp = dxlSetStatusReturnLevel(id, dxl_setup_params[id][i]);
-								break;
+									case DXL_SETUP_VOLTAGE_LIMIT_HIGH:
+										internal_error = dxlSetVoltageLimitHigh(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
 
-							case DXL_SETUP_RETURN_DELAY_TIME:
-								tmp = dxlSetReturnDelay(id, dxl_setup_params[id][i]);
-								break;
+									case DXL_SETUP_MAX_TORQUE:
+										internal_error = dxlSetMaxTorque(id, dxl_setup_params[id][i - 1] | (dxl_setup_params[id][i] << 8));
+										dxl_error = dxl_status_packet.error;
+										break;
 
-							case DXL_SETUP_ALARM_LED:
-								tmp = dxlSetAlarmLED(id, dxl_setup_params[id][i]);
-								break;
+									case DXL_SETUP_STATUS_RETURN_LEVEL:
+										internal_error = dxlSetStatusReturnLevel(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
 
-							case DXL_SETUP_ALARM_SHUT_DOWN:
-								tmp = dxlSetAlarmShutdown(id, dxl_setup_params[id][i]);
-								break;
+									case DXL_SETUP_RETURN_DELAY_TIME:
+										internal_error = dxlSetReturnDelay(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
 
-							default:
-								break;
-							}
-						}
+									case DXL_SETUP_ALARM_LED:
+										internal_error = dxlSetAlarmLED(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
 
-						if (tmp != 0)
-						{
-							dxl_error = 1;
-							if (sizeof(dxl_return_data) / sizeof(dxl_return_data[0]) >= 2) // sizeof geht nicht !!!!!!!!!!!
-							{
-								dxlError(dxl_return_data[1], id);
-							}
-							else
-							{
-								SendStatus("initDynamixel()", "error while reading dxl_return_data - no error code found", SYS_STAT_ERROR);
+									case DXL_SETUP_ALARM_SHUT_DOWN:
+										internal_error = dxlSetAlarmShutdown(id, dxl_setup_params[id][i]);
+										dxl_error = dxl_status_packet.error;
+										break;
+
+									default:
+										break;
+									}
+								}
+
+								if (internal_error != 0)
+								{
+									dxlPrintErrorMessage(internal_error, id);
+								}
+
+								if (dxl_error != 0)
+								{
+									dxlPrintErrorMessage(dxl_error, id);
+								}
 							}
 						}
 					}
 				}
 				else
 				{
-					/* dxl_return_data to long */
+					/* not enough data to proceed */
+					
 				}
 			}
 			else
 			{
-				/* dxl error */
+				/* aktuelle Konfiguration konnte nicht gelesen werden */
+				dxlPrintErrorMessage(internal_error, id);
+				break;
 			}
 		}
 		
-		if (dxl_error == 0)
+		if (internal_error == 0)
 		{
 			/* continuous turn & torque enable! */
+		}
+		else
+		{
+#ifndef _DEBUG
+			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
+#endif
 		}
 	}
 }
 
-void dxlError(int16_t errorBit, uint8_t id)
+void dxlPrintErrorMessage(int16_t errorBit, uint8_t id)
 {
+	/* um interne Fehle erweitern z.B. aus dxlGetStatusPacket -1 bis -5 usw. !!!!!!!!!!!!! */
 	if (errorBit > 0 && errorBit <= 0x0080)
 	{
 		char msg[64];
@@ -785,44 +796,44 @@ void dxlError(int16_t errorBit, uint8_t id)
 		switch (errorBit)
 		{
 		case 0x0001:
-			sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0002:
-			sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0004:
-			sprintf(msg, "Dynamixel - Overheating Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Overheating Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0008:
-			sprintf(msg, "Dynamixel - Range Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Range Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0010:
-			sprintf(msg, "Dynamixel - Checksum Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Checksum Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0020:
-			sprintf(msg, "Dynamixel - Overload Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Overload Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0040:
-			sprintf(msg, "Dynamixel - Instruction Error @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - Instruction Error @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 
 		case 0x0080:
 		default:
-			sprintf(msg, "Dynamixel - no response @ ID: %d", id);
-			SendStatus("dxlError(): ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "Dynamixel - no response @ ID: %u", id);
+			SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
 			break;
 		}
 #ifndef _DEBUG

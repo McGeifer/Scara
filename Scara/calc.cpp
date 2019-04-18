@@ -365,7 +365,7 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 
 int16_t UpdateZPos(void)
 {
-	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10);
+	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10.0);
 
 	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val, true) == 0)
 	{

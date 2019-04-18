@@ -14,6 +14,7 @@ typedef struct {
 	const	uint8_t		idx;				/* index number of object */
 			uint8_t		props;				/* object properties */
 			int16_t		data;				/* object data */
+			int8_t		(*pFunc)(uint8_t idx, int16_t data);	/* pointer for handler function*/
 } objStruct_t;
 
 /* data structure for the tool table */
@@ -26,7 +27,7 @@ typedef struct {
 			bool		active;				/* tool is active */
 } toolTbl_t;
 
-/* register to store position values */
+/* data structure to store position values */
 typedef struct {
 			uint8_t		pointIdx;
 			uint8_t		props;
@@ -34,6 +35,7 @@ typedef struct {
 			int16_t		posRegY;
 			int16_t		posRegZ;
 } posReg_t;
+
 
 /* modbus holding registers */
 enum modbusHoldingReg {

@@ -12,14 +12,13 @@
 #include "calc.h"
 #include "dynamixel.h"
 
-
 /* To Do's
 
 	###### hohe Priorität !!! ######
 
 		* Kommunikation mit Dynamixel wieder herstellen!
 			- Seit Ausführung eines Dynamixel reset lässt sich keine Verbindung mehr aufbauen.
-			- Led Umschaltung über broadcast ID geht -> Tristate scheint also zu funktionieren.
+			- LED Umschaltung über broadcast ID geht -> Tristate scheint also zu funktionieren.
 			- Kein Empfang von Statuspaketen
 			- Setzten von ID ohne Wirkung -> nach setzten der ID auf x über broadcast ID (nur ein Dynamixel angeschlossen) keine Kommunikation über diese ID möglich
 
@@ -34,7 +33,7 @@
 					- automatisches Berechnen des Positionsfenster für z.B. Zielpos wenn diese in ObDir geschrieben wird
 			1.4 UpdateObjDir() - neue setX Funktionen einbauen
 			
-		* dynamixel.cpp / .h
+		* dynamixel.cpp/ .h
 
 			2.1 dxl_return_data - raus schmeißen - siehe 1.1
 			2.2 HandleMove() 
@@ -53,7 +52,7 @@
 			3.3 handleScaraData() komplett überarbeiten - aus altem Projekt übernommen und NICHT FUNKTIONSFÄHIG!
 			3.4 sio.h Funktionsbeschreibungen erstellen
 
-		* clap.cpp/ .h
+		* calc.cpp/ .h
 
 			4.1 CalcAngle() testen
 				- Testen ob die Entscheidung für kürzeste Bewegung richtig funktioniert (vor allem Grenzfälle Testen)

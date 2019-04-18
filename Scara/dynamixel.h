@@ -11,7 +11,6 @@
 
 #include "Stream.h"
 
-extern uint8_t *dxl_return_data;
 
 /* Dynamixel control table parameters */
 /* EEPROM AREA */
@@ -138,6 +137,15 @@ extern uint8_t *dxl_return_data;
 #define dxlSetDirPin(DirPin)	(pinMode(DirPin,OUTPUT))				/* select the GPIO for switching the tristate buffer */
 #define dxlSetComMode(Mode)		(digitalWrite(DXL_DIRECTION_PIN, Mode))	/* switch between Rx- or Tx-Mode */
 
+/* data structure to store dynamixel status return packet */
+typedef struct {
+	uint8_t		id;			/* dynamixel ID */
+	uint8_t		length;		/* length of the status packet */
+	uint8_t		error;		/* dynamixel error byte */
+	uint8_t		*param;		/* additional information */
+	uint8_t		checksum;	/* status packet check sum */
+} dxlStatusPacket_t;
+
 /*  */
 enum dxReturnVal
 {
@@ -170,7 +178,7 @@ void initDynamixel(void);
 	the function it will issue an error message. In addition the execution of the main loop
 	is stopped to prevent inadvertent behavior.
  */
-void dxlError(int16_t errorBit, uint8_t id);
+void dxlPrintErrorMessage(int16_t errorBit, uint8_t id);
 
 /* 
 	Cyclic function for detecting the move status of the system and if necessary executing
