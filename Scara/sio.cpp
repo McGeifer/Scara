@@ -16,12 +16,12 @@
 #define SCARA_PACKET_LENGTH 4
 
 // serial buffer
-const uint8_t	buffer_length = 128;
-static uint8_t	buffer[buffer_length];
-static char		c_buffer[buffer_length];
-static uint8_t	idx = 0;
-FastCRC8		crc8;
-const uint8_t	min_buffer_length = 11; // minimum buffer length for a valid instruction ---> Magnet_An();
+static const uint8_t	buffer_length = 128;
+static uint8_t			buffer[buffer_length];
+static char				c_buffer[buffer_length];
+static uint8_t			idx = 0;
+static FastCRC8			crc8;
+static const uint8_t	min_buffer_length = 11; // minimum buffer length for a valid instruction ---> Magnet_An();
 
 void initSio(void)
 {
@@ -55,15 +55,16 @@ void handleSIO(void)
 		case OP_MODE_SCARA:
 			handleScaraData();
 			break;
-
 		default:
 			// ???
 			break;
 		}
 	}
 }
-
-int8_t ParseRadpid(void)
+/*
+ * function description:
+ */
+static int8_t ParseRadpid(void)
 {
 	enum tmpData
 	{
@@ -73,6 +74,7 @@ int8_t ParseRadpid(void)
 		xSpeed,
 		ySpeed,
 		zSpeed,
+		size_of_tmp_data
 	};
 
 	char input_string[buffer_length];
@@ -85,7 +87,7 @@ int8_t ParseRadpid(void)
 	bool offset_mode = false;
 	bool point_mode = false;
 	uint8_t point_idx = 0xFF;
-	int16_t data_to_write[sizeof(tmpData)];
+	int16_t data_to_write[size_of_tmp_data];
 
 	c_buffer[idx + 1] = '\0';	// terminate string
 	// buffer overflow möglich!?
@@ -185,7 +187,7 @@ int8_t ParseRadpid(void)
 		}
 		else if (strcmp(output_string[0], "MoveJ") == 0)
 		{
-			// setzte betriebsart ??? gibt ja momentan eh nur eine
+			// setzte Betriebsart ??? gibt ja momentan eh nur eine
 		}
 		else
 		{
@@ -249,16 +251,18 @@ int8_t ParseRadpid(void)
 		else if (point_mode && offset_mode)
 		{
 			int16_t *pPosRegData = GetPosRegData(&point_idx);
-			char msg[64];
-			sprintf(msg, "posRegData[] x: %i, y: %i, z: %i", pPosRegData[0], pPosRegData[1], pPosRegData[2]);
-			SendStatus("handleRapidString(): ", msg, STATUS_MSG_TYPE_DEBUG);
 			
 			if (pPosRegData != NULL)
 			{
+				char msg[128];
+				sprintf(msg, "posRegData[] x: %i, y: %i, z: %i", pPosRegData[xPos], pPosRegData[yPos], pPosRegData[zPos]);
+				SendStatus("handleRapidString(): ", msg, STATUS_MSG_TYPE_DEBUG); 
+				
 				data_to_write[xPos] = pPosRegData[0] + (int16_t)strtol(output_string[3], NULL, 10);
 				data_to_write[yPos] = pPosRegData[1] + (int16_t)strtol(output_string[4], NULL, 10);
 				data_to_write[zPos] = pPosRegData[2] + (int16_t)strtol(output_string[5], NULL, 10);
-				char msg[64];
+				
+				memset(msg, 0 ,128);
 				sprintf(msg, "point & offset mode - temporary position values[] x: %i, y: %i, z: %i", data_to_write[xPos], data_to_write[yPos], data_to_write[zPos]);
 				SendStatus("handleRapidString(): ", msg, STATUS_MSG_TYPE_DEBUG);
 			}
@@ -472,7 +476,7 @@ int8_t ParseRadpid(void)
 }
 
 // Receive a Modbus data package via RS232, plausibility check and error response done by the SimpleModbusClient.
-void handleModbusData(void)
+static void handleModbusData(void)
 {
 	// function 3 and 16 register array
 	static uint16_t holdingRegs[TOTAL_REGS_SIZE_MDB];
@@ -497,7 +501,7 @@ void handleModbusData(void)
 }
 
 // Receive a Rapid command string via UART, check the data for proper length and content.
-void handleRapidString(void)
+static void handleRapidString(void)
 {
 	if (Serial.available() > 0)
 	{
@@ -546,11 +550,11 @@ void handleRapidString(void)
 }
 
 // Receive a Scara data package via UART, check the data package and store it in the object dir.
-void handleScaraData(void)
+static void handleScaraData(void)
 {
 	if (Serial.available() > 0)
 	{
-		if (idx <= buffer_length)
+		if (idx < buffer_length) /*          prüfen !!!!!!!!!!!!!!! war vorher <= (out of bounds)*/
 		{
 			buffer[idx] = Serial.read();
 			idx++;

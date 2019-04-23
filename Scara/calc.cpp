@@ -12,42 +12,48 @@
 	return 0  - value is not in range
 	return -1 - error
  */
-uint8_t ChkServoLmt(uint8_t servo, float *val)
+static uint8_t ChkServoLmt(uint8_t servo, float *val)
 {
-	if (servo == 1)
-	{
-		int16_t tmp = (int16_t)round(degrees(*val) * 10);
-#ifdef _DEBUG
-		Serial.print("ChkServoLmt() -> tmp: ");
-		Serial.println(tmp, DEC);
-#endif
-		if (tmp >= OBJ_ANGLE_AXIS_1_MIN && tmp <= OBJ_ANGLE_AXIS_1_MAX)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else if (servo == 2)
+	if (val != NULL)
 	{
 		int16_t tmp = (int16_t)round(*val * RAD_TO_DEG * 10);
+
 #ifdef _DEBUG
 		Serial.print("ChkServoLmt() -> tmp: ");
 		Serial.println(tmp, DEC);
 #endif
-		if (tmp >= OBJ_ANGLE_AXIS_2_MIN && tmp <= OBJ_ANGLE_AXIS_2_MAX)
+
+		if (servo == 1)
 		{
-			return 1;
+			if (tmp >= OBJ_ANGLE_AXIS_1_MIN && tmp <= OBJ_ANGLE_AXIS_1_MAX)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else if (servo == 2)
+		{
+			if (tmp >= OBJ_ANGLE_AXIS_2_MIN && tmp <= OBJ_ANGLE_AXIS_2_MAX)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		else
 		{
-			return 0;
+			/* error message? */
+			return -1;
 		}
 	}
-	else {
-		/* error message? */
+	else
+	{
+		
 		return -1;
 	}
 }
@@ -57,7 +63,7 @@ uint8_t ChkServoLmt(uint8_t servo, float *val)
 	return #    - pointer to array
 	return NULL - error
  */
-float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
+static float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
 {
 	static float val[2] = { 0 };
 
@@ -155,7 +161,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 
 	/* 
 		Die berechneten Winkel und die in GeoGebra stimmen nicht überein. Alpha & gamma haben bis zu 2° Abweichung, wobei die Fehlerursache sehr wahrscheinlich
-		möglicherweise bei GeoGebra liegt. Dies führt zu Abweichung der X- und Y-Positionen von mehreren Millimetern !!!
+		bei GeoGebra liegt. Dies führt zu Abweichung der X- und Y-Positionen von mehreren Millimetern !!!
 	*/
 #ifdef _DEBUG
 	Serial.print("alpha: ");
@@ -257,7 +263,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 				result[1] = servo2A;
 				return result;
 			}
-			else if (cmp2A)
+			else if (cmp2B) /* stimmt das? war vorher auch cmp2A  */
 			{
 				/* error */
 				return NULL;
@@ -313,7 +319,6 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 	float alpha1 = 0;			/* outer angle between x-axis and c */
 	float beta = 0;				/* inner angle between a & c */
 	float beta1 = 0;			/* inner angle between x-axis & a */
-	float *result = { NULL };
 	
 	enum axis
 	{

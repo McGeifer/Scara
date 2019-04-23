@@ -10,30 +10,12 @@
 #endif
 
 
-
+static void handleModbusData(void);
+static void handleRapidString(void);
+static void handleScaraData(void);
 /*
 	
  */
 void initSio(void);
-
-/*
-	
- */
 void handleSIO(void);
-
-/*
-	
- */
-void handleModbusData(void);
-
-/*
-	
- */
-void handleRapidString(void);
-
-/*
-	
- */
-void handleScaraData(void);
-
 #endif

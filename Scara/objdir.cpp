@@ -19,10 +19,10 @@ static objStruct_t objDir[] =
 	/* internal objects */
 	{OBJ_IDX_Z_POS_COUNT,					OBJ_PROP_RW, 0, NULL},
 	{OBJ_IDX_OP_MODE,						OBJ_PROP_RW, 0, NULL},
-	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 4, NULL}, /* bit mask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
+	{OBJ_IDX_SYS_STATUS,					OBJ_PROP_RW, 0x04, NULL}, /* bit mask ! */    /* 0x04 for testing debug mode !!!!!!!!!!!!!!!!!!!!!!!!! */
 	
 	/* position values */
-	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, &setNewTargetPos},
+	{OBJ_IDX_X_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
 	{OBJ_IDX_X_ACTUAL_TARGET_POS,			OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_X_ACTUAL_POS,					OBJ_PROP_R_, 0, NULL},
 	{OBJ_IDX_Y_NEW_TARGET_POS,				OBJ_PROP__W, 0, NULL},
@@ -487,7 +487,7 @@ toolTbl_t* LocateTool(uint8_t index)
 		if (p->toolIdx == index)
 		{
 			char msg[64];
-			sprintf(msg, "tool %i found", p->toolIdx);
+			sprintf(msg, "tool %u found", p->toolIdx);
 			SendStatus("LocateTool(): ", msg, STATUS_MSG_TYPE_DEBUG);
 			return p;
 		}

@@ -108,7 +108,7 @@ void loop()
 		{
 			Serial.println(tmp);
 		}
-		else
+		/*else
 		{
 			if (dxl_return_data != NULL)
 			{
@@ -130,11 +130,11 @@ void loop()
 				Serial.println();
 				Serial.println();
 			}
-		}
+		}*/
 
-		/*UpdateObjDir();
-		handleSIO();
-		handleMove();*/
+		//UpdateObjDir();
+		//handleSIO();
+		//handleMove();
 
 		/* measure cycle time for main loop */
 		 cycle_count++;

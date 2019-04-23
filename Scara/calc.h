@@ -34,7 +34,7 @@
 /*
 	CalcAngle computes the angles for axis 1 & 2 out of the coordinates x & y
  */
-float* CalcAngle(int16_t *xVal, int16_t *yVal);
+float* CalcAngle(int16_t *xPos, int16_t *yPos);
 
 /*
 	Function to calculate actual x & y positions of the robot arm based on the axis angles.

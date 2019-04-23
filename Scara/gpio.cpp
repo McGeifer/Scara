@@ -10,9 +10,9 @@ void initGPIO(void)
 {
 	/* set pin modes */
 	pinMode(GPIO_PIN_MODBUS, INPUT);		/* pin to enable Modbus communication */
-	pinMode(GPIO_PIN_RAPID, INPUT);		/* pin to enable "Rapid" mode */
-	pinMode(GPIO_PIN_MAGNET, OUTPUT);	/* pin to switch the lifting magnet on/off */
-	pinMode(GPIO_PIN_INTERRUPT, INPUT);	/* interrupt pin for the light barrier */
+	pinMode(GPIO_PIN_RAPID, INPUT);			/* pin to enable "Rapid" mode */
+	pinMode(GPIO_PIN_MAGNET, OUTPUT);		/* pin to switch the lifting magnet on/off */
+	pinMode(GPIO_PIN_INTERRUPT, INPUT);		/* interrupt pin for the light barrier */
 
 	/* interrupts */
 	attachInterrupt(digitalPinToInterrupt(3), lightBarrierISR, CHANGE);	/* attach interrupt for light barrier impulse counter */
