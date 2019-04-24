@@ -31,7 +31,7 @@
 					- leichte Erkennung ob sich diese geändert haben/ ob sie erreicht wurden
 			1.3	Handler Funktionen wieder einführen
 					- automatisches Berechnen des Positionsfenster für z.B. Zielpos wenn diese in ObDir geschrieben wird
-			1.4 UpdateObjDir() - neue setX Funktionen einbauen
+			1.4 UpdateOD() - neue setX Funktionen einbauen
 			
 		* dynamixel.cpp/ .h
 
@@ -63,7 +63,7 @@ uint32_t cycle_time;
 uint32_t cycle_count;
 
 /* extern void InitDynamixel(void);
-extern void UpdateObjDir(void);
+extern void UpdateOD(void);
 extern void handleMove(void); */
 
 void setup()
@@ -132,7 +132,7 @@ void loop()
 			}
 		}*/
 
-		//UpdateObjDir();
+		//UpdateOD();
 		//handleSIO();
 		//handleMove();
 
@@ -143,7 +143,7 @@ void loop()
 			char msg[64];
 			uint32_t tmp = (micros() - cycle_time) / cycle_count;
 			sprintf(msg, "Cycle Time : %lu us", tmp);
-			SendStatus("StopWatch (loop): ", msg, STATUS_MSG_TYPE_INFO);
+			SendStatus("StopWatch (loop): ", msg, SYS_STAT_MSG_TYPE_INFO);
 			cycle_count = 0;
 			cycle_time = micros();
 		} 

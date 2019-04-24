@@ -11,42 +11,42 @@
 
 /* data structure for the object dictionary */
 typedef struct {
-	const	uint8_t		idx;				/* index number of object */
-			uint8_t		props;				/* object properties */
-			int16_t		data;				/* object data */
-			int8_t		(*pFunc)(uint8_t idx, int16_t data);	/* pointer for handler function*/
-} objStruct_t;
+	const	uint8_t		idx;						/* idx number of object */
+			uint8_t		props;						/* object properties */
+			int16_t		data;						/* object data */
+			int8_t		(*p)(uint8_t, int16_t);		/* pointer for handler function*/
+} objDir_t;
 
 /* data structure for the tool table */
 typedef struct {
-	const	uint8_t		toolIdx;			/* index number of tool */
-	const	uint8_t		props;				/* object properties */
-			int16_t		offsetX;			/* x offset */
-			int16_t		offsetY;			/* y offset */
-			int16_t		offsetZ;			/* z offset */
-			bool		active;				/* tool is active */
+	const	uint8_t		tool_idx;					/* idx number of tool */
+	const	uint8_t		props;						/* object properties */
+			int16_t		x_offset;					/* x offset */
+			int16_t		y_offset;					/* y offset */
+			int16_t		z_offset;					/* z offset */
+			bool		active;						/* tool is active */
 } toolTbl_t;
 
 /* data structure to store position values */
 typedef struct {
-			uint8_t		pointIdx;
+			uint8_t		point_idx;
 			uint8_t		props;
-			int16_t		posRegX;
-			int16_t		posRegY;
-			int16_t		posRegZ;
+			int16_t		x_pos;
+			int16_t		y_pos;
+			int16_t		z_pos;
 } posReg_t;
 
 
 /* modbus holding registers */
 enum modbusHoldingReg {
-	INDEX_MDB,				/* the first register starts at address 0 */
-	DATA_MDB,				/* data  */
-	CRC_MDB,				/* crc value */
-	TOTAL_ERRORS_MDB,		/* leave this one */
-	TOTAL_REGS_SIZE_MDB		/* total number of registers. Function 3 and 16 share the same register array */
+	INDEX_MDB,										/* the first register starts at address 0 */
+	DATA_MDB,										/* data  */
+	CRC_MDB,										/* crc value */
+	TOTAL_ERRORS_MDB,								/* leave this one */
+	TOTAL_REGS_SIZE_MDB								/* total number of registers. Function 3 and 16 share the same register array */
 };
 
-/* object index list */
+/* object idx list */
 /* basic options */
 #define OBJ_IDX_ACK							0xF0	/* acknowledge */
 #define OBJ_IDX_START_MOVE					0xF1	/* start movement of robot axis */
@@ -130,11 +130,11 @@ enum modbusHoldingReg {
 #define OP_MODE_SCARA						0x03	/* operation mode scara - use "Scara" protocol */
 
 /* status message types */
-#define STATUS_MSG_TYPE_NONE				0x01	/* display a message without status type (try not to use) */
-#define STATUS_MSG_TYPE_INFO				0x02	/* display normal info message */
-#define STATUS_MSG_TYPE_WARNING				0x03	/* display a warning message */
-#define STATUS_MSG_TYPE_ERROR				0x04	/* display a error message */
-#define STATUS_MSG_TYPE_DEBUG				0x05	/* display debug info */
+#define SYS_STAT_MSG_TYPE_NONE				0x01	/* display a message without status type (try not to use) */
+#define SYS_STAT_MSG_TYPE_INFO				0x02	/* display normal info message */
+#define SYS_STAT_MSG_TYPE_WARNING			0x03	/* display a warning message */
+#define SYS_STAT_MSG_TYPE_ERROR				0x04	/* display a error message */
+#define SYS_STAT_MSG_TYPE_DEBUG				0x05	/* display debug info */
 
 /* system status */
 #define SYS_STAT_RUNNING					0x01	/* no error - system operational */
@@ -144,121 +144,119 @@ enum modbusHoldingReg {
 #define SYS_STAT_SILENT						0x10	/* no messages will be send */
 #define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) /* system in error state */
 
-/* object dir - min/ max position/ angle values and tolerances */
-#define OBJ_POS_X_MIN 			0
-#define OBJ_POS_X_MAX			2000
-#define OBJ_POS_Y_MIN			0
-#define OBJ_POS_Y_MAX			2000
-#define OBJ_POS_Z_MIN			0
-#define OBJ_POS_Z_MAX			2000
+/* min/ max position/ angle values and tolerances */
+#define X_POS_MIN 							0
+#define X_POS_MAX							2000
+#define Y_POS_MIN							0
+#define Y_POS_MAX							2000
+#define Z_POS_MIN							0
+#define Z_POS_MAX							2000
 
-#define OBJ_ANGLE_AXIS_1_MIN	600
-#define OBJ_ANGLE_AXIS_1_MAX	2400
-#define OBJ_ANGLE_AXIS_2_MIN	600
-#define OBJ_ANGLE_AXIS_2_MAX	2400
+#define AXIS_1_ANGLE_MIN					600
+#define AXIS_1_ANGLE_MAX					2400
+#define AXIS_2_ANGLE_MIN					600
+#define AXIS_2_ANGLE_MAX					2400
 
 /* object dir - min/ max speed values */
-#define X_SPEED_MIN				1
-#define X_SPEED_MAX				255
-#define Y_SPEED_MIN				1
-#define Y_SPEED_MAX				255
-#define Z_SPEED_MIN				1
-#define Z_SPEED_MAX				255
+#define X_SPEED_MIN							1
+#define X_SPEED_MAX							255
+#define Y_SPEED_MIN							1
+#define Y_SPEED_MAX							255
+#define Z_SPEED_MIN							1
+#define Z_SPEED_MAX							255
 
-#define AXIS_1_SPEED_MIN		1
-#define AXIS_1_SPEED_MAX		255
-#define AXIS_2_SPEED_MIN		1
-#define AXIS_2_SPEED_MAX		255
-
-
+#define AXIS_1_SPEED_MIN					1
+#define AXIS_1_SPEED_MAX					255
+#define AXIS_2_SPEED_MIN					1
+#define AXIS_2_SPEED_MAX					255
 
 /* miscellaneous */
-#define PosArrayLength			64
+#define PosArrayLength						64
 
 /* mechanical parameters */
-#define Z_AXIS_GRADIENT			8.0					/* gradient of the z axis spindle */
-#define Z_AXIS_RESOLUTION		16.0				/* number of impulses for a whole turn of the spindle */
-#define Z_AXIS_LENGHT			200.0				/* length of z axis in mm */
-#define AXIS_1_LENGTH			195.0
-#define AXIS_2_LENGTH			200.0
+#define Z_GRADIENT							8.0		/* gradient of the z axis spindle */
+#define Z_RESOLUTION						16.0	/* number of impulses for a whole turn of the spindle */
+#define Z_LENGHT							200.0	/* length of z axis in mm */
+#define AXIS_1_LENGTH						195.0
+#define AXIS_2_LENGTH						200.0
 
 /* 
-	Function to return the x, y & z values for a given position index stored in the position register
+	Function to return the x, y & z values for a given position idx stored in the position register
  */
 int16_t* GetPosRegData(uint8_t *idx);
 
 /*
 	Function for writing data to the position register
  */
-uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal);
+uint8_t SetPosRegData(uint8_t *idx, int16_t *x_pos, int16_t *y_pos, int16_t *z_pos);
 
 /*
 	Function to return the stored data of an object
  */
-int16_t GetObjData(uint8_t index);
+int16_t GetObjData(uint8_t idx);
 
 /* 
 	Function for writing data to the object dictionary. Objects can only be written if they have the property "writable". 
-	This mechanism can be disabled if the parameter internalCall is set to "true" (use with caution!)
+	This mechanism can be disabled if the parameter internal_call is set to "true" (use with caution!)
  */
-int8_t SetObjData(uint8_t index, int16_t data, bool internalCall);
+int8_t SetObjData(uint8_t idx, int16_t data, bool internal_call);
 
 /*
-	Write "actualAngles" (rad) in objDir.
+	Write "actualAngles" (rad) in obj_dir.
 	return	0 = operation successful
 	return -1 = operation failed
  */
-int8_t SetActualAngles(float *servo1, float *servo2);
+int8_t SetActualAngles(float *servo_1, float *servo_2);
 
 /* 
-	Write "actualTargetAngles" (rad) in objDir.
+	Write "actualTargetAngles" (rad) in obj_dir.
 	return	0 = operation successful
 	return -1 = operation failed
  */
-int8_t SetActualTargetAngles(float *servo1, float *servo2);
+int8_t SetActualTargetAngles(float *servo_1, float *servo_2);
 
 /*
-	Write "newTargetAngles" (rad) in objDir.
+	Write "newTargetAngles" (rad) in obj_dir.
 	return	0 = operation successful
 	return -1 = operation failed
  */
-int8_t SetNewTargetAngles(float *servo1, float *servo2);
+int8_t SetNewTargetAngles(float *servo_1, float *servo_2);
 
 /*
-	Write "actualPos" (mm) in objDir.
+	Write "actualPos" (mm) in obj_dir.
 	return	0 = operation successful
 	return -1 = operation failed
  */
-int8_t SetActualPositions(float *xPos, float *yPos);
+int8_t SetActualPositions(float *x_pos, float *y_pos);
 
 /* 
-	Write "actualTargetPos" (mm) in objDir.
+	Write "actualTargetPos" (mm) in obj_dir.
 	return	0 = operation successful
 	return -1 = operation failed
  */
-int8_t SetActualTargetPositions(float *xPos, float *yPos);
+int8_t SetActualTargetPositions(float *x_pos, float *y_pos);
 
 /* 
-	Write "newTargetPos" (mm) in objDir.
+	Write "newTargetPos" (mm) in obj_dir.
 	return	0 = operation successful
 	return -1 = operation failed
  */
-int8_t SetNewTargetPositions(float *xPos, float *yPos);
+int8_t SetNewTargetPositions(float *x_pos, float *y_pos);
 
 /*
 	Function to return the stored offset values for a given tool
  */
-int16_t* GetToolData(uint8_t index);
+int16_t* GetToolData(uint8_t idx);
 
 /*
 	Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer
  */
-toolTbl_t* LocateTool(uint8_t index);
+toolTbl_t* LocateTool(uint8_t idx);
 
 /*
-	Cyclic function for updating all actual position, angle & speed values of the objDir
+	Cyclic function for updating all actual position, angle & speed values of the obj_dir
  */
-void UpdateObjDir(void);
+void UpdateOD(void);
 
 
 #endif

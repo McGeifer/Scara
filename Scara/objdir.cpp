@@ -8,7 +8,7 @@
 #include "dynamixel.h"
 
 /* object dictionary */
-static objStruct_t objDir[] =
+static objDir_t obj_dir[] =
 {
 	/* basic options */
 	/* {OBJ_IDX_ACK,							OBJ_PROP__W, 0}, */
@@ -59,7 +59,7 @@ static objStruct_t objDir[] =
 };
 
 /* tool table */
-static toolTbl_t toolTbl[] =
+static toolTbl_t tool_tbl[] =
 {
 	/* tool 0 - machine zero */
 	{OBJ_IDX_TOOL_0, OBJ_PROP_R_, 0, 0, 0, true},
@@ -77,7 +77,7 @@ static toolTbl_t toolTbl[] =
 };
 
 /* static position register */
-static posReg_t statPosReg[] =
+static posReg_t stat_pos_reg[] =
 {
 	{OBJ_IDX_STAT_POS_HOME,			OBJ_PROP_R_, 0, 0, 0},
 	{OBJ_IDX_STAT_POS_RD_COIN_1,	OBJ_PROP_R_, 0, 0, 0},
@@ -93,23 +93,23 @@ static posReg_t statPosReg[] =
 };
 
 /* dynamic position register */
-static posReg_t *dynPosReg[PosArrayLength] = { 0 };
+static posReg_t *dyn_pos_reg[PosArrayLength] = { 0 };
 
-/* index of the last position in the position register */
-static uint8_t pLastPos = 0;
+/* idx of the last position in the position register */
+static uint8_t p_last_pos = 0;
 
 
 static posReg_t* LocatePos(uint8_t *idx)
 {
 	for (uint8_t i = 0; i < PosArrayLength; i++)
 	{
-		if (dynPosReg[i]->pointIdx == *idx)
+		if (dyn_pos_reg[i]->point_idx == *idx)
 		{
-			SendStatus("LocatePos() ", "pos found", STATUS_MSG_TYPE_DEBUG);
-			return dynPosReg[i];
+			SendStatus("LocatePos() ", "pos found", SYS_STAT_MSG_TYPE_DEBUG);
+			return dyn_pos_reg[i];
 		}
 	}
-	SendStatus("LocatePos() ", "pos not found", STATUS_MSG_TYPE_DEBUG);
+	SendStatus("LocatePos() ", "pos not found", SYS_STAT_MSG_TYPE_DEBUG);
 	return NULL;
 }
 
@@ -121,9 +121,9 @@ int16_t* GetPosRegData(uint8_t *idx)
 	if (p != NULL)
 	{
 		static int16_t data[3];
-		data[0] = p->posRegX;
-		data[1] = p->posRegY;
-		data[2] = p->posRegZ;
+		data[0] = p->x_pos;
+		data[1] = p->y_pos;
+		data[2] = p->z_pos;
 		return data;
 	}
 	else
@@ -132,7 +132,7 @@ int16_t* GetPosRegData(uint8_t *idx)
 	}
 }
 
-uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
+uint8_t SetPosRegData(uint8_t *idx, int16_t *x_pos, int16_t *y_pos, int16_t *z_pos)
 {
 	posReg_t *p = NULL;
 	p = LocatePos(idx);
@@ -141,20 +141,20 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 	{
 		if (*idx < PosArrayLength)
 		{
-			dynPosReg[pLastPos] = (posReg_t*)malloc(sizeof(posReg_t)); /* allocate memory for new PosReg entry and store a pointer in the dynPosReg */
-			dynPosReg[pLastPos]->pointIdx = *idx;
-			dynPosReg[pLastPos]->props = OBJ_PROP_RW;
-			pLastPos++;
+			dyn_pos_reg[p_last_pos] = (posReg_t*)malloc(sizeof(posReg_t)); /* allocate memory for new PosReg entry and store a pointer in the dyn_pos_reg */
+			dyn_pos_reg[p_last_pos]->point_idx = *idx;
+			dyn_pos_reg[p_last_pos]->props = OBJ_PROP_RW;
+			p_last_pos++;
 			p = LocatePos(idx);
 			if (p == NULL)
 			{
-				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", STATUS_MSG_TYPE_ERROR);
+				SendStatus("in function SetPosRegData(): ", "unknown error while writing new position value", SYS_STAT_MSG_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else
 		{
-			SendStatus("in function SetPosRegData(): ", "failed to write - max number of points (64) reached", STATUS_MSG_TYPE_ERROR);
+			SendStatus("in function SetPosRegData(): ", "failed to write - max number of points (64) reached", SYS_STAT_MSG_TYPE_ERROR);
 			return -1;
 		}
 	}
@@ -162,22 +162,22 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 	{
 		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W) /* check if object is writable */
 		{
-			if (*xVal >= OBJ_POS_X_MIN && *xVal <= OBJ_POS_X_MAX) /* check the permissible value range */
+			if (*x_pos >= X_POS_MIN && *x_pos <= X_POS_MAX) /* check the permissible value range */
 			{
-				if (*yVal >= OBJ_POS_Y_MIN && *yVal <= OBJ_POS_Y_MAX)
+				if (*y_pos >= Y_POS_MIN && *y_pos <= Y_POS_MAX)
 				{
-					if (*zVal >= OBJ_POS_Z_MIN && *zVal <= OBJ_POS_Z_MAX)
+					if (*z_pos >= Z_POS_MIN && *z_pos <= Z_POS_MAX)
 					{
-						p->posRegX = *xVal;
-						p->posRegY = *yVal;
-						p->posRegZ = *zVal;
+						p->x_pos = *x_pos;
+						p->y_pos = *y_pos;
+						p->z_pos = *z_pos;
 						return 0;
 					}
 					else
 					{
 						char msg[64];
 						sprintf(msg, "position P%c value out of range", *idx);
-						SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+						SendStatus("in function SetPosRegData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 						return -1;
 					}
 				}
@@ -185,7 +185,7 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 				{
 					char msg[64];
 					sprintf(msg, "position P%c value out of range", *idx);
-					SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+					SendStatus("in function SetPosRegData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 					return -1;
 				}
 			}
@@ -193,7 +193,7 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 			{
 				char msg[64];
 				sprintf(msg, "position P%c value out of range", *idx);
-				SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+				SendStatus("in function SetPosRegData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 				return -1;
 			}
 		}
@@ -201,25 +201,25 @@ uint8_t SetPosRegData(uint8_t *idx, int16_t *xVal, int16_t *yVal, int16_t *zVal)
 		{
 			char msg[64];
 			sprintf(msg, "position P%c is read only", *idx);
-			SendStatus("in function SetPosRegData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("in function SetPosRegData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else
 	{
-		SendStatus("in function SetPosRegData(): failed to write - ", "unknown error", STATUS_MSG_TYPE_ERROR);
+		SendStatus("in function SetPosRegData(): failed to write - ", "unknown error", SYS_STAT_MSG_TYPE_ERROR);
 		return -1;
 	}
 }
 
-static objStruct_t* LocateObj(uint8_t index)
+static objDir_t* LocateObj(uint8_t idx)
 {
-	objStruct_t *p = NULL;
-	p = objDir;
+	objDir_t *p = NULL;
+	p = obj_dir;
 	
-	for (uint8_t i = 0; i < (sizeof(objDir) / sizeof(objDir[0])); i++, p++)
+	for (uint8_t i = 0; i < (sizeof(obj_dir) / sizeof(obj_dir[0])); i++, p++)
 	{
-		if (p->idx == index)
+		if (p->idx == idx)
 		{
 			return p;
 		}
@@ -227,17 +227,17 @@ static objStruct_t* LocateObj(uint8_t index)
 	return NULL;
 }
 
-int16_t GetObjData(uint8_t index)
+int16_t GetObjData(uint8_t idx)
 {
-	objStruct_t *p = NULL;
-	p = LocateObj(index);
+	objDir_t *p = NULL;
+	p = LocateObj(idx);
 
 	if (p != NULL)
 	{
 		/*char msg[64];
 		uint16_t tmp = p->data;
 		sprintf(msg, "return value 0x%x", tmp);
-		SendStatus("GetObjData(): ", "test", STATUS_MSG_TYPE_INFO);*/
+		SendStatus("GetObjData(): ", "test", SYS_STAT_MSG_TYPE_INFO);*/
 		return p->data;
 	}
 	else
@@ -246,118 +246,118 @@ int16_t GetObjData(uint8_t index)
 	}
 }
 
-int8_t SetObjData(uint8_t index, int16_t data, bool internalCall) {
+int8_t SetObjData(uint8_t idx, int16_t data, bool internal_call) {
 
-	objStruct_t *pObjStruct = NULL;
-	pObjStruct = LocateObj(index);
-	int16_t minValue = 0;
-	int16_t maxValue = 0;
+	objDir_t *p = NULL;
+	p = LocateObj(idx);
+	int16_t min_val = 0;
+	int16_t max_val = 0;
 
-	if (pObjStruct != NULL) /* make sure object does exist */
+	if (p != NULL) /* make sure object does exist */
 	{
-		if (pObjStruct->props == OBJ_PROP_RW || pObjStruct->props == OBJ_PROP__W || internalCall == true) /* check if object is writable */
+		if (p->props == OBJ_PROP_RW || p->props == OBJ_PROP__W || internal_call == true) /* check if object is writable */
 		{
-			switch (pObjStruct->idx)	/* set min/ max values for comparison */
+			switch (p->idx)	/* set min/ max values for comparison */
 			{
 			case OBJ_IDX_X_NEW_TARGET_POS:
-				minValue = OBJ_POS_X_MIN;
-				maxValue = OBJ_POS_X_MAX;
+				min_val = X_POS_MIN;
+				max_val = X_POS_MAX;
 				break;
 
 			case OBJ_IDX_Y_NEW_TARGET_POS:
-				minValue = OBJ_POS_Y_MIN;
-				maxValue = OBJ_POS_Y_MAX;
+				min_val = Y_POS_MIN;
+				max_val = Y_POS_MAX;
 				break;
 
 			case OBJ_IDX_Z_NEW_TARGET_POS:
-				minValue = OBJ_POS_Z_MIN;
-				maxValue = OBJ_POS_Z_MAX;
+				min_val = Z_POS_MIN;
+				max_val = Z_POS_MAX;
 				break;
 
 			case OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE:
-				minValue = OBJ_ANGLE_AXIS_1_MIN;
-				maxValue = OBJ_ANGLE_AXIS_1_MAX;
+				min_val = AXIS_1_ANGLE_MIN;
+				max_val = AXIS_1_ANGLE_MAX;
 				break;
 
 			case OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE:
-				minValue = OBJ_ANGLE_AXIS_2_MIN;
-				maxValue = OBJ_ANGLE_AXIS_2_MAX;
+				min_val = AXIS_2_ANGLE_MIN;
+				max_val = AXIS_2_ANGLE_MAX;
 				break;
 
 			case OBJ_IDX_X_NEW_TARGET_SPEED:
-				minValue = X_SPEED_MIN;
-				maxValue = X_SPEED_MAX;
+				min_val = X_SPEED_MIN;
+				max_val = X_SPEED_MAX;
 				break;
 
 			case OBJ_IDX_Y_NEW_TARGET_SPEED:
-				minValue = Y_SPEED_MIN;
-				maxValue = Y_SPEED_MAX;
+				min_val = Y_SPEED_MIN;
+				max_val = Y_SPEED_MAX;
 				break;
 
 			case OBJ_IDX_Z_NEW_TARGET_SPEED:
-				minValue = Z_SPEED_MIN;
-				maxValue = Z_SPEED_MAX;
+				min_val = Z_SPEED_MIN;
+				max_val = Z_SPEED_MAX;
 				break;
 
 			case OBJ_IDX_AXIS_1_NEW_TARGET_SPEED:
-				minValue = AXIS_1_SPEED_MIN;
-				maxValue = AXIS_1_SPEED_MAX;
+				min_val = AXIS_1_SPEED_MIN;
+				max_val = AXIS_1_SPEED_MAX;
 				break;
 
 			case OBJ_IDX_AXIS_2_NEW_TARGET_SPEED:
-				minValue = AXIS_2_SPEED_MIN;
-				maxValue = AXIS_2_SPEED_MAX;
+				min_val = AXIS_2_SPEED_MIN;
+				max_val = AXIS_2_SPEED_MAX;
 				break;
 
 			default:
-				minValue = -32768; /* gute Idee? */
-				maxValue = 32767;
+				min_val = -32768; /* gute Idee? */
+				max_val = 32767;
 				break;
 			}
 
-			if (data >= minValue &&  data <= maxValue) /* write data if it's inside the allowed range */
+			if (data >= min_val &&  data <= max_val) /* write data if it's inside the allowed range */
 			{
-				pObjStruct->data = data;
+				p->data = data;
 				return 0;
 			}
 			else
 			{
 				char msg[64];
-				sprintf(msg, "object 0x%x value out of range", index);
-				SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+				sprintf(msg, "object 0x%x value out of range", idx);
+				SendStatus("in function SetObjData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 				return -1;
 			}
 		}
 		else
 		{
 			char msg[64];
-			sprintf(msg, "object 0x%x is read only", index);
-			SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+			sprintf(msg, "object 0x%x is read only", idx);
+			SendStatus("in function SetObjData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 			return -1;
 		}
 	}
 	else
 	{
 		char msg[64];
-		sprintf(msg, "object 0x%x does not exist", index);
-		SendStatus("in function SetObjData(): failed to write - ", msg, STATUS_MSG_TYPE_ERROR);
+		sprintf(msg, "object 0x%x does not exist", idx);
+		SendStatus("in function SetObjData(): failed to write - ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		return -1;
 	}
 }
 
-int8_t SetActualAngles(float *servo1, float *servo2)
+int8_t SetActualAngles(float *servo_1, float *servo_2)
 {
-	int16_t actAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE);
+	int16_t act_angle_1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE);
 
-	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
+	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, round((degrees(*servo_1)) * 10.0), true) == 0)
 	{
-		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
+		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, round((degrees(*servo_2)) * 10.0), true) == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, actAngle1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, act_angle_1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -367,19 +367,19 @@ int8_t SetActualAngles(float *servo1, float *servo2)
 	}
 }
 
-int8_t SetActualTargetAngles(float *servo1, float *servo2)
+int8_t SetActualTargetAngles(float *servo_1, float *servo_2)
 {
-	int16_t oldTargetAngle1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE);
+	int16_t old_target_angle_1 = GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE);
 
-	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
+	if (SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, round((degrees(*servo_1)) * 10.0), true) == 0)
 	{
-		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
+		if (SetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE, round((degrees(*servo_2)) * 10.0), true) == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE, old_target_angle_1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -389,19 +389,19 @@ int8_t SetActualTargetAngles(float *servo1, float *servo2)
 	}
 }
 
-int8_t SetNewTargetAngles(float *servo1, float *servo2)
+int8_t SetNewTargetAngles(float *servo_1, float *servo_2)
 {
-	int16_t oldTargetAngle1 = GetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE);
+	int16_t old_target_angle_1 = GetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE);
 
-	if (SetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, round((degrees(*servo1)) * 10.0), true) == 0)
+	if (SetObjData(OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE, round((degrees(*servo_1)) * 10.0), true) == 0)
 	{
-		if (SetObjData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, round((degrees(*servo2)) * 10.0), true) == 0)
+		if (SetObjData(OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE, round((degrees(*servo_2)) * 10.0), true) == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, oldTargetAngle1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
+			SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, old_target_angle_1, true); /* try to set the old value of axis 1 to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -411,19 +411,19 @@ int8_t SetNewTargetAngles(float *servo1, float *servo2)
 	}
 }
 
-int8_t SetActualPositions(float *xPos, float *yPos)
+int8_t SetActualPositions(float *x_pos, float *y_pos)
 {
-	int16_t actPosX = GetObjData(OBJ_IDX_X_ACTUAL_POS);
+	int16_t actual_x_pos = GetObjData(OBJ_IDX_X_ACTUAL_POS);
 
-	if (SetObjData(OBJ_IDX_X_ACTUAL_POS, round(*xPos * 10.0), true) == 0)
+	if (SetObjData(OBJ_IDX_X_ACTUAL_POS, round(*x_pos * 10.0), true) == 0)
 	{
-		if (SetObjData(OBJ_IDX_Y_ACTUAL_POS, round(*yPos * 10.0), true) == 0)
+		if (SetObjData(OBJ_IDX_Y_ACTUAL_POS, round(*y_pos * 10.0), true) == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_X_ACTUAL_POS, actPosX, true); /* try to set the old value of x to avoid inconsistent data */
+			SetObjData(OBJ_IDX_X_ACTUAL_POS, actual_x_pos, true); /* try to set the old value of x to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -433,19 +433,19 @@ int8_t SetActualPositions(float *xPos, float *yPos)
 	}
 }
 
-int8_t SetActualTargetPositions(float *xPos, float *yPos)
+int8_t SetActualTargetPositions(float *x_pos, float *y_pos)
 {
-	int16_t actTargetPosX = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
+	int16_t actual_target_pos_X = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
 
-	if (SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, round(*xPos * 10.0), true) == 0)
+	if (SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, round(*x_pos * 10.0), true) == 0)
 	{
-		if (SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, round(*yPos * 10.0), true) == 0)
+		if (SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, round(*y_pos * 10.0), true) == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, actTargetPosX, true); /* try to set the old value of x to avoid inconsistent data */
+			SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, actual_target_pos_X, true); /* try to set the old value of x to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -455,19 +455,19 @@ int8_t SetActualTargetPositions(float *xPos, float *yPos)
 	}
 }
 
-int8_t SetNewTargetPositions(float *xPos, float *yPos)
+int8_t SetNewTargetPositions(float *x_pos, float *y_pos)
 {
-	int16_t newTargetPosX = GetObjData(OBJ_IDX_X_NEW_TARGET_POS);
+	int16_t new_target_pos_x = GetObjData(OBJ_IDX_X_NEW_TARGET_POS);
 
-	if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, round(*xPos * 10.0), true) == 0)
+	if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, round(*x_pos * 10.0), true) == 0)
 	{
-		if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, round(*yPos * 10.0), true) == 0)
+		if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, round(*y_pos * 10.0), true) == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			SetObjData(OBJ_IDX_X_NEW_TARGET_POS, newTargetPosX, true); /* try to set the old value of x to avoid inconsistent data */
+			SetObjData(OBJ_IDX_X_NEW_TARGET_POS, new_target_pos_x, true); /* try to set the old value of x to avoid inconsistent data */
 			return -1;
 		}
 	}
@@ -477,39 +477,39 @@ int8_t SetNewTargetPositions(float *xPos, float *yPos)
 	}
 }
 
-toolTbl_t* LocateTool(uint8_t index)
+toolTbl_t* LocateTool(uint8_t idx)
 {
 	toolTbl_t *p = NULL;
-	p = toolTbl;
+	p = tool_tbl;
 	
-	for (uint8_t i = 0; i < (sizeof(toolTbl) / sizeof(toolTbl[0])); i++, p++)
+	for (uint8_t i = 0; i < (sizeof(tool_tbl) / sizeof(tool_tbl[0])); i++, p++)
 	{
-		if (p->toolIdx == index)
+		if (p->tool_idx == idx)
 		{
 			char msg[64];
-			sprintf(msg, "tool %u found", p->toolIdx);
-			SendStatus("LocateTool(): ", msg, STATUS_MSG_TYPE_DEBUG);
+			sprintf(msg, "tool %u found", p->tool_idx);
+			SendStatus("LocateTool(): ", msg, SYS_STAT_MSG_TYPE_DEBUG);
 			return p;
 		}
 	}
 	return NULL;
 }
 
-int16_t* GetToolData(uint8_t index)
+int16_t* GetToolData(uint8_t idx)
 {
 	toolTbl_t *p = NULL;
-	p = LocateTool(index);
+	p = LocateTool(idx);
 
 	if (p != NULL)
 	{
 		static int16_t data[4];
-		data[0] = p->offsetX;
-		data[1] = p->offsetY;
-		data[2] = p->offsetZ;
+		data[0] = p->x_offset;
+		data[1] = p->y_offset;
+		data[2] = p->z_offset;
 		data[3] = p->active;
 		char msg[64];
-		sprintf(msg, "tool offset values: x: %i, y: %i, z: %i", p->offsetX, p->offsetY, p->offsetZ);
-		SendStatus("GetToolData(): ", msg, STATUS_MSG_TYPE_DEBUG);
+		sprintf(msg, "tool offset values: x: %i, y: %i, z: %i", p->x_offset, p->y_offset, p->z_offset);
+		SendStatus("GetToolData(): ", msg, SYS_STAT_MSG_TYPE_DEBUG);
 		return data;
 	}
 	else
@@ -518,7 +518,7 @@ int16_t* GetToolData(uint8_t index)
 	}
 }
 
-void UpdateObjDir(void)
+void UpdateOD(void)
 {
 	int16_t data[3][2] = { 0 };
 	uint8_t error = 0;
@@ -571,11 +571,11 @@ void UpdateObjDir(void)
 					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				case DXL_ID_AXIS_Z:
-					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true);
+					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true); //  falsch !!!!!!!!!!!!!
 					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
 					break;
 				default:
-					SendStatus("UpdateObjDir(): ", "unknown device ID", SYS_STAT_ERROR);
+					SendStatus("UpdateOD(): ", "unknown device ID", SYS_STAT_ERROR);
 					return;
 				}
 			}

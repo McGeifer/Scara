@@ -17,8 +17,8 @@
 #define MACHINE_ZERO_OFFS_X_FIELD 170.0		/* x-offset between field zero & machine zero */
 #define MACHINE_ZERO_OFFS_Y_FIELD 25.0		/* y-offset between field zero & machine zero */
 
-#define DYNA_TO_DEG(val) (round((val * 300.0) / 1023)) /* convert a dynamixel position value (0 - 1023) into an angle (degree) */
-#define DEG_TO_DYNA(val) (round((val / 1023.0) * 300)) /* convert an angle (degree) into a dynamixel position value */
+#define DYNA_TO_DEG(val) (round((val * 300.0) / 1023.0)) /* convert a dynamixel position value (0 - 1023) into an angle (degree) */
+#define DEG_TO_DYNA(val) (round((val / 1023.0) * 300.0)) /* convert an angle (degree) into a dynamixel position value */
 
 #define SOLUTION_A 0x01
 #define SOLUTION_B 0x02

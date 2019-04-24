@@ -25,7 +25,7 @@ static uint8_t ChkServoLmt(uint8_t servo, float *val)
 
 		if (servo == 1)
 		{
-			if (tmp >= OBJ_ANGLE_AXIS_1_MIN && tmp <= OBJ_ANGLE_AXIS_1_MAX)
+			if (tmp >= AXIS_1_ANGLE_MIN && tmp <= AXIS_1_ANGLE_MAX)
 			{
 				return 1;
 			}
@@ -36,7 +36,7 @@ static uint8_t ChkServoLmt(uint8_t servo, float *val)
 		}
 		else if (servo == 2)
 		{
-			if (tmp >= OBJ_ANGLE_AXIS_2_MIN && tmp <= OBJ_ANGLE_AXIS_2_MAX)
+			if (tmp >= AXIS_2_ANGLE_MIN && tmp <= AXIS_2_ANGLE_MAX)
 			{
 				return 1;
 			}
@@ -95,56 +95,56 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 {
 	float *coordinates = NULL;	/* converted coordinates */
 	static float result[2];		/* result of calculation */
-	float xTmp = 0;				/* temp value for conversion */
-	float yTmp = 0;				/* temp value for conversion */
-	float xVal = 0;				/*  */
-	float yVal = 0;				/*  */
+	float x_tmp = 0;				/* temp value for conversion */
+	float y_tmp = 0;				/* temp value for conversion */
+	float x_val = 0;				/*  */
+	float y_val = 0;				/*  */
 
 	float b = 0;				/* length between c & a */
 
-	uint8_t cmp1A = 0;			/* temporary compare values */
-	uint8_t cmp1B = 0;
-	uint8_t cmp2A = 0;
-	uint8_t cmp2B = 0;
+	uint8_t cmp_1A = 0;			/* temporary compare values */
+	uint8_t cmp_1B = 0;
+	uint8_t cmp_2A = 0;
+	uint8_t cmp_2B = 0;
 
 	/* all angles in non negative radians! */
 	float alpha = 0;			/* inner angle of triangle at point A (between b & c) */
-	float alpha2 = 0;			/* angle between b & x-axis  */
+	float alpha_2 = 0;			/* angle between b & x-axis  */
 	float beta = 0;				/* inner angle of triangle at point B (between a & c) */
 	float gamma = 0;			/* inner angle of triangle at point C (between b & c) */
-	static float servo1A = 0;	/* angle for servo motor 1 */
-	static float servo1B = 0;	/*  */
-	static float servo2A = 0;	/*  */
-	static float servo2B = 0;	/*  */
+	static float servo_1A = 0;	/* angle for servo motor 1 */
+	static float servo_1B = 0;	/*  */
+	static float servo_2A = 0;	/*  */
+	static float servo_2B = 0;	/*  */
 
 	/* convert the input position values based on the field coordinate system to the coordinate system of the robot axis */
-	xTmp = *xPos / 10.0;
-	yTmp = *yPos / 10.0;
+	x_tmp = *xPos / 10.0;
+	y_tmp = *yPos / 10.0;
 #ifdef _DEBUG
 	Serial.println("CalcAngle()");
-	Serial.print("xTmp: ");
-	Serial.println(xTmp, 8);
-	Serial.print("yTmp: ");
-	Serial.println(yTmp, 8);
+	Serial.print("x_tmp: ");
+	Serial.println(x_tmp, 8);
+	Serial.print("y_tmp: ");
+	Serial.println(y_tmp, 8);
 #endif 
-	coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &xTmp, &yTmp);
-	xVal = xTmp; /* coordinates[DXL_ID_AXIS_1]; */
-	yVal = yTmp; /* coordinates[DXL_ID_AXIS_2]; */
+	coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &x_tmp, &y_tmp);
+	x_val = x_tmp; /* coordinates[DXL_ID_AXIS_1]; */
+	y_val = y_tmp; /* coordinates[DXL_ID_AXIS_2]; */
 #ifdef _DEBUG
-	Serial.print("xVal: ");
-	Serial.println(xVal, 8);
-	Serial.print("yVal: ");
-	Serial.println(yVal, 8);
+	Serial.print("x_val: ");
+	Serial.println(x_val, 8);
+	Serial.print("y_val: ");
+	Serial.println(y_val, 8);
 #endif 
 
 	/* calculate missing lengths and angles */
-	b = (float)sqrt(xVal * xVal + yVal * yVal);
-	alpha2 = atan(yVal / xVal) * (-1);
+	b = (float)sqrt(x_val * x_val + y_val * y_val);
+	alpha_2 = atan(y_val / x_val) * (-1);
 #ifdef _DEBUG
 	Serial.print("b: ");
 	Serial.println(b, 8);
-	Serial.print("alpha2: ");
-	Serial.println(alpha2 * 180 / PI, 8);
+	Serial.print("alpha_2: ");
+	Serial.println(alpha_2 * 180 / PI, 8);
 
 	/*Serial.print("Teil1: ");
 	Serial.println(b * b + AXIS_2_LENGTH * AXIS_2_LENGTH - AXIS_1_LENGTH * AXIS_1_LENGTH, 8);
@@ -181,73 +181,73 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 	*/
 
 	 /* calculation of the servo angles based on the orientation of the triangle in the coordinate system */
-	servo1A = 2 * PI - SERVO_1_OFFS - alpha - alpha2;	/* point B is "left" from b */
-	servo1B = 2 * PI - SERVO_1_OFFS - (alpha2 - alpha); /* point B is "right" from b */
-	servo2A = 2 * PI - SERVO_2_OFFS - beta;				/* point B is "left" from b */
-	servo2B = beta - SERVO_2_OFFS;						/* point B is "right" from b */
+	servo_1A = 2 * PI - SERVO_1_OFFS - (alpha - alpha_2);	/* point B is "left" from b */
+	servo_1B = 2 * PI - SERVO_1_OFFS - (alpha_2 - alpha);	/* point B is "right" from b */
+	servo_2A = 2 * PI - SERVO_2_OFFS - beta;				/* point B is "left" from b */
+	servo_2B = beta - SERVO_2_OFFS;							/* point B is "right" from b */
 #ifdef _DEBUG
-	Serial.print("servo1A: ");
-	Serial.println(degrees(servo1A), DEC);
-	Serial.print("servo1B: ");
-	Serial.println(degrees(servo1B), DEC);
-	Serial.print("servo2A: ");
-	Serial.println(degrees(servo2A), DEC);
-	Serial.print("servo2B: ");
-	Serial.println(degrees(servo2B), DEC);
+	Serial.print("servo_1A: ");
+	Serial.println(degrees(servo_1A), DEC);
+	Serial.print("servo_1B: ");
+	Serial.println(degrees(servo_1B), DEC);
+	Serial.print("servo_2A: ");
+	Serial.println(degrees(servo_2A), DEC);
+	Serial.print("servo_2B: ");
+	Serial.println(degrees(servo_2B), DEC);
 #endif
 
 	/* check which solutions are inside the allowed range of the dynamixel servos to reach the given position */
-	cmp1A = ChkServoLmt(1, &servo1A);
-	cmp1B = ChkServoLmt(1, &servo1B);
-	cmp2A = ChkServoLmt(2, &servo2A);
-	cmp2B = ChkServoLmt(2, &servo2B);
+	cmp_1A = ChkServoLmt(1, &servo_1A);
+	cmp_1B = ChkServoLmt(1, &servo_1B);
+	cmp_2A = ChkServoLmt(2, &servo_2A);
+	cmp_2B = ChkServoLmt(2, &servo_2B);
 #ifdef _DEBUG
-	Serial.print("cmp1A: ");
-	Serial.println(cmp1A, DEC);
-	Serial.print("cmp1B: ");
-	Serial.println(cmp1B, DEC);
-	Serial.print("cmp2A: ");
-	Serial.println(cmp2A, DEC);
-	Serial.print("cmp2B: ");
-	Serial.println(cmp2B, DEC);
+	Serial.print("cmp_1A: ");
+	Serial.println(cmp_1A, DEC);
+	Serial.print("cmp_1B: ");
+	Serial.println(cmp_1B, DEC);
+	Serial.print("cmp_2A: ");
+	Serial.println(cmp_2A, DEC);
+	Serial.print("cmp_2B: ");
+	Serial.println(cmp_2B, DEC);
 #endif 
 
-	if (cmp1A)
+	if (cmp_1A)
 	{
-		if (cmp1B) /* both solutions for servo1 are allowed */
+		if (cmp_1B) /* both solutions for servo1 are allowed */
 		{
 			/* check which solution can also be reached by servo2 */
 
-			if (cmp2A && cmp2B) /* both solutions for servo2 are allowed */
+			if (cmp_2A && cmp_2B) /* both solutions for servo2 are allowed */
 			{
 				/* decision is based on the shortest way for servo2 */
 				float actAngle = radians(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE) / 10);
-				float diffA = actAngle < servo2A ? servo2A - actAngle : actAngle - servo2A;
-				float diffB = actAngle < servo2B ? servo2B - actAngle : actAngle - servo2B;
+				float diffA = actAngle < servo_2A ? servo_2A - actAngle : actAngle - servo_2A;
+				float diffB = actAngle < servo_2B ? servo_2B - actAngle : actAngle - servo_2B;
 
 				if (diffA < diffB)
 				{
-					result[0] = servo1A;
-					result[1] = servo2A;
+					result[0] = servo_1A;
+					result[1] = servo_2A;
 					return result;
 				}
 				else
 				{
-					result[0] = servo1B;
-					result[1] = servo2B;
+					result[0] = servo_1B;
+					result[1] = servo_2B;
 					return result;
 				}
 			}
-			else if (cmp2A) /* only solution A for servo2 is allowed */
+			else if (cmp_2A) /* only solution A for servo2 is allowed */
 			{
-				result[0] = servo1A;
-				result[1] = servo2A;
+				result[0] = servo_1A;
+				result[1] = servo_2A;
 				return result;
 			}
-			else if (cmp2B) /* only solution B for servo2 is allowed */
+			else if (cmp_2B) /* only solution B for servo2 is allowed */
 			{
-				result[0] = servo1B;
-				result[1] = servo2B;
+				result[0] = servo_1B;
+				result[1] = servo_2B;
 				return result;
 			}
 			else
@@ -255,15 +255,15 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 				return NULL;
 			}
 		}
-		else if (!cmp1B) /* only solution A for servo1 is allowed */
+		else if (!cmp_1B) /* only solution A for servo1 is allowed */
 		{
-			if (cmp2A)
+			if (cmp_2A)
 			{
-				result[0] = servo1A;
-				result[1] = servo2A;
+				result[0] = servo_1A;
+				result[1] = servo_2A;
 				return result;
 			}
-			else if (cmp2B) /* stimmt das? war vorher auch cmp2A  */
+			else if (cmp_2B) /* stimmt das? war vorher auch cmp_2A  */
 			{
 				/* error */
 				return NULL;
@@ -278,17 +278,17 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 			return NULL;
 		}
 	}
-	else if (!cmp1A)
+	else if (!cmp_1A)
 	{
-		if (cmp1B) /* only solution B for servo1 is allowed */
+		if (cmp_1B) /* only solution B for servo1 is allowed */
 		{
-			if (cmp2B)
+			if (cmp_2B)
 			{
-				result[0] = servo1B;
-				result[1] = servo2B;
+				result[0] = servo_1B;
+				result[1] = servo_2B;
 				return result;
 			}
-			else if (!cmp2B)
+			else if (!cmp_2B)
 			{
 				/* error */
 				return NULL;
@@ -313,12 +313,12 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 
 float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 {
-	float vecA[2] = { 0 };
-	float vecB[2] = { 0 };
-	float vecR[2] = { 0 };
-	float alpha1 = 0;			/* outer angle between x-axis and c */
+	float vec_a[2] = { 0 };
+	float vec_b[2] = { 0 };
+	float vec_r[2] = { 0 };
+	float alpha_1 = 0;			/* outer angle between x-axis and c */
 	float beta = 0;				/* inner angle between a & c */
-	float beta1 = 0;			/* inner angle between x-axis & a */
+	float beta_1 = 0;			/* inner angle between x-axis & a */
 	
 	enum axis
 	{
@@ -328,49 +328,49 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 		V_SIZE
 	};
 
-	vecA[X] = AXIS_1_LENGTH * cos(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
-	vecA[Y] = AXIS_1_LENGTH * sin(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
+	vec_a[X] = AXIS_1_LENGTH * cos(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
+	vec_a[Y] = AXIS_1_LENGTH * sin(radians(*angleAxis1 / 10.0) + SERVO_1_OFFS);
 
-	alpha1 =           radians(*angleAxis1 / 10.0) + SERVO_1_OFFS;
-	beta   = 2 * PI - (radians(*angleAxis2 / 10.0) + SERVO_2_OFFS);
-	beta1  = 2 * PI - (beta - (alpha1 - PI));
+	alpha_1 =           radians(*angleAxis1 / 10.0) + SERVO_1_OFFS;
+	beta    = 2 * PI - (radians(*angleAxis2 / 10.0) + SERVO_2_OFFS);
+	beta_1  = 2 * PI - (beta - (alpha_1 - PI));
 
-	vecB[X] = AXIS_2_LENGTH * cos(beta1);
-	vecB[Y] = AXIS_2_LENGTH * sin(beta1);
+	vec_b[X] = AXIS_2_LENGTH * cos(beta_1);
+	vec_b[Y] = AXIS_2_LENGTH * sin(beta_1);
 
-	vecR[X] = vecA[X] + vecB[X];
-	vecR[Y] = vecA[Y] + vecB[Y]; /* bis hier hin funktioniert sie :D */
+	vec_r[X] = vec_a[X] + vec_b[X];
+	vec_r[Y] = vec_a[Y] + vec_b[Y]; /* bis hier hin funktioniert sie :D */
 
 //#ifdef _DEBUG
 //	Serial.println("CalcPosition()");
-//	Serial.print("alpha1: ");
-//	Serial.println(alpha1 * 180 / PI, DEC);
+//	Serial.print("alpha_1: ");
+//	Serial.println(alpha_1 * 180 / PI, DEC);
 //	Serial.print("beta: ");
 //	Serial.println(beta * 180 / PI, DEC);
-//	Serial.print("beta1: ");
-//	Serial.println(beta1 * 180 / PI, DEC);
+//	Serial.print("beta_1: ");
+//	Serial.println(beta_1 * 180 / PI, DEC);
 //	Serial.print("anlgeAxis1: ");
 //	Serial.println(*angleAxis1 / 10, DEC);
-//	Serial.print("vecA[X]: ");
-//	Serial.println(vecA[X], DEC);
-//	Serial.print("vecA[Y]: ");
-//	Serial.println(vecA[Y], DEC);
-//	Serial.print("vecB[X]: ");
-//	Serial.println(vecB[X], DEC);
-//	Serial.print("vecB[Y]: ");
-//	Serial.println(vecB[Y], DEC);
-//	Serial.print("vecR[X]: ");
-//	Serial.println(vecR[X], DEC);
-//	Serial.print("vecR[Y]: ");
-//	Serial.println(vecR[Y], DEC);
+//	Serial.print("vec_a[X]: ");
+//	Serial.println(vec_a[X], DEC);
+//	Serial.print("vec_a[Y]: ");
+//	Serial.println(vec_a[Y], DEC);
+//	Serial.print("vec_b[X]: ");
+//	Serial.println(vec_b[X], DEC);
+//	Serial.print("vec_b[Y]: ");
+//	Serial.println(vec_b[Y], DEC);
+//	Serial.print("vec_r[X]: ");
+//	Serial.println(vec_r[X], DEC);
+//	Serial.print("vec_r[Y]: ");
+//	Serial.println(vec_r[Y], DEC);
 //#endif
 
-	return ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vecR[X], &vecR[Y]);
+	return ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vec_r[X], &vec_r[Y]);
 }
 
 int16_t UpdateZPos(void)
 {
-	int16_t val = round((Z_AXIS_RESOLUTION / Z_AXIS_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10.0);
+	int16_t val = round((Z_RESOLUTION / Z_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10.0);
 
 	if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val, true) == 0)
 	{

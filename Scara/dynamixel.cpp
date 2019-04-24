@@ -300,7 +300,7 @@ int8_t dxlAction(uint8_t id)
 
 int8_t dxlSyncWrite(void)
 {
-	SendStatus("dxlSyncWrite(): ", "sync write not supported", STATUS_MSG_TYPE_ERROR);
+	SendStatus("dxlSyncWrite(): ", "sync write not supported", SYS_STAT_MSG_TYPE_ERROR);
 	return -1;
 }
 
@@ -655,20 +655,20 @@ void initDynamixel(void)
 			dxlPrintErrorMessage(tmp, i);
 			char msg[32];
 			sprintf(msg, "no Dynamixel found @ ID: %d", i);
-			SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_ERROR);
+			SendStatus("InitDynamixel(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		}
 		else
 		{
 			char msg[64];
 			sprintf(msg, "Dynamixel found @ ID: %d", i);
-			SendStatus("InitDynamixel(): ", msg, STATUS_MSG_TYPE_INFO);
+			SendStatus("InitDynamixel(): ", msg, SYS_STAT_MSG_TYPE_INFO);
 			response++;
 		}
 	}
 
 	if (response != 3)
 	{
-		SendStatus("InitDynamixel(): ", "check wiring and ID's of Dynamixel servos and restart the controller", STATUS_MSG_TYPE_ERROR);
+		SendStatus("InitDynamixel(): ", "check wiring and ID's of Dynamixel servos and restart the controller", SYS_STAT_MSG_TYPE_ERROR);
 		/* if one of the servos could not be found, set the system error state to prevent further operations */
 #ifndef _DEBUG
 		SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
@@ -811,82 +811,82 @@ void dxlPrintErrorMessage(int16_t error, uint8_t id)
 	{
 	case DXL_ERR_INPUT_VOLTAGE:
 		sprintf(msg, "Dynamixel - Input Voltage Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_ANGLE_LIMIT:
 		sprintf(msg, "Dynamixel - Angle Limit Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_OVERHEATING:
 		sprintf(msg, "Dynamixel - Overheating Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_RANGE:
 		sprintf(msg, "Dynamixel - Range Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_CHECKSUM:
 		sprintf(msg, "Dynamixel - Checksum Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_OVERLOAD:
 		sprintf(msg, "Dynamixel - Overload Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_INSTRUCTION:
 		sprintf(msg, "Dynamixel - Instruction Error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_NO_RESPONSE:
 		sprintf(msg, "Dynamixel - no response @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_TIMEOUT_WAITING_STATUS:
 		sprintf(msg, "internal error - timeout while waiting for status packet @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_TIMEOUT_RECEIVING_STATUS:
 		sprintf(msg, "internal error - timeout while receiving status packet @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_INVALID_STATUS_DATA:
 		sprintf(msg, "internal error - invalid status packet @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_MEMORY_ALLOCATION:
 		sprintf(msg, "internal error - error while allocating memory @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_STATUS_PACKET_SIZE:
 		sprintf(msg, "internal error - wrong status packet size @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_NO_PARAM_LIST:
 		sprintf(msg, "internal error - no parameter list for status packet @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	case DXL_ERR_NO_SYNC_WRITE:
 		sprintf(msg, "internal error - sync write not supported @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 
 	default:
 		sprintf(msg, "unknown error @ ID: %u", id);
-		SendStatus("dxlPrintErrorMessage(): ", msg, STATUS_MSG_TYPE_ERROR);
+		SendStatus("dxlPrintErrorMessage(): ", msg, SYS_STAT_MSG_TYPE_ERROR);
 		break;
 	}
 

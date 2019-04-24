@@ -19,23 +19,23 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 
 			switch (statusType)
 			{
-			case STATUS_MSG_TYPE_NONE:
+			case SYS_STAT_MSG_TYPE_NONE:
 				sprintf(statusString, "         ");
 				break;
 
-			case STATUS_MSG_TYPE_INFO:
+			case SYS_STAT_MSG_TYPE_INFO:
 				sprintf(statusString, "Info:    ");
 				break;
 
-			case STATUS_MSG_TYPE_WARNING:
+			case SYS_STAT_MSG_TYPE_WARNING:
 				sprintf(statusString, "Warning: ");
 				break;
 
-			case STATUS_MSG_TYPE_ERROR:
+			case SYS_STAT_MSG_TYPE_ERROR:
 				sprintf(statusString, "Error:   ");
 				break;
 
-			case STATUS_MSG_TYPE_DEBUG:
+			case SYS_STAT_MSG_TYPE_DEBUG:
 				sprintf(statusString, "Debug:   ");
 				break;
 
@@ -58,7 +58,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 			}
 			else
 			{
-				if (statusType != STATUS_MSG_TYPE_DEBUG)
+				if (statusType != SYS_STAT_MSG_TYPE_DEBUG)
 				{
 					sprintf(finalMsgString, "%s %s", statusString, message);
 					Serial.println(finalMsgString);
