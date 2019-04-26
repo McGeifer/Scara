@@ -1,6 +1,5 @@
 /*  */
 
-
 #include "calc.h"
 #include "objdir.h"
 #include "status.h"

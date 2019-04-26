@@ -520,78 +520,77 @@ int16_t* GetToolData(uint8_t idx)
 
 void UpdateOD(void)
 {
-	int16_t data[3][2] = { 0 };
-	uint8_t error = 0;
-	float *result = {};
-
 	enum dataType
 	{
 		angle,
 		speed
 	};
 
+	int16_t data[3][2] = { 0 };
+
 	if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
 		for (uint8_t id = 0; id < 3; id++)
 		{
-			//data[id][angle] = dynamixelReadPosition(id); /********** was mit z-Achse? was für Rückgabewerte bei continuous turn modus? ************/
-			//data[id][speed] = dynamixelReadSpeed(id);
-
-			/*Serial.print("angle");
-			Serial.println(data[id][angle]);
-			Serial.print("speed");
-			Serial.println(data[id][speed]);*/
-
-			if (data[id][angle] < 0 || data[id][speed] < 0)
+			
+			if (dxlGetPresentPosition(id) == 0)
 			{
+				const dxlStatusPacket_t status_packet = dxlGetStatusPacket();
 
-				if (data[id][angle] < 0) /* error value is negative by dynamixel library */
-				{
-					error = data[id][angle] * (-1);
-				}
-				else
-				{
-					error = data[id][speed] * (-1);
-				}
-				dxlPrintErrorMessage(error, id);
-				return;
+				
+				
+			
+
+			//if (data[id][angle] < 0 || data[id][speed] < 0)
+			//{
+
+			//	if (data[id][angle] < 0) /* error value is negative by dynamixel library */
+			//	{
+			//		error = data[id][angle] * (-1);
+			//	}
+			//	else
+			//	{
+			//		error = data[id][speed] * (-1);
+			//	}
+			//	dxlPrintErrorMessage(error, id);
+			//	return;
+			//}
+			//else
+			//{
+			//	switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
+			//	{
+			//	case DXL_ID_AXIS_1:
+
+			//		/* Durch die neuen Set Funktionen ersetzen !!! */
+			//		SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
+			//		SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
+			//		break;
+			//	case DXL_ID_AXIS_2:
+			//		SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
+			//		SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
+			//		break;
+			//	case DXL_ID_AXIS_Z:
+			//		SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true); //  falsch !!!!!!!!!!!!!
+			//		SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
+			//		break;
+			//	default:
+			//		SendStatus("UpdateOD(): ", "unknown device ID", SYS_STAT_ERROR);
+			//		return;
+			//	}
 			}
-			else
-			{
-				switch (id) /* store actual speed and position values, abort with error state if unknown id is detected */
-				{
-				case DXL_ID_AXIS_1:
+		}
+		//result = CalcPosistion(&data[DXL_ID_AXIS_1][angle], &data[DXL_ID_AXIS_2][angle]);
 
-					/* Durch die neuen Set Funktionen ersetzen !!! */
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
-					SetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED, data[id][speed], true);
-					break;
-				case DXL_ID_AXIS_2:
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE, DYNA_TO_DEG(data[id][angle]), true);
-					SetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED, data[id][speed], true);
-					break;
-				case DXL_ID_AXIS_Z:
-					SetObjData(OBJ_IDX_Z_ACTUAL_POS, UpdateZPos(), true); //  falsch !!!!!!!!!!!!!
-					SetObjData(OBJ_IDX_Z_ACTUAL_SPEED, data[id][speed], true);
-					break;
-				default:
-					SendStatus("UpdateOD(): ", "unknown device ID", SYS_STAT_ERROR);
-					return;
-				}
-			}
-		}
-		result = CalcPosistion(&data[DXL_ID_AXIS_1][angle], &data[DXL_ID_AXIS_2][angle]);
-
-		if (result == NULL) /* calculate related x and y positions */
-		{
-#ifndef _DEBUG
-			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
-#endif
-		}
-		else
-		{
-			SetActualPositions(&result[0], &result[1]);
-		}
+//		if (result == NULL) /* calculate related x and y positions */
+//		{
+//#ifndef _DEBUG
+//			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
+//#endif
+//		}
+//		else
+//		{
+//			SetActualPositions(&result[0], &result[1]);
+//		}
 
 
 		if (data[DXL_ID_AXIS_1][speed] > 0 || data[DXL_ID_AXIS_2][speed] > 0 || data[DXL_ID_AXIS_Z][speed] > 0) /********** Was ist mit z-Achse?? Wie sehen die Geschwindigkeitswerte aus? > 0 richtig ? ************/

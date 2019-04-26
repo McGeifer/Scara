@@ -102,7 +102,7 @@ void loop()
 {
 	while (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
 	{
-		int8_t tmp = dxlSetLED(DXL_BROADCASTING_ID, 0);
+		int8_t tmp = dxlSetLED(DXL_BROADCASTING_ID, 1);
 
 		if (tmp != 0)
 		{
@@ -132,7 +132,7 @@ void loop()
 			}
 		}*/
 
-		//UpdateOD();
+		UpdateOD();
 		//handleSIO();
 		//handleMove();
 

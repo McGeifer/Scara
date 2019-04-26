@@ -297,9 +297,9 @@ static int8_t ParseRadpid(void)
 		}
 
 		// set outputstring[] offset for speed, positioning mode & tool (based on "lowest" position of the speed value in the output_string[])
-		//					 -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
-		//					 -> MoveJ p1, vmax, fine, tool0;  <------ offset based on this type of message
-		//					 -> MoveJ (1,  119,  100), vmax, fine, tool0;
+		//	                 -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
+		//                   -> MoveJ p1, vmax, fine, tool0;  <------ offset based on this type of message
+		//                   -> MoveJ (1,  119,  100), vmax, fine, tool0;
 		// output_string index:   0    1    2     3     4     5      6     7     8
 		if (point_mode && offset_mode)
 		{

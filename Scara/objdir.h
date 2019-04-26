@@ -180,6 +180,7 @@ enum modbusHoldingReg {
 #define AXIS_1_LENGTH						195.0
 #define AXIS_2_LENGTH						200.0
 
+
 /* 
 	Function to return the x, y & z values for a given position idx stored in the position register
  */

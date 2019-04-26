@@ -50,16 +50,22 @@ static const dxlStatusPacket_t dxl_status_packet_empty = { 0 };	/* empty instanc
 																 * deallocated and pointer is set to NULL before using empty instance
 																 * to prevent memory fragmentation */
 
+const dxlStatusPacket_t dxlGetStatusPacket(void)
+{
+	const dxlStatusPacket_t tmp = dxl_status_packet;
+	return tmp;
+}
+
 /*
 	Function to receive and parse a Dynamixel status return packet. If a valid status return packet	has
-	been received it will store the received data for further processing in the dxl_return_data array.
-	return  0	= received data successfully stored in dxl_return_data
+	been received it will store the data for further processing in dxl_status_packet.
+	return  0	= received data successfully stored in dxl_status_packet
 	return -1	= timeout while waiting for data (no data received)
 	return -2	= timeout while receiving data
 	return -4	= invalid data packet
 	return -5   = error while allocating memory
 */
-int8_t dxlGetStatusPacket(void)
+int8_t dxlReceiveStatusPacket(void)
 {
 	uint32_t time_stamp = 0;
 
@@ -111,7 +117,7 @@ int8_t dxlGetStatusPacket(void)
 
 #ifdef _DEBUG
 					char msg[64];
-					sprintf(msg, "dxlGetStatusPacket: 0x%02X 0x%02X", dxl_status_packet.id, dxl_status_packet.length);
+					sprintf(msg, "dxlReceiveStatusPacket: 0x%02X 0x%02X", dxl_status_packet.id, dxl_status_packet.length);
 					Serial.print(msg);
 #endif
 					if (dxl_status_packet.param != NULL)	/* check for proper calloc execution */
@@ -202,7 +208,7 @@ int8_t dxlGetStatusPacket(void)
 							- read instruction: number of bytes to read
 							- write instruction: data to write
 	return 0			= no error or no status return packet (when using broadcast id)
-	return -1			= error, Dynamixel error bit stored in *dxl_return_data
+	return -1			= error, Dynamixel error bit stored in dxl_status_packet.error
 */
 int8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 {
@@ -267,7 +273,7 @@ int8_t dxlWriteData(uint8_t id, uint8_t instruction, uint8_t *param_list)
 
 		if (id != DXL_BROADCASTING_ID)
 		{
-			return dxlGetStatusPacket();
+			return dxlReceiveStatusPacket();
 		}
 		else
 		{
@@ -459,6 +465,7 @@ int8_t dxlSetCustomData(uint8_t id, const uint8_t DXL_INST_, uint8_t *param_list
 /* 
 	Dynamixel read functions
 */
+
 int8_t dxlGetModelNumber(uint8_t id)
 {
 	uint8_t param[] = { 3, DXL_P_MODEL_NUMBER_L, 2 };

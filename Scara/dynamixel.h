@@ -11,9 +11,8 @@
 
 #include "Stream.h"
 
-
 /* Dynamixel control table parameters */
-/* EEPROM AREA */
+/* EEPROM area */
 #define DXL_P_MODEL_NUMBER_L				0		/* Model Number(L) */
 #define DXL_P_MODEL_NUMBER_H				1		/* Model Number(H) */
 #define DXL_P_VERSION						2		/* Version of Firmware */
@@ -39,7 +38,7 @@
 #define DXL_P_UP_CALIBRATION_L				22		/* Up Calibration(L) */
 #define DXL_P_UP_CALIBRATION_H				23		/* Up Calibration(H) */
 
-/* RAM AREA */
+/* RAM area */
 #define DXL_P_TORQUE_ENABLE					24		/* Torque Enable */
 #define DXL_P_LED							25		/* LED */
 #define DXL_P_CW_COMPLIANCE_MARGIN			26		/* CW Compliance Margin */
@@ -110,7 +109,7 @@
 #define DXL_POS_TOLERANCE					0.5		/* max position tolerance for a Dynamixel */
 #define DXL_TORQUE_ON						1
 #define DXL_TORQUE_OFF						0
-#define DXL_START							0xFF	/* start byte of Dynamixel protocol (two times 0xFF) */
+#define DXL_START							0xFF	/* start byte of Dynamixel protocol */
 
 /* dynamixel axis id's */
 #define DXL_ID_AXIS_1						0x00	/* Dynamixel id for axis 1 */
@@ -132,24 +131,24 @@
 #define DXL_ERR_OVERLOAD					32		/* 0x20 - Dynamixel - Overload Error */ 
 #define DXL_ERR_INSTRUCTION					64		/* 0x40 - Dynamixel - Instruction Error */ 
 #define DXL_ERR_NO_RESPONSE					128		/* 0x80 - Dynamixel - no response */ 
-/* error states - internally triggered */
+
+/* error states - triggered internally */
 #define DXL_ERR_TIMEOUT_WAITING_STATUS		-1		/* timeout while waiting for status packet  */
 #define DXL_ERR_TIMEOUT_RECEIVING_STATUS	-2		/* timeout while receiving status packet */
 #define DXL_ERR_INVALID_STATUS_DATA			-3		/* invalid status packet */
 #define DXL_ERR_MEMORY_ALLOCATION			-4		/* error while allocating memory */
 #define DXL_ERR_STATUS_PACKET_SIZE			-5		/* wrong status packet size */
 #define DXL_ERR_NO_PARAM_LIST				-6		/* no parameter list for status packet */
-
 #define DXL_ERR_NO_SYNC_WRITE				-10		/* sync write not supported */
 
-
 /* macros for serial port functions */
-#define dxlBeginCom(args)	(Serial2.begin(args))	/* begin serial communication */
-#define dxlSendData(args)	(Serial2.write(args))	/* write byte over serial */
-#define dxlAvailableData()	(Serial2.available())	/* check serial data available */
-#define dxlReadData()		(Serial2.read())		/* read byte over serial data */
-#define dxlPeekData()		(Serial2.peek())		/* peek serial data */
-#define dxlFlush()			(Serial2.flush())		/* flush serial buffer */
+#define DXL_SERIAL_PORT		Serial2							/* serial port used by the Dynamixel */
+#define dxlBeginCom(args)	(DXL_SERIAL_PORT.begin(args))	/* begin serial communication */
+#define dxlSendData(args)	(DXL_SERIAL_PORT.write(args))	/* write byte over serial */
+#define dxlAvailableData()	(DXL_SERIAL_PORT.available())	/* check serial data available */
+#define dxlReadData()		(DXL_SERIAL_PORT.read())		/* read byte over serial data */
+#define dxlPeekData()		(DXL_SERIAL_PORT.peek())		/* peek serial data */
+#define dxlFlush()			(DXL_SERIAL_PORT.flush())		/* flush serial buffer */
 
 /* macros for switching between Rx & Tx mode */
 #define DXL_RX_MDOE LOW
@@ -159,32 +158,25 @@
 
 /* data structure to store dynamixel status return packet */
 typedef struct {
-	uint8_t		id;			/* dynamixel ID */
-	uint8_t		length;		/* length of the status packet */
-	uint8_t		error;		/* dynamixel error byte */
-	uint8_t		*param;		/* additional information */
-	uint8_t		checksum;	/* status packet check sum */
+	uint8_t		id;				/* dynamixel ID */
+	uint8_t		length;			/* length of the status packet */
+	uint8_t		error;			/* dynamixel error byte */
+	uint8_t		*param;			/* additional information */
+	uint8_t		checksum;		/* status packet check sum */
 } dxlStatusPacket_t;
 
 /*  */
-enum dxReturnVal
-{
-	DXL_RETURN_LENGTH,
-	DXL_RETURN_ERROR,
-	DXL_RETURN_DATA
-};
-
 enum dxlSetupParams
 {
 	DXL_SETUP_TEMP_LIMIT,
 	DXL_SETUP_VOLTAGE_LIMIT_LOW,
 	DXL_SETUP_VOLTAGE_LIMIT_HIGH,
-	DXL_SETUP_MAX_TORQUE			= 4, /* skip one - max_torque is uint16 not uint8 */
+	DXL_SETUP_MAX_TORQUE			= 4,	/* skip one - max_torque is uint16 not uint8 */
 	DXL_SETUP_STATUS_RETURN_LEVEL,
 	DXL_SETUP_RETURN_DELAY_TIME,
 	DXL_SETUP_ALARM_LED,
 	DXL_SETUP_ALARM_SHUT_DOWN,
-	DXL_SETUP_TOTAL_SIZE				/* total size of enum - must be at the last position */
+	DXL_SETUP_TOTAL_SIZE					/* total size of enum - must be at the last position */
 };
 
 /*
@@ -210,6 +202,11 @@ void handleMove(void);
 	Open serial port for Dynamixel communication and set direction pin to control the half duplex UART.
  */
 void dxlStartCom(uint32_t baudRate, uint8_t directionPin);
+
+/* 
+	This function returns the actual Dynamixel status return packet.
+*/
+const dxlStatusPacket_t dxlGetStatusPacket(void);
 
 /*
 	#################################################
