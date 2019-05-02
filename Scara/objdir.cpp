@@ -248,7 +248,6 @@ int16_t GetObjData(uint8_t idx)
 
 int8_t SetObjData(uint8_t idx, int16_t data, bool internal_call)
 {
-
     objDir_t *p = NULL;
     p = LocateObj(idx);
     int16_t min_val = 0;
@@ -534,10 +533,11 @@ void UpdateObjDir(void)
         size_of_data_type
     };
 
-    uint8_t dxl_error = 0;					/* Dynamixel error code received by the status packet */
-    int8_t internal_error = 0;				/* internal error code reported by the Dynamixel help functions and/ or the initialization process */
-    dxlStatusPacket_t dxl_status = { 0 };	/* Dynamixel status packet */
+    uint8_t dxl_error = 0;                  /* Dynamixel error code received by the status packet */
+    int8_t internal_error = 0;              /* internal error code reported by the Dynamixel help functions and/ or the initialization process */
+    dxlStatusPacket_t dxl_status = { 0 };   /* Dynamixel status packet */
     uint16_t data[DXL_ID_TOTAL_NUMBER_OF_AXIS][size_of_data_type] = { 0 };
+    uint16_t old_data[DXL_ID_TOTAL_NUMBER_OF_AXIS][size_of_data_type] = { 0 };
 
     if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
     {
@@ -578,18 +578,41 @@ void UpdateObjDir(void)
 
             data[id][position] = ((uint16_t)dxl_status.param[1] << 8) | dxl_status.param[0]; /* present position */
             data[id][speed]    = ((uint16_t)dxl_status.param[3] << 8) | dxl_status.param[2]; /* present speed */
+
+            switch (id) /* cache old values as backup if writing of new data fails */
+            {
+            case DXL_ID_AXIS_1:
+                old_data[id][position] = (uint16_t)GetObjData(OBJ_IDX_AXIS_1_ACTUAL_ANGLE);
+                old_data[id][speed]    = (uint16_t)GetObjData(OBJ_IDX_AXIS_1_ACTUAL_SPEED);
+                break;
+
+            case DXL_ID_AXIS_2:
+                old_data[id][position] = (uint16_t)GetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE);
+                old_data[id][speed]    = (uint16_t)GetObjData(OBJ_IDX_AXIS_2_ACTUAL_SPEED);
+                break;
+
+            case DXL_ID_AXIS_Z:
+                old_data[id][position] = (uint16_t)GetObjData(OBJ_IDX_Z_ACTUAL_POS);
+                old_data[id][speed]    = (uint16_t)GetObjData(OBJ_IDX_Z_ACTUAL_SPEED);
+                break;
+
+            default:
+                break;
+            }
         }
 
-        if (internal_error == 0 && dxl_error == 0)
+        if (internal_error != 0 && dxl_error != 0)
         {
-            /* alles gut mach zeug */
-        }
-        else
-        {
-            /* Fehler*/
 #ifndef _DEBUG
-			SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
+            SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
 #endif
+            return;
         }
+        
+        /* write new data to ObjDir and make sure that only a full set of new values can be written
+           to the data structure so that inconsistent position and speed values can't occur */
+
+        
+
     }
 }

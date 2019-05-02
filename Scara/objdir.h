@@ -74,29 +74,29 @@ enum modbusHoldingReg
 #define OBJ_IDX_Z_ACTUAL_POS                0x32    /* z - actual position */
 
 /* angle values */
-#define OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE		0x40    /* axis 1 - new target angle */
-#define OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE	0x41    /* axis 1 - actual target angle */
-#define OBJ_IDX_AXIS_1_ACTUAL_ANGLE			0x42    /* axis 1 - actual angle */
-#define OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE		0x50    /* axis 2 - new target angle */
-#define OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE	0x51    /* axis 2 - actual target angle */
-#define OBJ_IDX_AXIS_2_ACTUAL_ANGLE			0x52    /* axis 2 - actual angle */
+#define OBJ_IDX_AXIS_1_NEW_TARGET_ANGLE     0x40    /* axis 1 - new target angle */
+#define OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE  0x41    /* axis 1 - actual target angle */
+#define OBJ_IDX_AXIS_1_ACTUAL_ANGLE         0x42    /* axis 1 - actual angle */
+#define OBJ_IDX_AXIS_2_NEW_TARGET_ANGLE     0x50    /* axis 2 - new target angle */
+#define OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE  0x51    /* axis 2 - actual target angle */
+#define OBJ_IDX_AXIS_2_ACTUAL_ANGLE         0x52    /* axis 2 - actual angle */
 
 /* speed values */
-#define OBJ_IDX_X_NEW_TARGET_SPEED			0x60    /* x - new target speed */
-#define OBJ_IDX_X_ACTUAL_TARGET_SPEED		0x61    /* x - actual target speed */
-#define OBJ_IDX_X_ACTUAL_SPEED				0x62    /* x - actual speed */
-#define OBJ_IDX_Y_NEW_TARGET_SPEED			0x70    /* y - new target speed */
-#define OBJ_IDX_Y_ACTUAL_TARGET_SPEED		0x71    /* y - actual target speed */
-#define OBJ_IDX_Y_ACTUAL_SPEED				0x72    /* y - actual speed */
-#define OBJ_IDX_Z_NEW_TARGET_SPEED			0x80    /* z - new target speed */
-#define OBJ_IDX_Z_ACTUAL_TARGET_SPEED		0x81    /* z - actual target speed */
-#define OBJ_IDX_Z_ACTUAL_SPEED				0x82    /* z - actual speed */
-#define OBJ_IDX_AXIS_1_NEW_TARGET_SPEED		0x90    /* axis 1 - new target speed */
-#define OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED	0x91    /* axis 1 - actual target speed */
-#define OBJ_IDX_AXIS_1_ACTUAL_SPEED			0x92    /* axis 1 - actual speed */
-#define OBJ_IDX_AXIS_2_NEW_TARGET_SPEED		0xA0    /* axis 2 - new target speed */
-#define OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED	0xA1    /* axis 2 - actual target speed */
-#define OBJ_IDX_AXIS_2_ACTUAL_SPEED			0xA2    /* axis 2 - actual speed */
+#define OBJ_IDX_X_NEW_TARGET_SPEED          0x60    /* x - new target speed */
+#define OBJ_IDX_X_ACTUAL_TARGET_SPEED       0x61    /* x - actual target speed */
+#define OBJ_IDX_X_ACTUAL_SPEED              0x62    /* x - actual speed */
+#define OBJ_IDX_Y_NEW_TARGET_SPEED          0x70    /* y - new target speed */
+#define OBJ_IDX_Y_ACTUAL_TARGET_SPEED       0x71    /* y - actual target speed */
+#define OBJ_IDX_Y_ACTUAL_SPEED              0x72    /* y - actual speed */
+#define OBJ_IDX_Z_NEW_TARGET_SPEED          0x80    /* z - new target speed */
+#define OBJ_IDX_Z_ACTUAL_TARGET_SPEED       0x81    /* z - actual target speed */
+#define OBJ_IDX_Z_ACTUAL_SPEED              0x82    /* z - actual speed */
+#define OBJ_IDX_AXIS_1_NEW_TARGET_SPEED     0x90    /* axis 1 - new target speed */
+#define OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED  0x91    /* axis 1 - actual target speed */
+#define OBJ_IDX_AXIS_1_ACTUAL_SPEED         0x92    /* axis 1 - actual speed */
+#define OBJ_IDX_AXIS_2_NEW_TARGET_SPEED     0xA0    /* axis 2 - new target speed */
+#define OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED  0xA1    /* axis 2 - actual target speed */
+#define OBJ_IDX_AXIS_2_ACTUAL_SPEED         0xA2    /* axis 2 - actual speed */
 
 /* tools */
 #define OBJ_IDX_TOOL_0                      0x00    /* tool 0 - machine zero - only change if you really know what you are doing! */
@@ -124,28 +124,28 @@ enum modbusHoldingReg
 #define OBJ_IDX_STAT_POS_GN_COIN_5          0x0A
 
 /* object properties */
-#define OBJ_PROP_R_							0x10    /* read only */
-#define OBJ_PROP__W							0x20    /* write only */
-#define OBJ_PROP_RW				    (0x10 | 0x20)   /* read & write */
+#define OBJ_PROP_R_                         0x10    /* read only */
+#define OBJ_PROP__W                         0x20    /* write only */
+#define OBJ_PROP_RW                 (0x10 | 0x20)   /* read & write */
 
 /* operation modes */
-#define OP_MODE_MODBUS						0x01    /* operation mode modbus - use SimpleModbusClient */
-#define OP_MODE_RAPID						0x02    /* operation mode rapid - use "Rapid" protocol */
-#define OP_MODE_SCARA						0x03    /* operation mode scara - use "Scara" protocol */
+#define OP_MODE_MODBUS                      0x01    /* operation mode modbus - use SimpleModbusClient */
+#define OP_MODE_RAPID                       0x02    /* operation mode rapid - use "Rapid" protocol */
+#define OP_MODE_SCARA                       0x03    /* operation mode scara - use "Scara" protocol */
 
 /* status message types */
-#define SYS_STAT_MSG_TYPE_NONE				0x01    /* display a message without status type (try not to use) */
-#define SYS_STAT_MSG_TYPE_INFO				0x02    /* display normal info message */
-#define SYS_STAT_MSG_TYPE_WARNING			0x03    /* display a warning message */
-#define SYS_STAT_MSG_TYPE_ERROR				0x04    /* display a error message */
-#define SYS_STAT_MSG_TYPE_DEBUG				0x05    /* display debug info */
+#define SYS_STAT_MSG_TYPE_NONE              0x01    /* display a message without status type (try not to use) */
+#define SYS_STAT_MSG_TYPE_INFO              0x02    /* display normal info message */
+#define SYS_STAT_MSG_TYPE_WARNING           0x03    /* display a warning message */
+#define SYS_STAT_MSG_TYPE_ERROR             0x04    /* display a error message */
+#define SYS_STAT_MSG_TYPE_DEBUG             0x05    /* display debug info */
 
 /* system status */
-#define SYS_STAT_RUNNING					0x01    /* no error - system operational */
-#define SYS_STAT_DYNAMIXEL_ERROR			0x02    /* error  - dynamixel servo motors */
-#define SYS_STAT_DEBUG						0x04    /* print additional debug info  */
-#define SYS_STAT_UNKOWN_ERROR				0x08    /* unknown error - not used jet */
-#define SYS_STAT_SILENT						0x10    /* no messages will be send */
+#define SYS_STAT_RUNNING                    0x01    /* no error - system operational */
+#define SYS_STAT_DYNAMIXEL_ERROR            0x02    /* error  - dynamixel servo motors */
+#define SYS_STAT_DEBUG                      0x04    /* print additional debug info  */
+#define SYS_STAT_UNKOWN_ERROR               0x08    /* unknown error - not used jet */
+#define SYS_STAT_SILENT                     0x10    /* no messages will be send */
 #define SYS_STAT_ERROR (SYS_STAT_DYNAMIXEL_ERROR | SYS_STAT_UNKOWN_ERROR) /* system in error state */
 
 /* min/ max position/ angle values and tolerances */
