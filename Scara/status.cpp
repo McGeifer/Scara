@@ -7,12 +7,12 @@
 
 void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t statusType) {
 	
-	if (!(GetObjData(0xFF) & SYS_STAT_SILENT)) /* no messages will be send if system is in silent mode */
+	if (!(getObjData(0xFF) & SYS_STAT_SILENT)) /* no messages will be send if system is in silent mode */
 	{ 
 		char statusString[10];
 		char finalMsgString[128];
 
-		switch (GetObjData(OBJ_IDX_OP_MODE))
+		switch (getObjData(OBJ_IDX_OP_MODE))
 		{
 		case OP_MODE_SCARA:
 		case OP_MODE_RAPID:
@@ -44,7 +44,7 @@ void SendStatus(const char *optionalDebugMessage, const char *message, uint8_t s
 				break;
 			}
 
-			if (GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DEBUG) { /* check if system ist in debug mode */
+			if (getObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_DEBUG) { /* check if system ist in debug mode */
 				if (optionalDebugMessage == NULL)
 				{
 					sprintf(finalMsgString, "%s %s", statusString, message);

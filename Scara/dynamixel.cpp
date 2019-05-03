@@ -69,13 +69,13 @@ void dxlSetStatusPacket(dxlStatusPacket_t args)
 }
 
 /*
-    Function to receive and parse a Dynamixel status return packet. If a valid status return packet	has
+    Function to receive and parse a Dynamixel status return packet. If a valid status return packet has
     been received it will store the data for further processing in dxl_status_packet.
-    return  0	= received data successfully stored in dxl_status_packet
-    return -1	= timeout while waiting for data (no data received)
-    return -2	= timeout while receiving data
-    return -4	= invalid data packet
-    return -5   = error while allocating memory
+    return  0 = received data successfully stored in dxl_status_packet
+    return -1 = timeout while waiting for data (no data received)
+    return -2 = timeout while receiving data
+    return -4 = invalid data packet
+    return -5 = error while allocating memory
 */
 int8_t dxlReceiveStatusPacket(void)
 {
@@ -129,7 +129,7 @@ int8_t dxlReceiveStatusPacket(void)
                     sprintf(msg, "dxlReceiveStatusPacket: 0x%02X 0x%02X", status_packet_tmp.id, status_packet_tmp.length);
                     SendStatus("dxlReceiveStatusPacket()", msg, SYS_STAT_MSG_TYPE_DEBUG);
 
-                    if (status_packet_tmp.param != NULL)	/* check for proper calloc execution */
+                    if (status_packet_tmp.param != NULL) /* check for proper calloc execution */
                     {
                         uint8_t i = 0;
                         while (dxlAvailableData() > 0 && i < status_packet_tmp.length)
@@ -348,14 +348,14 @@ void initDynamixel(void)
         SendStatus("InitDynamixel(): ", "check wiring and ID's of Dynamixel servos and restart the controller", SYS_STAT_MSG_TYPE_ERROR);
         /* if one of the servos could not be found, set the system error state to prevent further operations */
 #ifndef _DEBUG
-        SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
+        setObjData(OBJ_IDX_SYS_STATUS, getObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
         return;
     }
     else
     {
         /* read configuration of the Dynamixel servos */
-        for (int id = 0; id < 3; id++)
+        for (int id = 0; id < DXL_ID_TOTAL_NUMBER_OF_AXIS; id++)
         {
             internal_error = dxlSetCustomData(id, DXL_INST_WRITE, dxl_setup_params[id]);
 
@@ -395,11 +395,16 @@ void initDynamixel(void)
         if (internal_error == 0 && dxl_status.error == 0)
         {
             /* continuous turn & torque enable! */
+
+
+
+
+
         }
         else
         {
 #ifndef _DEBUG
-            SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
+            setObjData(OBJ_IDX_SYS_STATUS, getObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
         }
     }
@@ -413,28 +418,28 @@ void handleMove(void)
         MAX_POS
     };
 
-    if (!(GetObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
+    if (!(getObjData(OBJ_IDX_SYS_STATUS) & SYS_STAT_ERROR))
     {
-        uint8_t moving = (uint8_t)GetObjData(OBJ_IDX_MOVING);
-        uint8_t start = (uint8_t)GetObjData(OBJ_IDX_START_MOVE);
+        uint8_t moving = (uint8_t)getObjData(OBJ_IDX_MOVING);
+        uint8_t start = (uint8_t)getObjData(OBJ_IDX_START_MOVE);
 
         float actPos[3] = /* actual position values */
         {
-            GetObjData(OBJ_IDX_X_ACTUAL_POS) / 10.0,
-            GetObjData(OBJ_IDX_Y_ACTUAL_POS) / 10.0,
-            GetObjData(OBJ_IDX_Z_ACTUAL_POS) / 10.0
+            getObjData(OBJ_IDX_X_ACTUAL_POS) / 10.0,
+            getObjData(OBJ_IDX_Y_ACTUAL_POS) / 10.0,
+            getObjData(OBJ_IDX_Z_ACTUAL_POS) / 10.0
         };
         float actTargetPos[3] = /* actual target position values */
         {
-            GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS) / 10.0,
-            GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS) / 10.0,
-            GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS) / 10.0
+            getObjData(OBJ_IDX_X_ACTUAL_TARGET_POS) / 10.0,
+            getObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS) / 10.0,
+            getObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS) / 10.0
         };
         float newTargetPos[3] = /* new target position values */
         {
-            GetObjData(OBJ_IDX_X_NEW_TARGET_POS) / 10.0,
-            GetObjData(OBJ_IDX_Y_NEW_TARGET_POS) / 10.0,
-            GetObjData(OBJ_IDX_Z_NEW_TARGET_POS) / 10.0,
+            getObjData(OBJ_IDX_X_NEW_TARGET_POS) / 10.0,
+            getObjData(OBJ_IDX_Y_NEW_TARGET_POS) / 10.0,
+            getObjData(OBJ_IDX_Z_NEW_TARGET_POS) / 10.0,
         };
         float posWindow[3][2] = /* allowed position windows */
         {
@@ -461,55 +466,55 @@ void handleMove(void)
                 actPos[DXL_ID_AXIS_2] < posWindow[DXL_ID_AXIS_2][MIN_POS] || actPos[DXL_ID_AXIS_2] > posWindow[DXL_ID_AXIS_2][MAX_POS] ||
                 actPos[DXL_ID_AXIS_Z] < posWindow[DXL_ID_AXIS_Z][MIN_POS] || actPos[DXL_ID_AXIS_Z] > posWindow[DXL_ID_AXIS_Z][MAX_POS])
             {
-                SetObjData(OBJ_IDX_POS_REACHED, 0, false);
+                setObjData(OBJ_IDX_POS_REACHED, 0, false);
 
                 if (newTargetPos[DXL_ID_AXIS_1] != actTargetPos[DXL_ID_AXIS_1])
                 {
-                    SetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_X_NEW_TARGET_POS), false);
+                    setObjData(OBJ_IDX_X_ACTUAL_TARGET_POS, getObjData(OBJ_IDX_X_NEW_TARGET_POS), false);
                 }
                 if (newTargetPos[DXL_ID_AXIS_2] != actTargetPos[DXL_ID_AXIS_2])
                 {
-                    SetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Y_NEW_TARGET_POS), false);
+                    setObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS, getObjData(OBJ_IDX_Y_NEW_TARGET_POS), false);
                 }
                 if (newTargetPos[DXL_ID_AXIS_Z] != actTargetPos[DXL_ID_AXIS_Z])
                 {
-                    SetObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, GetObjData(OBJ_IDX_Z_NEW_TARGET_POS), false);
+                    setObjData(OBJ_IDX_Z_ACTUAL_TARGET_POS, getObjData(OBJ_IDX_Z_NEW_TARGET_POS), false);
 
                     if (newTargetPos[DXL_ID_AXIS_Z] > actTargetPos[DXL_ID_AXIS_Z])
                     {
-                        //dynamixelTurn(DXL_ID_Z_AXIS, RIGTH, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+                        //dynamixelTurn(DXL_ID_Z_AXIS, RIGTH, getObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
                     }
                     else
                     {
-                        //dynamixelTurn(DXL_ID_Z_AXIS, LEFT, GetObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
+                        //dynamixelTurn(DXL_ID_Z_AXIS, LEFT, getObjData(OBJ_IDX_Z_ACTUAL_TARGET_SPEED)); /* besser über moveRW für sync start mit x & y */
                     }
                 }
-                int16_t val1 = GetObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
-                int16_t val2 = GetObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS);
+                int16_t val1 = getObjData(OBJ_IDX_X_ACTUAL_TARGET_POS);
+                int16_t val2 = getObjData(OBJ_IDX_Y_ACTUAL_TARGET_POS);
 
                 /* calculate new target position*/
-                CalcAngle(&val1, &val2);
+                calcAngle(&val1, &val2);
 
                 uint8_t param_list[4][3] = {
                     {
                         DXL_P_GOAL_SPEED_L,
-                        (uint8_t)GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED),        /* low byte */
-                        (uint8_t)(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED) >> 8)  /* high byte */
+                        (uint8_t)getObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED),        /* low byte */
+                        (uint8_t)(getObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_SPEED) >> 8)  /* high byte */
                     },
                     {
                         DXL_P_GOAL_SPEED_L,
-                        (uint8_t)GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED),
-                        (uint8_t)(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED) >> 8)
+                        (uint8_t)getObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED),
+                        (uint8_t)(getObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_SPEED) >> 8)
                     },
                     {
                         DXL_P_GOAL_POSITION_L,
-                        (uint8_t)DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)),
-                        (uint8_t)(DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)) >> 8)
+                        (uint8_t)(DEG_TO_DYNA(getObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)),
+                        (uint8_t)(DEG_TO_DYNA(getObjData(OBJ_IDX_AXIS_1_ACTUAL_TARGET_ANGLE)) >> 8)
                     },
                     {
                         DXL_P_GOAL_POSITION_L,
-                        (uint8_t)DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)),
-                        (uint8_t)(DEG_TO_DYNA(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)) >> 8)
+                        (uint8_t)DEG_TO_DYNA(getObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)),
+                        (uint8_t)(DEG_TO_DYNA(getObjData(OBJ_IDX_AXIS_2_ACTUAL_TARGET_ANGLE)) >> 8)
                     }
                 };
 
@@ -519,17 +524,17 @@ void handleMove(void)
                 dxlSetRegisteredInstruction(DXL_ID_AXIS_2, param_list[3]);
                 dxlAction(DXL_BROADCASTING_ID); /* sync start */
 
-                SetObjData(OBJ_IDX_MOVING, 1, true);
-                SetObjData(OBJ_IDX_START_MOVE, 0, false);
+                setObjData(OBJ_IDX_MOVING, 1, true);
+                setObjData(OBJ_IDX_START_MOVE, 0, false);
             }
             else
             {
-                SetObjData(OBJ_IDX_START_MOVE, 0, false);
+                setObjData(OBJ_IDX_START_MOVE, 0, false);
             }
         }
         else if (start && moving)
         {
-            SetObjData(OBJ_IDX_START_MOVE, 0, false);
+            setObjData(OBJ_IDX_START_MOVE, 0, false);
         }
         else /* (!start && moving) */
         {
@@ -538,8 +543,8 @@ void handleMove(void)
                 actPos[DXL_ID_AXIS_2] >= posWindow[DXL_ID_AXIS_2][MIN_POS] && actPos[DXL_ID_AXIS_2] <= posWindow[DXL_ID_AXIS_2][MAX_POS] &&
                 actPos[DXL_ID_AXIS_Z] >= posWindow[DXL_ID_AXIS_Z][MIN_POS] && actPos[DXL_ID_AXIS_Z] <= posWindow[DXL_ID_AXIS_Z][MAX_POS])
             {
-                SetObjData(OBJ_IDX_MOVING, 0, true);
-                SetObjData(OBJ_IDX_POS_REACHED, 1, false);
+                setObjData(OBJ_IDX_MOVING, 0, true);
+                setObjData(OBJ_IDX_POS_REACHED, 1, false);
             }
             else
             {
@@ -641,7 +646,7 @@ void dxlPrintErrorMessage(int16_t error, uint8_t id)
     }
 
 #ifndef _DEBUG
-    SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
+    setObjData(OBJ_IDX_SYS_STATUS, getObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_DYNAMIXEL_ERROR, false);
 #endif
 }
 

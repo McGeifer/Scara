@@ -21,12 +21,12 @@ typedef struct
 /* data structure for the tool table */
 typedef struct
 {
-    const   uint8_t tool_idx;   /* idx number of tool */
-    const   uint8_t props;      /* object properties */
-            int16_t x_offset;   /* x offset */
-            int16_t y_offset;   /* y offset */
-            int16_t z_offset;   /* z offset */
-            bool    active;     /* tool is active */
+    const   uint8_t tool_idx;               /* idx number of tool */
+    const   uint8_t props;                  /* object properties */
+            int16_t x_offset;               /* x offset */
+            int16_t y_offset;               /* y offset */
+            int16_t z_offset;               /* z offset */
+            bool    active;                 /* tool is active */
 } toolTbl_t;
 
 /* data structure to store position values */
@@ -188,80 +188,80 @@ enum modbusHoldingReg
 /*
     Function to return the x, y & z values for a given position idx stored in the position register
  */
-int16_t* GetPosRegData(uint8_t *idx);
+int16_t* getPosRegData(uint8_t *idx);
 
 /*
     Function for writing data to the position register
  */
-uint8_t SetPosRegData(uint8_t *idx, int16_t *x_pos, int16_t *y_pos, int16_t *z_pos);
+uint8_t setPosRegData(uint8_t *idx, int16_t *x_pos, int16_t *y_pos, int16_t *z_pos);
 
 /*
     Function to return the stored data of an object
  */
-int16_t GetObjData(uint8_t idx);
+int16_t getObjData(uint8_t idx);
 
 /*
     Function for writing data to the object dictionary. Objects can only be written if they have the property "writable".
     This mechanism can be disabled if the parameter internal_call is set to "true" (use with caution!)
  */
-int8_t SetObjData(uint8_t idx, int16_t data, bool internal_call);
+int8_t setObjData(uint8_t idx, int16_t data, bool internal_call);
 
 /*
     Write "actualAngles" (Dynamixel) in obj_dir.
-    return	0 = operation successful
+    return  0 = operation successful
     return -1 = operation failed
  */
-int8_t SetActualAngles(int16_t *servo_1, int16_t *servo_2);
-
-/*
-    Write "actualTargetAngles" (Dynamixel) in obj_dir.
-    return	0 = operation successful
-    return -1 = operation failed
- */
-int8_t SetActualTargetAngles(int16_t *servo_1, int16_t *servo_2);
-
-/*
-    Write "newTargetAngles" (Dynamixel) in obj_dir.
-    return	0 = operation successful
-    return -1 = operation failed
- */
-int8_t SetNewTargetAngles(int16_t *servo_1, int16_t *servo_2);
-
-/*
-    Write "actualPos" (mm) in obj_dir.
-    return	0 = operation successful
-    return -1 = operation failed
- */
-int8_t SetActualPositions(float *x_pos, float *y_pos);
-
-/*
-    Write "actualTargetPos" (mm) in obj_dir.
-    return	0 = operation successful
-    return -1 = operation failed
- */
-int8_t SetActualTargetPositions(float *x_pos, float *y_pos);
-
-/*
-    Write "newTargetPos" (mm) in obj_dir.
-    return	0 = operation successful
-    return -1 = operation failed
- */
-int8_t SetNewTargetPositions(float *x_pos, float *y_pos);
-
-/*
-    Function to return the stored offset values for a given tool
- */
-int16_t* GetToolData(uint8_t idx);
+//int8_t SetActualAngles(int16_t *servo_1, int16_t *servo_2);
+//
+///*
+//    Write "actualTargetAngles" (Dynamixel) in obj_dir.
+//    return  0 = operation successful
+//    return -1 = operation failed
+// */
+//int8_t SetActualTargetAngles(int16_t *servo_1, int16_t *servo_2);
+//
+///*
+//    Write "newTargetAngles" (Dynamixel) in obj_dir.
+//    return  0 = operation successful
+//    return -1 = operation failed
+// */
+//int8_t SetNewTargetAngles(int16_t *servo_1, int16_t *servo_2);
+//
+///*
+//    Write "actualPos" (mm) in obj_dir.
+//    return  0 = operation successful
+//    return -1 = operation failed
+// */
+//int8_t SetActualPositions(float *x_pos, float *y_pos);
+//
+///*
+//    Write "actualTargetPos" (mm) in obj_dir.
+//    return  0 = operation successful
+//    return -1 = operation failed
+// */
+//int8_t SetActualTargetPositions(float *x_pos, float *y_pos);
+//
+///*
+//    Write "newTargetPos" (mm) in obj_dir.
+//    return  0 = operation successful
+//    return -1 = operation failed
+// */
+//int8_t SetNewTargetPositions(float *x_pos, float *y_pos);
+//
+///*
+//    Function to return the stored offset values for a given tool
+// */
+int16_t* getToolData(uint8_t idx);
 
 /*
     Function to search the tool table. If the given entry is found it returns a pointer to it, if not it returns a NULL pointer
  */
-toolTbl_t* LocateTool(uint8_t idx);
+toolTbl_t* locateTool(uint8_t idx);
 
 /*
-    Cyclic function for updating all actual position, angle & speed values of the obj_dir
+    Cyclic function for updating position, angle & speed values
  */
-void UpdateObjDir(void);
+void updateObjDir(void);
 
 
 #endif

@@ -11,14 +11,14 @@
     return 0  - value is not in range
     return -1 - error
  */
-static uint8_t ChkServoLmt(uint8_t servo, float *val)
+static uint8_t chkServoLmt(uint8_t servo, float *val)
 {
     if (val != NULL)
     {
         int16_t tmp = (int16_t)round(*val * RAD_TO_DEG * 10);
 
 #ifdef _DEBUG
-        Serial.print("ChkServoLmt() -> tmp: ");
+        Serial.print("chkServoLmt() -> tmp: ");
         Serial.println(tmp, DEC);
 #endif
 
@@ -58,11 +58,11 @@ static uint8_t ChkServoLmt(uint8_t servo, float *val)
 }
 
 /*
-    ConvertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
+    convertCoordinates converts x and y coordinates between the different coordinate systems (machine & field).
     return #    - pointer to array
     return NULL - error
  */
-static float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
+static float* convertCoordinates(uint8_t direction, float *xVal, float *yVal)
 {
     static float val[2] = { 0 };
 
@@ -72,7 +72,7 @@ static float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
         val[DXL_ID_AXIS_1] = *xVal + MACHINE_ZERO_OFFS_X_FIELD - MACHINE_ZERO_OFFS_X_ROBOT;
         val[DXL_ID_AXIS_2] = *yVal + MACHINE_ZERO_OFFS_Y_FIELD - MACHINE_ZERO_OFFS_Y_ROBOT;
 #ifdef _DEBUG
-        Serial.println("ConvertCoordinates()");
+        Serial.println("convertCoordinates()");
         Serial.print("val[DXL_ID_AXIS_1]: ");
         Serial.println(val[DXL_ID_AXIS_1], 8);
         Serial.print("val[DXL_ID_AXIS_2]: ");
@@ -90,7 +90,7 @@ static float* ConvertCoordinates(uint8_t direction, float *xVal, float *yVal)
     }
 }
 
-float DynaToDeg(int16_t *dxl_val)
+float dynaToDeg(int16_t *dxl_val)
 {
     if(*dxl_val < 0)
     {
@@ -105,7 +105,7 @@ float DynaToDeg(int16_t *dxl_val)
     return (*dxl_val * 300.0) / 1023.0;
 }
 
-int16_t DegToDyna(float *angle)
+int16_t degToDyna(float *angle)
 {
     if (*angle < 0)
     {
@@ -120,7 +120,7 @@ int16_t DegToDyna(float *angle)
     return round((*angle / 300.0) * 1023.0);
 }
 
-float* CalcAngle(int16_t *xPos, int16_t *yPos)
+float* calcAngle(int16_t *xPos, int16_t *yPos)
 {
     float *coordinates = NULL;  /* converted coordinates */
     static float result[2];     /* result of calculation */
@@ -150,13 +150,13 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
     x_tmp = *xPos / 10.0;
     y_tmp = *yPos / 10.0;
 #ifdef _DEBUG
-    Serial.println("CalcAngle()");
+    Serial.println("calcAngle()");
     Serial.print("x_tmp: ");
     Serial.println(x_tmp, 8);
     Serial.print("y_tmp: ");
     Serial.println(y_tmp, 8);
 #endif 
-    coordinates = ConvertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &x_tmp, &y_tmp);
+    coordinates = convertCoordinates(CONVERT_COORDINATE_TO_ROBOT, &x_tmp, &y_tmp);
     x_val = x_tmp; /* coordinates[DXL_ID_AXIS_1]; */
     y_val = y_tmp; /* coordinates[DXL_ID_AXIS_2]; */
 #ifdef _DEBUG
@@ -226,10 +226,10 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
 #endif
 
     /* check which solutions are inside the allowed range of the dynamixel servos to reach the given position */
-    cmp_1A = ChkServoLmt(1, &servo_1A);
-    cmp_1B = ChkServoLmt(1, &servo_1B);
-    cmp_2A = ChkServoLmt(2, &servo_2A);
-    cmp_2B = ChkServoLmt(2, &servo_2B);
+    cmp_1A = chkServoLmt(1, &servo_1A);
+    cmp_1B = chkServoLmt(1, &servo_1B);
+    cmp_2A = chkServoLmt(2, &servo_2A);
+    cmp_2B = chkServoLmt(2, &servo_2B);
 #ifdef _DEBUG
     Serial.print("cmp_1A: ");
     Serial.println(cmp_1A, DEC);
@@ -250,7 +250,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
             if (cmp_2A && cmp_2B) /* both solutions for servo2 are allowed */
             {
                 /* decision is based on the shortest way for servo2 */
-                float actAngle = radians(GetObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE) / 10);
+                float actAngle = radians(getObjData(OBJ_IDX_AXIS_2_ACTUAL_ANGLE) / 10);
                 float diffA = actAngle < servo_2A ? servo_2A - actAngle : actAngle - servo_2A;
                 float diffB = actAngle < servo_2B ? servo_2B - actAngle : actAngle - servo_2B;
 
@@ -340,7 +340,7 @@ float* CalcAngle(int16_t *xPos, int16_t *yPos)
     }
 }
 
-float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
+float* calcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
 {
     float vec_a[2] = { 0 };
     float vec_b[2] = { 0 };
@@ -371,44 +371,44 @@ float* CalcPosistion(int16_t *angleAxis1, int16_t *angleAxis2)
     vec_r[Y] = vec_a[Y] + vec_b[Y]; /* bis hier hin funktioniert sie :D */
 
 //#ifdef _DEBUG
-//	Serial.println("CalcPosition()");
-//	Serial.print("alpha_1: ");
-//	Serial.println(alpha_1 * 180 / PI, DEC);
-//	Serial.print("beta: ");
-//	Serial.println(beta * 180 / PI, DEC);
-//	Serial.print("beta_1: ");
-//	Serial.println(beta_1 * 180 / PI, DEC);
-//	Serial.print("anlgeAxis1: ");
-//	Serial.println(*angleAxis1 / 10, DEC);
-//	Serial.print("vec_a[X]: ");
-//	Serial.println(vec_a[X], DEC);
-//	Serial.print("vec_a[Y]: ");
-//	Serial.println(vec_a[Y], DEC);
-//	Serial.print("vec_b[X]: ");
-//	Serial.println(vec_b[X], DEC);
-//	Serial.print("vec_b[Y]: ");
-//	Serial.println(vec_b[Y], DEC);
-//	Serial.print("vec_r[X]: ");
-//	Serial.println(vec_r[X], DEC);
-//	Serial.print("vec_r[Y]: ");
-//	Serial.println(vec_r[Y], DEC);
+// Serial.println("CalcPosition()");
+// Serial.print("alpha_1: ");
+// Serial.println(alpha_1 * 180 / PI, DEC);
+// Serial.print("beta: ");
+// Serial.println(beta * 180 / PI, DEC);
+// Serial.print("beta_1: ");
+// Serial.println(beta_1 * 180 / PI, DEC);
+// Serial.print("anlgeAxis1: ");
+// Serial.println(*angleAxis1 / 10, DEC);
+// Serial.print("vec_a[X]: ");
+// Serial.println(vec_a[X], DEC);
+// Serial.print("vec_a[Y]: ");
+// Serial.println(vec_a[Y], DEC);
+// Serial.print("vec_b[X]: ");
+// Serial.println(vec_b[X], DEC);
+// Serial.print("vec_b[Y]: ");
+// Serial.println(vec_b[Y], DEC);
+// Serial.print("vec_r[X]: ");
+// Serial.println(vec_r[X], DEC);
+// Serial.print("vec_r[Y]: ");
+// Serial.println(vec_r[Y], DEC);
 //#endif
 
-    return ConvertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vec_r[X], &vec_r[Y]);
+    return convertCoordinates(CONVERT_COORDINATE_TO_FIELD, &vec_r[X], &vec_r[Y]);
 }
 
-int16_t UpdateZPos(void)
+int16_t updateZPos(void)
 {
-    int16_t val = round((Z_RESOLUTION / Z_GRADIENT) * GetObjData(OBJ_IDX_Z_POS_COUNT) * 10.0);
+    int16_t val = round((Z_RESOLUTION / Z_GRADIENT) * getObjData(OBJ_IDX_Z_POS_COUNT) * 10.0);
 
-    if (SetObjData(OBJ_IDX_Z_ACTUAL_POS, val, true) == 0)
+    if (setObjData(OBJ_IDX_Z_ACTUAL_POS, val, true) == 0)
     {
         return 0;
     }
     else
     {
 #ifndef _DEBUG
-        SetObjData(OBJ_IDX_SYS_STATUS, GetObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
+        setObjData(OBJ_IDX_SYS_STATUS, getObjData(OBJ_IDX_SYS_STATUS) | SYS_STAT_ERROR, false);
 #endif 
         return -1;
     }

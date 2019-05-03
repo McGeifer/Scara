@@ -27,7 +27,6 @@ void initSio(void)
 {
     // Setup for USB connection;
     Serial.begin(1000000);
-    Serial.setTimeout(500);
 
     // Setup for Modbus connection (Serial1)
     modbus_configure(115200, 1, 0, TOTAL_REGS_SIZE_MDB, 0);
@@ -40,9 +39,9 @@ void initSio(void)
 void handleSIO(void)
 {
     // get system error state - abort if system is in error state
-    if (!(GetObjData(OBJ_IDX_OP_MODE) & SYS_STAT_ERROR))
+    if (!(getObjData(OBJ_IDX_OP_MODE) & SYS_STAT_ERROR))
     {
-        switch (GetObjData(OBJ_IDX_OP_MODE))
+        switch (getObjData(OBJ_IDX_OP_MODE))
         {
         case OP_MODE_MODBUS:
             handleModbusData();
@@ -64,7 +63,7 @@ void handleSIO(void)
 /*
  * function description:
  */
-static int8_t ParseRadpid(void)
+static int8_t parseRadpid(void)
 {
     enum tmpData
     {
@@ -121,7 +120,7 @@ static int8_t ParseRadpid(void)
                 int16_t pos_y_tmp = (int16_t)strtol(output_string[4], NULL, 10);
                 int16_t pos_z_tmp = (int16_t)strtol(output_string[5], NULL, 10);
 
-                if (SetPosRegData(&point_idx, &pos_x_tmp, &pos_y_tmp, &pos_z_tmp) == 0)
+                if (setPosRegData(&point_idx, &pos_x_tmp, &pos_y_tmp, &pos_z_tmp) == 0)
                 {
                     return 0;
                 }
@@ -202,7 +201,7 @@ static int8_t ParseRadpid(void)
             {
                 point_idx = (int8_t)strtol(output_string[2] + 1, NULL, 10);
 
-                if (GetPosRegData(&point_idx) != NULL)
+                if (getPosRegData(&point_idx) != NULL)
                 {
                     offset_mode = true;
                     point_mode = true;
@@ -225,7 +224,7 @@ static int8_t ParseRadpid(void)
         {
             point_idx = (uint8_t)strtol(output_string[1] + 1, NULL, 10);
 
-            if (GetPosRegData(&point_idx) != NULL)
+            if (getPosRegData(&point_idx) != NULL)
             {
                 point_mode = true;
             }
@@ -250,7 +249,7 @@ static int8_t ParseRadpid(void)
         }
         else if (point_mode && offset_mode)
         {
-            int16_t *pPosRegData = GetPosRegData(&point_idx);
+            int16_t *pPosRegData = getPosRegData(&point_idx);
 
             if (pPosRegData != NULL)
             {
@@ -276,7 +275,7 @@ static int8_t ParseRadpid(void)
         }
         else if (point_mode && !offset_mode)
         {
-            int16_t *p_pos_reg_data = GetPosRegData(&point_idx);
+            int16_t *p_pos_reg_data = getPosRegData(&point_idx);
 
             if (p_pos_reg_data != NULL)
             {
@@ -297,7 +296,7 @@ static int8_t ParseRadpid(void)
         }
 
         // set outputstring[] offset for speed, positioning mode & tool (based on "lowest" position of the speed value in the output_string[])
-        //	                 -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
+        //                   -> MoveJ Offs(p2,   -9,   109,   90), vmax, fine, tool0;
         //                   -> MoveJ p1, vmax, fine, tool0;  <------ offset based on this type of message
         //                   -> MoveJ (1,  119,  100), vmax, fine, tool0;
         // output_string index:   0    1    2     3     4     5      6     7     8
@@ -378,13 +377,13 @@ static int8_t ParseRadpid(void)
         {
             uint8_t tool = (uint8_t)strtol(output_string[4 + idx_offs] + 4, NULL, 10);
             toolTbl_t *pToolTbl = NULL;
-            pToolTbl = LocateTool(tool);
+            pToolTbl = locateTool(tool);
 
             if (pToolTbl != NULL)
             {
                 if (pToolTbl->active != false)
                 {
-                    int16_t *p_tool_offset = GetToolData(tool);
+                    int16_t *p_tool_offset = getToolData(tool);
                     data_to_write[xPos] -= p_tool_offset[0];
                     data_to_write[yPos] -= p_tool_offset[1];
                     data_to_write[zPos] -= p_tool_offset[2];
@@ -399,27 +398,27 @@ static int8_t ParseRadpid(void)
                             if (data_to_write[zPos] >= Z_POS_MIN && data_to_write[zPos] <= Z_POS_MAX)
                             {
                                 // save speed and position values
-                                if (SetObjData(OBJ_IDX_X_NEW_TARGET_POS, data_to_write[xPos], false) != 0)
+                                if (setObjData(OBJ_IDX_X_NEW_TARGET_POS, data_to_write[xPos], false) != 0)
                                 {
                                     return -1;
                                 }
-                                if (SetObjData(OBJ_IDX_Y_NEW_TARGET_POS, data_to_write[yPos], false) != 0)
+                                if (setObjData(OBJ_IDX_Y_NEW_TARGET_POS, data_to_write[yPos], false) != 0)
                                 {
                                     return -1;
                                 }
-                                if (SetObjData(OBJ_IDX_Z_NEW_TARGET_POS, data_to_write[zPos], false) != 0)
+                                if (setObjData(OBJ_IDX_Z_NEW_TARGET_POS, data_to_write[zPos], false) != 0)
                                 {
                                     return -1;
                                 }
-                                if (SetObjData(OBJ_IDX_X_NEW_TARGET_SPEED, data_to_write[xSpeed], false) != 0)
+                                if (setObjData(OBJ_IDX_X_NEW_TARGET_SPEED, data_to_write[xSpeed], false) != 0)
                                 {
                                     return -1;
                                 }
-                                if (SetObjData(OBJ_IDX_Y_NEW_TARGET_SPEED, data_to_write[ySpeed], false) != 0)
+                                if (setObjData(OBJ_IDX_Y_NEW_TARGET_SPEED, data_to_write[ySpeed], false) != 0)
                                 {
                                     return -1;
                                 }
-                                if (SetObjData(OBJ_IDX_Z_NEW_TARGET_SPEED, data_to_write[zSpeed], false) != 0)
+                                if (setObjData(OBJ_IDX_Z_NEW_TARGET_SPEED, data_to_write[zSpeed], false) != 0)
                                 {
                                     return -1;
                                 }
@@ -485,9 +484,9 @@ static void handleModbusData(void)
     holdingRegs[TOTAL_ERRORS_MDB] = modbus_update(holdingRegs);
 
     // write modbus packet to object
-    if (SetObjData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB], false) == 0)
+    if (setObjData(holdingRegs[INDEX_MDB], holdingRegs[DATA_MDB], false) == 0)
     {
-        //objDir_t *recvP = LocateObj(holdingRegs[INDEX_MDB]);
+        //objDir_t *recvP = locateObj(holdingRegs[INDEX_MDB]);
         //
         //if (recvP->pFunction != NULL) {
         //  // execute handler function if available
@@ -519,9 +518,9 @@ static void handleRapidString(void)
             {
                 if (idx > min_buffer_length)
                 {
-                    int tmp = ParseRadpid();
+                    int tmp = parseRadpid();
                     char msg[32];
-                    sprintf(msg, "ParseRadpid() return: %i", tmp);
+                    sprintf(msg, "parseRadpid() return: %i", tmp);
                     SendStatus("handleRapidString(): ", msg, SYS_STAT_MSG_TYPE_DEBUG);
 
                     /*if (tmp == 0) {
@@ -572,9 +571,9 @@ static void handleScaraData(void)
                         uint16_t recvData = (buffer[idx - SCARA_PACKET_LENGTH + 2] << 8) | buffer[idx - SCARA_PACKET_LENGTH + 3];
 
                         // save data in object
-                        if (SetObjData(recvIndex, recvData, false) == 0)
+                        if (setObjData(recvIndex, recvData, false) == 0)
                         {
-                            /*objDir_t *recvP = LocateObj(recvIndex);*/
+                            /*objDir_t *recvP = locateObj(recvIndex);*/
                             memset(buffer, 0, idx);
                             idx = 0;
 

@@ -4,9 +4,9 @@
 #define _SIO_h
 
 #if defined(ARDUINO) && ARDUINO >= 100
-#include "arduino.h"
+    #include "arduino.h"
 #else
-#include "WProgram.h"
+    #include "WProgram.h"
 #endif
 
 
@@ -14,8 +14,12 @@ static void handleModbusData(void);
 static void handleRapidString(void);
 static void handleScaraData(void);
 /*
-
+    
  */
 void initSio(void);
+
+/*
+    
+*/
 void handleSIO(void);
 #endif
